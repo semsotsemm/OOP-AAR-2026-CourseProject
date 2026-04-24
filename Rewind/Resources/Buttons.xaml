@@ -26,12 +26,21 @@
         </Setter>
     </Style>
 
+    <!-- Активный элемент меню -->
+    <Style x:Key="ActiveNavButtonStyle" TargetType="Button" BasedOn="{StaticResource NavButtonStyle}">
+        <Setter Property="Background" Value="{DynamicResource GreenGradientStyle}"/>
+        <Setter Property="Opacity" Value="0.8"/>
+    </Style>
+
     <!-- Ползунки -->
     <Style x:Key="SliderStyle" TargetType="Slider">
+        <Setter Property="HorizontalAlignment" Value="Stretch"/>
+        <Setter Property="Background" Value="Transparent"/>
+
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Slider">
-                    <Grid>
+                    <Grid Background="{TemplateBinding Background}">
                         <Track x:Name="PART_Track">
                             <Track.DecreaseRepeatButton>
                                 <RepeatButton Command="Slider.DecreaseLarge">
@@ -47,7 +56,7 @@
                                     <Thumb.Template>
                                         <ControlTemplate TargetType="Thumb">
                                             <Ellipse Width="12" Height="12" Fill="White"
-                                                     Stroke="#E8462A" StrokeThickness="2"/>
+                                                     Stroke="{StaticResource AccentColor}" StrokeThickness="2"/>
                                         </ControlTemplate>
                                     </Thumb.Template>
                                 </Thumb>
@@ -117,6 +126,30 @@
                 <Setter Property="Foreground" Value="#AAAAAA"/>
             </Trigger>
         </Style.Triggers>
+    </Style>
+
+    <!-- Стиль поиска -->
+    <Style x:Key="SearchBoxStyle" TargetType="TextBox">
+        <Setter Property="Background" Value="#FFFFFF"/>
+        <Setter Property="BorderBrush" Value="#EBEBE7"/>
+        <Setter Property="BorderThickness" Value="1.5"/>
+        <Setter Property="Foreground" Value="#1A1A18"/>
+        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="Padding" Value="12,10"/>
+        <Setter Property="CaretBrush" Value="#E8462A"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="TextBox">
+                    <Border Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="12">
+                        <ScrollViewer x:Name="PART_ContentHost" Margin="{TemplateBinding Padding}"
+                                  VerticalAlignment="Center"/>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
     </Style>
 
 </ResourceDictionary>

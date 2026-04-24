@@ -17,4 +17,5 @@
         <Setter Property="Padding" Value="12"/>
         <Setter Property="Margin" Value="0,0,0,12"/>
     </Style>
+
 </ResourceDictionary>

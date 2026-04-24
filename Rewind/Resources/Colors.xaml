@@ -1,17 +1,24 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    
+
     <!-- Цвета -->
     <SolidColorBrush x:Key="BgMain" Color="#F5F4F0"/>
     <SolidColorBrush x:Key="BgSidebar" Color="#FFFFFF"/>
     <SolidColorBrush x:Key="BgCard" Color="#FFFFFF"/>
     <SolidColorBrush x:Key="BgCardHover" Color="#F0EFEB"/>
-    <SolidColorBrush x:Key="AccentColor" Color="#E8462A"/>
+    <SolidColorBrush x:Key="AccentColor" Color="#2ae843"/>
+    <SolidColorBrush x:Key="AccentDark" Color="#01590d"/>
     <SolidColorBrush x:Key="AccentLight" Color="#FFF0ED"/>
     <SolidColorBrush x:Key="TextPrimary" Color="#1A1A18"/>
     <SolidColorBrush x:Key="TextSecondary" Color="#888880"/>
     <SolidColorBrush x:Key="TextMuted" Color="#BBBBB5"/>
     <SolidColorBrush x:Key="BorderColor" Color="#EBEBE7"/>
     <SolidColorBrush x:Key="PlayerBg" Color="#1A1A18"/>
+
+    <!-- Градиент -->
+    <LinearGradientBrush x:Key="GreenGradientStyle" StartPoint="1,0" EndPoint="0,1">
+        <GradientStop Color="#00BF72" Offset="0"/>
+        <GradientStop Color="#004D40" Offset="1"/>
+    </LinearGradientBrush>
 
 </ResourceDictionary>
