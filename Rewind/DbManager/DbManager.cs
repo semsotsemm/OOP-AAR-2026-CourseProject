@@ -49,6 +49,16 @@ namespace Rewind.DbManager
         public List<PlaylistTrack> PlaylistTracks { get; set; } = new();
     }
 
+    public class ListeningHistory
+    {
+        [Key]
+        public int HistoryId { get; set; }
+        public int UserID { get; set; }
+        public User User { get; set; }
+        public int TrackID { get; set; }
+        public Track Track { get; set; }
+        public DateTime ListenedAt { get; set; } = DateTime.UtcNow;
+    }
     public class Statistic
     {
         [Key, ForeignKey("Track")]
@@ -75,6 +85,45 @@ namespace Rewind.DbManager
         public Playlist Playlist { get; set; }
         public int TrackID { get; set; }
         public Track Track { get; set; }
+    }
+
+    public class UserStatisticsDto
+    {
+        public int SubscriptionsCount { get; set; } 
+        public int TotalTracksListened { get; set; } 
+        public int TotalTimeFormatted { get; set; } 
+        public int PlaylistsCount { get; set; } 
+        public int FavoritesCount { get; set; }
+        public static UserStatisticsDto GetUserStats(int userId)
+        {
+            using (var db = new AppDbContext())
+            {
+                var subsCount = db.Subscriptions.Count(s => s.FollowerID == userId);
+
+                var playlistsCount = db.Playlists.Count(p => p.OwnerID == userId);
+
+                var favoritesCount = db.Favorites.Count(f => f.UserID == userId);
+
+                var historyData = db.History
+                    .Where(h => h.UserID == userId)
+                    .Select(h => h.Track.Duration)
+                    .ToList();
+
+                int totalTracks = historyData.Count;
+                int totalSeconds = historyData.Sum();
+
+                var time = TimeSpan.FromSeconds(totalSeconds);
+
+                return new UserStatisticsDto
+                {
+                    SubscriptionsCount = subsCount,
+                    PlaylistsCount = playlistsCount,
+                    FavoritesCount = favoritesCount,
+                    TotalTracksListened = totalTracks,
+                    TotalTimeFormatted = time.Minutes
+                };
+            }
+        }
     }
 
     public class Subscription
@@ -107,6 +156,7 @@ namespace Rewind.DbManager
         public DbSet<PlaylistTrack> PlaylistTracks { get; set; }
         public DbSet<Subscription> Subscriptions { get; set; }
         public DbSet<Favorite> Favorites { get; set; }
+        public DbSet<ListeningHistory> History { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -124,6 +174,10 @@ namespace Rewind.DbManager
             modelBuilder.Entity<Favorite>().HasKey(f => new { f.UserID, f.TrackID });
             modelBuilder.Entity<Subscription>().HasKey(s => new { s.FollowerID, s.ArtistID });
 
+            // Индексы для истории прослушивания 
+            modelBuilder.Entity<ListeningHistory>().HasIndex(h => h.UserID);
+            modelBuilder.Entity<ListeningHistory>().HasIndex(h => h.TrackID);
+
             // Роли заполняем
             modelBuilder.Entity<Role>().HasData(
                 new Role { RoleId = 1, RoleName = "Admin" },
@@ -135,6 +189,7 @@ namespace Rewind.DbManager
 
     public static class UserService
     {
+
         public static List<User> GetAllUsers()
         {
             using (var db = new AppDbContext())

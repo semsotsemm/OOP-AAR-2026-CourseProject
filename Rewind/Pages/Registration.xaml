@@ -3,67 +3,12 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:Rewind.Pages"
+        xmlns:local="clr-namespace:Rewind"
         mc:Ignorable="d"
         Title="Rewind"
         Icon="/Images/rewind_logo.png"
         Height="780" Width="1100">
-
-    <Window.Resources>
-        <SolidColorBrush x:Key="DefaultIconBackground" Color="#E8E8E4"/>
-        <SolidColorBrush x:Key="DefaultSecondaryText" Color="#888880"/>
-        <SolidColorBrush x:Key="ActiveCardBackground" Color="#F3FFF5"/>
-
-        <Style x:Key="RoleCardButtonStyle" TargetType="ListBoxItem">
-            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="ListBoxItem">
-                        <Border x:Name="MainBorder" 
-                                Background="#F5F4F0" 
-                                BorderBrush="#E0DFD9" 
-                                BorderThickness="1.5" 
-                                CornerRadius="14" 
-                                Cursor="Hand" 
-                                Padding="14,16"
-                                Margin="5">
-                            <StackPanel HorizontalAlignment="Center">
-                                <Border x:Name="IconContainer" Width="40" Height="40" CornerRadius="10" 
-                                        Background="{StaticResource DefaultIconBackground}" 
-                                        HorizontalAlignment="Center" Margin="0,0,0,10">
-                                    <Path x:Name="IconPath" 
-                                          Data="{Binding Tag, RelativeSource={RelativeSource TemplatedParent}}" 
-                                          Fill="{StaticResource DefaultSecondaryText}" 
-                                          Stretch="Uniform" Width="18" Height="18" 
-                                          HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                </Border>
-                                <TextBlock x:Name="LabelText" 
-                                           Text="{Binding Content, RelativeSource={RelativeSource TemplatedParent}}"
-                                           FontSize="13" FontWeight="Bold" 
-                                           Foreground="{StaticResource DefaultSecondaryText}" 
-                                           HorizontalAlignment="Center"/>
-                                <TextBlock x:Name="DescText" 
-                                           Text="{Binding ToolTip, RelativeSource={RelativeSource TemplatedParent}}" 
-                                           FontSize="11" Foreground="#BBBBB5" 
-                                           HorizontalAlignment="Center" Margin="0,3,0,0"/>
-                            </StackPanel>
-                        </Border>
-
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsSelected" Value="True">
-                                <Setter TargetName="MainBorder" Property="BorderBrush" Value="{DynamicResource AccentColor}"/>
-                                <Setter TargetName="MainBorder" Property="Background" Value="{StaticResource ActiveCardBackground}"/>
-                                <Setter TargetName="IconContainer" Property="Background" Value="{DynamicResource AccentColor}"/>
-                                <Setter TargetName="IconPath" Property="Fill" Value="White"/>
-                                <Setter TargetName="LabelText" Property="Foreground" Value="{DynamicResource AccentColor}"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-    </Window.Resources>
-
+    
     <Window.Triggers>
         <EventTrigger RoutedEvent="Window.Loaded">
             <BeginStoryboard Storyboard="{StaticResource FloatAnimation}" />
@@ -117,18 +62,18 @@
                                 <ListBoxItem Content="Слушатель" 
                                              ToolTip="Слушай музыку"
                                              Tag="M12 2a4 4 0 1 1 0 8 4 4 0 0 1 0-8zm0 10c5 0 8 2.24 8 4v1H4v-1c0-1.76 3-4 8-4z"
-                                             Style="{StaticResource RoleCardButtonStyle}"
+                                             Style="{DynamicResource RoleCardButtonStyle}"
                                              IsSelected="True"/>
 
                                 <ListBoxItem Content="Исполнитель" 
                                              ToolTip="Загружай треки"
                                              Tag="M12 3v10.55A4 4 0 1 0 14 17V7h4V3z"
-                                             Style="{StaticResource RoleCardButtonStyle}"/>
+                                             Style="{DynamicResource RoleCardButtonStyle}"/>
 
                                 <ListBoxItem Content="Администратор" 
                                              ToolTip="Управление"
                                              Tag="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"
-                                             Style="{StaticResource RoleCardButtonStyle}"/>
+                                             Style="{DynamicResource RoleCardButtonStyle}"/>
                             </ListBox>
                         </Border>
 

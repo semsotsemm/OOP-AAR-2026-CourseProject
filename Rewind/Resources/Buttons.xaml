@@ -63,11 +63,6 @@
                     <Border Background="{TemplateBinding Background}" CornerRadius="9">
                         <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Border>
-                    <ControlTemplate.Triggers>
-                        <Trigger Property="IsMouseOver" Value="True">
-                            <Setter Property="Background" Value="#F0EFEB"/>
-                        </Trigger>
-                    </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
@@ -82,7 +77,7 @@
 
     <!-- Строка трека -->
     <Style x:Key="TrackRow" TargetType="Border">
-        <Setter Property="Background" Value="#FFFFFF"/>
+        <Setter Property="Background" Value="{DynamicResource BgSidebar}"/>
         <Setter Property="BorderBrush" Value="#E0DFD9"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="CornerRadius" Value="12"/>
@@ -102,7 +97,7 @@
 
     <!-- Карточка плейлиста -->
     <Style x:Key="PlaylistCard" TargetType="Border">
-        <Setter Property="Background" Value="#FFFFFF"/>
+        <Setter Property="Background" Value="{DynamicResource BgSidebar}"/>
         <Setter Property="BorderBrush" Value="#E0DFD9"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="CornerRadius" Value="14"/>
@@ -113,8 +108,8 @@
 
     <!-- Карточка статистики -->
     <Style x:Key="StatCard" TargetType="Border">
-        <Setter Property="Background" Value="#FFFFFF"/>
-        <Setter Property="BorderBrush" Value="#E0DFD9"/>
+        <Setter Property="Background" Value="{DynamicResource BgSidebar}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource BgSidebar}"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="CornerRadius" Value="14"/>
         <Setter Property="Padding" Value="16,14"/>
@@ -129,7 +124,7 @@
         <Setter Property="Cursor" Value="Hand"/>
     </Style>
     <Style x:Key="ToggleOn" TargetType="Border" BasedOn="{StaticResource ToggleOff}">
-        <Setter Property="Background" Value="#E8462A"/>
+        <Setter Property="Background" Value="{DynamicResource AccentColor}"/>
     </Style>
 
     <!-- Карточка темы -->
@@ -141,10 +136,9 @@
         <Setter Property="Margin" Value="0,0,8,0"/>
     </Style>
     <Style x:Key="ThemeCardActive" TargetType="Border" BasedOn="{StaticResource ThemeCard}">
-        <Setter Property="BorderBrush" Value="#E8462A"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource AccentColor}"/>
     </Style>
-
-
+    
     <!-- Ползунки -->
     <Style x:Key="SliderStyle" TargetType="Slider">
         <Setter Property="HorizontalAlignment" Value="Stretch"/>
@@ -168,8 +162,7 @@
                                 <Thumb>
                                     <Thumb.Template>
                                         <ControlTemplate TargetType="Thumb">
-                                            <Ellipse Width="12" Height="12" Fill="White"
-                                                     Stroke="{StaticResource AccentColor}" StrokeThickness="2"/>
+                                            <Ellipse Width="12" Height="12" Fill="White" Stroke="{DynamicResource AccentColor}" StrokeThickness="2"/>
                                         </ControlTemplate>
                                     </Thumb.Template>
                                 </Thumb>
@@ -243,7 +236,7 @@
 
     <!-- Стиль поиска -->
     <Style x:Key="SearchBoxStyle" TargetType="TextBox">
-        <Setter Property="Background" Value="#FFFFFF"/>
+        <Setter Property="Background" Value="{DynamicResource BgSidebar}"/>
         <Setter Property="BorderBrush" Value="#EBEBE7"/>
         <Setter Property="BorderThickness" Value="1.5"/>
         <Setter Property="Foreground" Value="#1A1A18"/>
@@ -270,7 +263,7 @@
         <Setter Property="Height" Value="48"/>
         <Setter Property="FontSize" Value="14"/>
         <Setter Property="Foreground" Value="#1A1A18"/>
-        <Setter Property="Background" Value="#FFFFFF"/>
+        <Setter Property="Background" Value="{DynamicResource BgSidebar}"/>
         <Setter Property="BorderBrush" Value="#E0DFD9"/>
         <Setter Property="BorderThickness" Value="1.5"/>
         <Setter Property="Padding" Value="16,0"/>
@@ -313,7 +306,7 @@
         <Setter Property="Height" Value="48"/>
         <Setter Property="FontSize" Value="14"/>
         <Setter Property="Foreground" Value="#1A1A18"/>
-        <Setter Property="Background" Value="#FFFFFF"/>
+        <Setter Property="Background" Value="{DynamicResource BgSidebar}"/>
         <Setter Property="BorderBrush" Value="#E0DFD9"/>
         <Setter Property="BorderThickness" Value="1.5"/>
         <Setter Property="Padding" Value="16,0"/>
@@ -382,51 +375,98 @@
         <Setter Property="Margin" Value="0,0,0,7"/>
     </Style>
 
-    <SolidColorBrush x:Key="DefaultIconBackground" Color="#E8E8E4"/>
-    <SolidColorBrush x:Key="DefaultSecondaryText" Color="#888880"/>
-    <SolidColorBrush x:Key="ActiveCardBackground" Color="#F3FFF5"/>
 
+    <!-- Роли в меню регистрации -->
     <Style x:Key="RoleCardButtonStyle" TargetType="ListBoxItem">
+        <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="ListBoxItem">
                     <Border x:Name="MainBorder" 
-                        Background="#F5F4F0" 
-                        BorderBrush="#E0DFD9" 
-                        BorderThickness="1.5" 
-                        CornerRadius="14" 
-                        Cursor="Hand" 
-                        Padding="14,16"
-                        Margin="5">
+                                Background="#F5F4F0" 
+                                BorderBrush="#E0DFD9" 
+                                BorderThickness="1.5" 
+                                CornerRadius="14" 
+                                Cursor="Hand" 
+                                Padding="14,16"
+                                Margin="5">
                         <StackPanel HorizontalAlignment="Center">
                             <Border x:Name="IconContainer" Width="40" Height="40" CornerRadius="10" 
-                                Background="{StaticResource DefaultIconBackground}" 
-                                HorizontalAlignment="Center" Margin="0,0,0,10">
+                                        Background="{DynamicResource DefaultIconBackground}" 
+                                        HorizontalAlignment="Center" Margin="0,0,0,10">
                                 <Path x:Name="IconPath" 
-                                  Data="{Binding Tag, RelativeSource={RelativeSource TemplatedParent}}" 
-                                  Fill="{StaticResource DefaultSecondaryText}" 
-                                  Stretch="Uniform" Width="18" Height="18" 
-                                  HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                          Data="{Binding Tag, RelativeSource={RelativeSource TemplatedParent}}" 
+                                          Fill="{DynamicResource DefaultSecondaryText}" 
+                                          Stretch="Uniform" Width="18" Height="18" 
+                                          HorizontalAlignment="Center" VerticalAlignment="Center"/>
                             </Border>
                             <TextBlock x:Name="LabelText" 
-                                   Text="{Binding Content, RelativeSource={RelativeSource TemplatedParent}}"
-                                   FontSize="13" FontWeight="Bold" 
-                                   Foreground="{StaticResource DefaultSecondaryText}" 
-                                   HorizontalAlignment="Center"/>
+                                           Text="{Binding Content, RelativeSource={RelativeSource TemplatedParent}}"
+                                           FontSize="13" FontWeight="Bold" 
+                                           Foreground="{DynamicResource DefaultSecondaryText}" 
+                                           HorizontalAlignment="Center"/>
                             <TextBlock x:Name="DescText" 
-                                   Text="{Binding ToolTip, RelativeSource={RelativeSource TemplatedParent}}" 
-                                   FontSize="11" Foreground="#BBBBB5" 
-                                   HorizontalAlignment="Center" Margin="0,3,0,0"/>
+                                           Text="{Binding ToolTip, RelativeSource={RelativeSource TemplatedParent}}" 
+                                           FontSize="11" Foreground="#BBBBB5" 
+                                           HorizontalAlignment="Center" Margin="0,3,0,0"/>
                         </StackPanel>
                     </Border>
 
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsSelected" Value="True">
                             <Setter TargetName="MainBorder" Property="BorderBrush" Value="{DynamicResource AccentColor}"/>
-                            <Setter TargetName="MainBorder" Property="Background" Value="{StaticResource ActiveCardBackground}"/>
+                            <Setter TargetName="MainBorder" Property="Background" Value="{DynamicResource ActiveCardBackground}"/>
                             <Setter TargetName="IconContainer" Property="Background" Value="{DynamicResource AccentColor}"/>
                             <Setter TargetName="IconPath" Property="Fill" Value="White"/>
                             <Setter TargetName="LabelText" Property="Foreground" Value="{DynamicResource AccentColor}"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="ModernToggleStyle" TargetType="CheckBox">
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="CheckBox">
+                    <Border x:Name="BackgroundBorder" 
+                        Width="44" Height="26" 
+                        CornerRadius="13" 
+                        Background="#D0CFC9">
+                        <Ellipse x:Name="Dot" 
+                             Width="20" Height="20" 
+                             Fill="White" 
+                             HorizontalAlignment="Left" 
+                             Margin="3,0,0,0">
+                            <Ellipse.RenderTransform>
+                                <TranslateTransform X="0"/>
+                            </Ellipse.RenderTransform>
+                        </Ellipse>
+                    </Border>
+
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="BackgroundBorder" Property="Background" Value="{DynamicResource AccentColor}"/>
+                            <Trigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="Dot" 
+                                                     Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.X)" 
+                                                     To="18" Duration="0:0:0.15"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+                            <Trigger.ExitActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="Dot" 
+                                                     Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.X)" 
+                                                     To="0" Duration="0:0:0.15"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.ExitActions>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -455,7 +495,7 @@
     </Style>
 
     <Style x:Key="ModeBtnActive" TargetType="Button" BasedOn="{StaticResource ModeBtn}">
-        <Setter Property="Background" Value="#FFFFFF"/>
+        <Setter Property="Background" Value="{DynamicResource BgSidebar}"/>
         <Setter Property="Foreground" Value="#1A1A18"/>
         <Setter Property="FontWeight" Value="Bold"/>
     </Style>

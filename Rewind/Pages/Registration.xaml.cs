@@ -1,9 +1,6 @@
-﻿using Rewind.DbManager;
-using System.Windows;
+﻿using System.Windows;
+using Rewind.DbManager;
 using System.Windows.Controls;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Shapes;
 
 namespace Rewind.Pages
 {
@@ -93,6 +90,12 @@ namespace Rewind.Pages
 
                 UserService.AddUser(newUser);
 
+                Session.UserName = nickname;
+                Session.Email = email;
+                Session.Password = password;
+                Session.UserRole = selectedRoleId == 1 ? "Слушатель" : "Исполнитель";
+                Session.HidedPassword = new string('*', Session.Password.Length);
+
                 Profile profile_window = new Profile();
                 profile_window.Show();
                 this.Close();
@@ -145,6 +148,23 @@ namespace Rewind.Pages
                     MessageBox.Show("Выбранная роль не соответствует вашему аккаунту", "Доступ запрещен");
                     return;
                 }
+
+                // Получаем текущего пользователя
+                UserStatisticsDto current_user = new UserStatisticsDto();
+                UserStatisticsDto.GetUserStats(checking_user.UserId);
+
+                Session.UserName = checking_user.Nickname;
+                Session.Email = checking_user.Email;
+                Session.Password = password;
+                Session.UserRole = selectedRoleId == 1 ? "Слушатель" : "Исполнитель";
+                Session.TracksListened = current_user.TotalTracksListened;
+                Session.Subscriptions = current_user.SubscriptionsCount;
+                Session.Liked = current_user.FavoritesCount;
+                Session.Listened = current_user.TotalTimeFormatted;
+                Session.Playlists = current_user.PlaylistsCount;
+                Session.HidedPassword = new string('*', Session.Password.Length);
+
+
                 Profile profile_window = new Profile();
                 profile_window.Show();
                 this.Close();

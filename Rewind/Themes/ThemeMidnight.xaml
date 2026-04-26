@@ -1,0 +1,26 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <SolidColorBrush x:Key="BgMain" Color="#07101D"/>
+    <SolidColorBrush x:Key="BgSidebar" Color="#0A192F"/>
+    <SolidColorBrush x:Key="BgCard" Color="#112240"/>
+    <SolidColorBrush x:Key="BgCardHover" Color="#1D335A"/>
+    <SolidColorBrush x:Key="AccentColor" Color="#64FFDA"/>
+    <SolidColorBrush x:Key="PrimaryColor" Color="#48D1B2"/>
+    <SolidColorBrush x:Key="AccentDark" Color="#004D40"/>
+    <SolidColorBrush x:Key="AccentLight" Color="#E6FFF9"/>
+    <SolidColorBrush x:Key="TextPrimary" Color="#CCD6F6"/>
+    <SolidColorBrush x:Key="TextSecondary" Color="#8892B0"/>
+    <SolidColorBrush x:Key="TextMuted" Color="#495670"/>
+    <SolidColorBrush x:Key="BorderColor" Color="#1D2D50"/>
+    <SolidColorBrush x:Key="PlayerBg" Color="#020C1B"/>
+    <SolidColorBrush x:Key="DefaultIconBackground" Color="#172A45"/>
+    <SolidColorBrush x:Key="DefaultSecondaryText" Color="#8892B0"/>
+    <SolidColorBrush x:Key="ActiveCardBackground" Color="#162F56"/>
+
+    <LinearGradientBrush x:Key="GreenGradientStyle" StartPoint="1,0" EndPoint="0,1">
+        <GradientStop Color="#64FFDA" Offset="0"/>
+        <GradientStop Color="#0A192F" Offset="1"/>
+    </LinearGradientBrush>
+
+</ResourceDictionary>
