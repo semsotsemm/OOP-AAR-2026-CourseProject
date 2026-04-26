@@ -115,9 +115,16 @@ namespace Rewind.DbManager
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            // Почта и логин уникальные
+            modelBuilder.Entity<User>().HasIndex(u => u.Nickname).IsUnique();
+            modelBuilder.Entity<User>().HasIndex(u => u.Email).IsUnique();
+
+            // Состовные первичные ключи
             modelBuilder.Entity<PlaylistTrack>().HasKey(pt => new { pt.PlaylistID, pt.TrackID });
             modelBuilder.Entity<Favorite>().HasKey(f => new { f.UserID, f.TrackID });
             modelBuilder.Entity<Subscription>().HasKey(s => new { s.FollowerID, s.ArtistID });
+
+            // Роли заполняем
             modelBuilder.Entity<Role>().HasData(
                 new Role { RoleId = 1, RoleName = "Admin" },
                 new Role { RoleId = 2, RoleName = "Artist" },
@@ -141,6 +148,13 @@ namespace Rewind.DbManager
             using (var db = new AppDbContext())
             {
                 return db.Users.Include(u => u.Role).Include(u => u.Tracks).FirstOrDefault(u => u.UserId == id);
+            }
+        }
+        public static User? GetUserByNickname(string nickname)
+        {
+            using (var db = new AppDbContext())
+            {
+                return db.Users.Include(u => u.Role).FirstOrDefault(u => u.Nickname == nickname);
             }
         }
 
@@ -177,12 +191,29 @@ namespace Rewind.DbManager
             }
         }
 
-        public static void UpdateUser(User updatedUser)
+        public static void UpdateUser(User currentUser, User newUser)
         {
             using (var db = new AppDbContext())
             {
-                db.Users.Update(updatedUser);
-                db.SaveChanges();
+                var userInDb = db.Users.Find(currentUser.UserId);
+
+                if (userInDb != null)
+                {
+                    userInDb.Nickname = newUser.Nickname;
+                    userInDb.Email = newUser.Email;
+                    userInDb.RoleId = newUser.RoleId;
+
+                    if (!string.IsNullOrWhiteSpace(newUser.PasswordHash))
+                    {
+                        userInDb.PasswordHash = newUser.PasswordHash;
+                    }
+
+                    db.SaveChanges();
+                }
+                else
+                {
+                    throw new Exception("Пользователь не найден в базе данных.");
+                }
             }
         }
     }

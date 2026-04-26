@@ -6,7 +6,8 @@
     <SolidColorBrush x:Key="BgSidebar" Color="#FFFFFF"/>
     <SolidColorBrush x:Key="BgCard" Color="#FFFFFF"/>
     <SolidColorBrush x:Key="BgCardHover" Color="#F0EFEB"/>
-    <SolidColorBrush x:Key="AccentColor" Color="#2ae843"/>
+    <SolidColorBrush x:Key="AccentColor" Color="#2AE876"/>
+    <SolidColorBrush x:Key="PrimaryColor" Color="#23C13A"/>
     <SolidColorBrush x:Key="AccentDark" Color="#01590d"/>
     <SolidColorBrush x:Key="AccentLight" Color="#FFF0ED"/>
     <SolidColorBrush x:Key="TextPrimary" Color="#1A1A18"/>

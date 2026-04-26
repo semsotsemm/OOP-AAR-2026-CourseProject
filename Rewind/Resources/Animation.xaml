@@ -1,0 +1,29 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    
+    <!-- Кружки на заднем фоне страницы регистрации -->
+    <Storyboard x:Key="FloatAnimation">
+        <DoubleAnimation Storyboard.TargetName="Circle1" 
+               Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.X)"
+               From="-60" To="60" Duration="0:0:10" AutoReverse="True" RepeatBehavior="Forever" />
+        <DoubleAnimation Storyboard.TargetName="Circle1" 
+               Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)"
+               From="-40" To="80" Duration="0:0:12" AutoReverse="True" RepeatBehavior="Forever" />
+
+        <DoubleAnimation Storyboard.TargetName="Circle2" 
+               Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.X)"
+               From="80" To="-80" Duration="0:0:11" AutoReverse="True" RepeatBehavior="Forever" />
+        <DoubleAnimation Storyboard.TargetName="Circle2" 
+               Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)"
+               From="50" To="-70" Duration="0:0:9.5" AutoReverse="True" RepeatBehavior="Forever" />
+
+        <DoubleAnimation Storyboard.TargetName="Circle3" 
+               Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.X)"
+               From="-50" To="100" Duration="0:0:13" AutoReverse="True" RepeatBehavior="Forever" />
+        <DoubleAnimation Storyboard.TargetName="Circle3" 
+               Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)"
+               From="-90" To="40" Duration="0:0:10.5" AutoReverse="True" RepeatBehavior="Forever" />
+    </Storyboard>
+
+    
+</ResourceDictionary>

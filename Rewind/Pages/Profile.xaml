@@ -1,0 +1,623 @@
+﻿<Window x:Class="Rewind.Pages.Profile"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Rewind"
+        mc:Ignorable="d"
+        Title="Profile" 
+        Height="780" Width="1280">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="240"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- ==================== SIDEBAR ==================== -->
+        <Border Grid.Column="0" Background="#FFFFFF" BorderBrush="#EBEBE7" BorderThickness="0,0,1,0">
+            <DockPanel LastChildFill="False">
+
+                <!-- Логотип -->
+                <StackPanel DockPanel.Dock="Top" Margin="24,26,24,24">
+                    <StackPanel Orientation="Horizontal">
+                        <Border Width="32" Height="32" CornerRadius="16" Background="#E8462A" Margin="0,0,10,0">
+                            <Image Source="/Images/rewind_logo.png" Stretch="UniformToFill"/>
+                        </Border>
+                        <TextBlock Text="Rewind" VerticalAlignment="Center"
+                                   FontWeight="Black" FontSize="16" Foreground="#1A1A18"
+                                   FontFamily="{StaticResource HeaderFont}"/>
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- Навигация -->
+                <StackPanel DockPanel.Dock="Top" Margin="12,0,12,0">
+                    <TextBlock Text="МЕНЮ" FontSize="10" FontWeight="Bold"
+                               Foreground="#BBBBB5" Margin="12,0,0,10"/>
+
+                    <Button Style="{StaticResource NavButtonStyle}">
+                        <StackPanel Orientation="Horizontal">
+                            <Border Width="30" Height="30" CornerRadius="7" Background="#F0EFEB" Margin="0,0,10,0">
+                                <Path Data="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"
+                                      Fill="#888880" Stretch="Uniform" Width="14" Height="14"
+                                      HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <TextBlock Text="Главная" FontSize="13" Foreground="#888880" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+
+                    <Button Style="{StaticResource NavButtonStyle}">
+                        <StackPanel Orientation="Horizontal">
+                            <Border Width="30" Height="30" CornerRadius="7" Background="#F0EFEB" Margin="0,0,10,0">
+                                <Path Data="M10 2a8 8 0 1 0 4.5 14.71l4.9 4.9 1.41-1.42-4.9-4.9A8 8 0 0 0 10 2zm0 2a6 6 0 1 1 0 12 6 6 0 0 1 0-12z"
+                                      Fill="#888880" Stretch="Uniform" Width="14" Height="14"
+                                      HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <TextBlock Text="Поиск" FontSize="13" Foreground="#888880" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+
+                    <Button Style="{StaticResource NavButtonStyle}">
+                        <StackPanel Orientation="Horizontal">
+                            <Border Width="30" Height="30" CornerRadius="7" Background="#F0EFEB" Margin="0,0,10,0">
+                                <Path Data="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
+                                      Stroke="#888880" StrokeThickness="1.5" Fill="Transparent"
+                                      Stretch="Uniform" Width="14" Height="14"
+                                      HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <TextBlock Text="Любимые" FontSize="13" Foreground="#888880" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+
+                    <Button Style="{StaticResource NavButtonStyle}">
+                        <StackPanel Orientation="Horizontal">
+                            <Border Width="30" Height="30" CornerRadius="7" Background="#F0EFEB" Margin="0,0,10,0">
+                                <Path Data="M3 18h18 M3 12h18 M3 6h18"
+                                      Stroke="#888880" StrokeThickness="1.5" Fill="Transparent"
+                                      Stretch="Uniform" Width="14" Height="14"
+                                      HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <TextBlock Text="Плейлисты" FontSize="13" Foreground="#888880" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+
+                    <!-- ПРОФИЛЬ — активный -->
+                    <Button Style="{StaticResource ActiveNavButtonStyle}">
+                        <StackPanel Orientation="Horizontal">
+                            <Border Width="30" Height="30" CornerRadius="7" Background="{DynamicResource AccentColor}" Margin="0,0,10,0">
+                                <Path Data="M12 2a4 4 0 1 1 0 8 4 4 0 0 1 0-8zm0 10c5 0 8 2.24 8 4v1H4v-1c0-1.76 3-4 8-4z"
+                                      Fill="White" Stretch="Uniform" Width="14" Height="14"
+                                      HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <TextBlock Text="Профиль" FontSize="13" FontWeight="Bold"
+                                       Foreground="{DynamicResource AccentColor}" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+
+                <!-- Аватар внизу -->
+                <Border DockPanel.Dock="Bottom" Margin="16,0,16,20" 
+                        Background="{DynamicResource ActiveCardBackground}" CornerRadius="12" Padding="12,10" Cursor="Hand">
+                    <StackPanel Orientation="Horizontal">
+                        <Border Width="38" Height="38" CornerRadius="19">
+                            <Border.Background>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                    <GradientStop Color="#E8462A" Offset="0"/>
+                                    <GradientStop Color="#FF8C42" Offset="1"/>
+                                </LinearGradientBrush>
+                            </Border.Background>
+                            <TextBlock Text="АИ" FontSize="13" FontWeight="Bold"
+                                       Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <StackPanel Margin="10,0,0,0" VerticalAlignment="Center">
+                            <TextBlock Text="Алексей И." FontSize="13" FontWeight="SemiBold" Foreground="#1A1A18"/>
+                            <TextBlock Text="Бесплатный план" FontSize="11" Foreground="#BBBBB5"/>
+                        </StackPanel>
+                        <TextBlock Text="···" FontSize="18" Foreground="#BBBBB5"
+                                   HorizontalAlignment="Right" VerticalAlignment="Center" Margin="10,0,0,0"/>
+                    </StackPanel>
+                </Border>
+
+            </DockPanel>
+        </Border>
+
+        <!-- ==================== MAIN CONTENT ==================== -->
+        <Grid Grid.Column="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- ===== HERO BANNER ===== -->
+            <Border Grid.Row="0">
+                <Border.Background>
+                    <SolidColorBrush Color="#1A1A18"/>
+                </Border.Background>
+                <Grid>
+                    <!-- Декор: точечная сетка -->
+                    <Rectangle Opacity="0.04" HorizontalAlignment="Right" Width="260" VerticalAlignment="Stretch">
+                        <Rectangle.Fill>
+                            <DrawingBrush TileMode="Tile" Viewport="0,0,18,18" ViewportUnits="Absolute">
+                                <DrawingBrush.Drawing>
+                                    <GeometryDrawing Brush="White">
+                                        <GeometryDrawing.Geometry>
+                                            <EllipseGeometry RadiusX="1.5" RadiusY="1.5" Center="9,9"/>
+                                        </GeometryDrawing.Geometry>
+                                    </GeometryDrawing>
+                                </DrawingBrush.Drawing>
+                            </DrawingBrush>
+                        </Rectangle.Fill>
+                    </Rectangle>
+
+                    <!-- Акцентный прямоугольник справа -->
+                    <Border Width="120" Height="120" CornerRadius="28" Opacity="0.12"
+                            HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,36,16">
+                    </Border>
+
+                    <StackPanel>
+                        <!-- Верхняя часть: аватар + имя + кнопка -->
+                        <Grid Margin="32,28,32,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Аватар -->
+                            <Border Grid.Column="0" Width="88" Height="88" CornerRadius="44"
+                                    BorderThickness="3" VerticalAlignment="Bottom" Margin="0,0,20,18">
+                                <Border.BorderBrush>
+                                    <SolidColorBrush Color="#2D2D2B"/>
+                                </Border.BorderBrush>
+                                <Border.Background>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                        <GradientStop Color="#E8462A" Offset="0"/>
+                                        <GradientStop Color="#FF8C42" Offset="1"/>
+                                    </LinearGradientBrush>
+                                </Border.Background>
+                                <TextBlock Text="АИ" FontSize="30" FontWeight="Black"
+                                           Foreground="White" HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"
+                                           FontFamily="{StaticResource HeaderFont}"/>
+                            </Border>
+
+                            <!-- Имя и роль -->
+                            <StackPanel Grid.Column="1" VerticalAlignment="Bottom" Margin="0,0,0,18">
+                                <TextBlock Text="Алексей Иванов" FontSize="24" FontWeight="Black"
+                                           Foreground="White" FontFamily="{StaticResource HeaderFont}"
+                                           Margin="0,0,0,6"/>
+                                <Border Background="#2A2A28" CornerRadius="6"
+                                        Padding="10,4" HorizontalAlignment="Left">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Path Data="M12 2a4 4 0 1 1 0 8 4 4 0 0 1 0-8zm0 10c5 0 8 2.24 8 4v1H4v-1c0-1.76 3-4 8-4z"
+                                              Fill="#888880" Stretch="Uniform" Width="11" Height="11"
+                                              VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                        <TextBlock Text="Слушатель · Бесплатный план"
+                                                   FontSize="11" FontWeight="SemiBold"
+                                                   Foreground="#888880" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+
+                            <!-- Кнопка редактировать -->
+                            <Border Grid.Column="2" Background="#2A2A28" CornerRadius="10"
+                                    Padding="18,10" VerticalAlignment="Bottom" Margin="0,0,0,18" Cursor="Hand"
+                                    BorderBrush="#383836" BorderThickness="1">
+                                <TextBlock Text="Редактировать" FontSize="13" FontWeight="Bold"
+                                           Foreground="White"/>
+                            </Border>
+                        </Grid>
+
+                        <!-- Статистика -->
+                        <Border BorderBrush="#252523" BorderThickness="0,1,0,0">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <Border Grid.Column="0" BorderBrush="#252523" BorderThickness="0,0,1,0" Padding="10,16">
+                                    <StackPanel HorizontalAlignment="Center">
+                                        <TextBlock Text="847" FontSize="22" FontWeight="Black"
+                                                   Foreground="White" HorizontalAlignment="Center"
+                                                   FontFamily="{StaticResource HeaderFont}"/>
+                                        <TextBlock Text="Треков сыграно" FontSize="11"
+                                                   Foreground="#555552" HorizontalAlignment="Center" Margin="0,3,0,0"/>
+                                    </StackPanel>
+                                </Border>
+                                <Border Grid.Column="1" BorderBrush="#252523" BorderThickness="0,0,1,0" Padding="10,16">
+                                    <StackPanel HorizontalAlignment="Center">
+                                        <TextBlock Text="38" FontSize="22" FontWeight="Black"
+                                                   Foreground="White" HorizontalAlignment="Center"
+                                                   FontFamily="{StaticResource HeaderFont}"/>
+                                        <TextBlock Text="Лайкнуто" FontSize="11"
+                                                   Foreground="#555552" HorizontalAlignment="Center" Margin="0,3,0,0"/>
+                                    </StackPanel>
+                                </Border>
+                                <Border Grid.Column="2" BorderBrush="#252523" BorderThickness="0,0,1,0" Padding="10,16">
+                                    <StackPanel HorizontalAlignment="Center">
+                                        <TextBlock Text="12" FontSize="22" FontWeight="Black"
+                                                   Foreground="White" HorizontalAlignment="Center"
+                                                   FontFamily="{StaticResource HeaderFont}"/>
+                                        <TextBlock Text="Плейлистов" FontSize="11"
+                                                   Foreground="#555552" HorizontalAlignment="Center" Margin="0,3,0,0"/>
+                                    </StackPanel>
+                                </Border>
+                                <Border Grid.Column="3" BorderBrush="#252523" BorderThickness="0,0,1,0" Padding="10,16">
+                                    <StackPanel HorizontalAlignment="Center">
+                                        <TextBlock Text="243ч" FontSize="22" FontWeight="Black"
+                                                   Foreground="White" HorizontalAlignment="Center"
+                                                   FontFamily="{StaticResource HeaderFont}"/>
+                                        <TextBlock Text="Прослушано" FontSize="11"
+                                                   Foreground="#555552" HorizontalAlignment="Center" Margin="0,3,0,0"/>
+                                    </StackPanel>
+                                </Border>
+                                <Border Grid.Column="4" Padding="10,16">
+                                    <StackPanel HorizontalAlignment="Center">
+                                        <TextBlock Text="6" FontSize="22" FontWeight="Black"
+                                                   Foreground="White" HorizontalAlignment="Center"
+                                                   FontFamily="{StaticResource HeaderFont}"/>
+                                        <TextBlock Text="Подписок" FontSize="11"
+                                                   Foreground="#555552" HorizontalAlignment="Center" Margin="0,3,0,0"/>
+                                    </StackPanel>
+                                </Border>
+                            </Grid>
+                        </Border>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- ===== КОНТЕНТ С ТАБАМИ ===== -->
+            <Grid Grid.Row="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <!-- Табы -->
+                <Border Grid.Row="0" Background="#FFFFFF" BorderBrush="#E0DFD9" BorderThickness="0,0,0,1"
+                        Padding="28,12">
+                    <StackPanel Orientation="Horizontal">
+                        <Border Background="#F5F4F0" CornerRadius="12" Padding="4">
+                            <StackPanel Orientation="Horizontal" Width="480">
+                                <Button x:Name="TabOverview" Content="Обзор"
+                                        Click="TabOverview_Click"
+                                        Style="{StaticResource ProfileTabActive}"
+                                        Width="115"/>
+                                <Button x:Name="TabLiked" Content="Любимые треки"
+                                        Click="TabLiked_Click"
+                                        Style="{StaticResource ProfileTab}"
+                                        Width="135"/>
+                                <Button x:Name="TabPlaylists" Content="Плейлисты"
+                                        Style="{StaticResource ProfileTab}"
+                                        Click="TabPlaylists_Click"
+                                        Width="110"/>
+                                <Button x:Name="TabSettings" Content="Настройки"
+                                        Click="TabSettings_Click"
+                                        Style="{StaticResource ProfileTab}"
+                                        Width="110"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </Border>
+
+                <!-- Содержимое табов -->
+                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto"
+                              HorizontalScrollBarVisibility="Disabled" Background="#F5F4F0">
+                    <Grid Margin="32,24,32,32">
+
+                        <!-- ======= ТАБ: ОБЗОР ======= -->
+                        <StackPanel x:Name="PanelOverview" Visibility="Visible">
+                            <TextBlock Text="Статистика аккаунта" FontSize="16" FontWeight="Black"
+                                       Foreground="#1A1A18" Margin="0,0,0,14"
+                                       FontFamily="{StaticResource HeaderFont}"/>
+
+                            <!-- Карточки статистики 4 в ряд -->
+                            <Grid Margin="0,0,0,28">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="10"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="10"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="10"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <Border Grid.Column="0" Style="{StaticResource StatCard}">
+                                    <StackPanel HorizontalAlignment="Center">
+                                        <TextBlock Text="38" FontSize="28" FontWeight="Black"
+                                                   Foreground="{StaticResource AccentColor}" HorizontalAlignment="Center"
+                                                   FontFamily="{StaticResource HeaderFont}"/>
+                                        <TextBlock Text="Лайкнутых треков" FontSize="12" Foreground="#888880"
+                                                   HorizontalAlignment="Center" Margin="0,4,0,0"/>
+                                    </StackPanel>
+                                </Border>
+                                <Border Grid.Column="2" Style="{StaticResource StatCard}">
+                                    <StackPanel HorizontalAlignment="Center">
+                                        <TextBlock Text="12" FontSize="28" FontWeight="Black"
+                                                   Foreground="#1A1A18" HorizontalAlignment="Center"
+                                                   FontFamily="{StaticResource HeaderFont}"/>
+                                        <TextBlock Text="Плейлистов" FontSize="12" Foreground="#888880"
+                                                   HorizontalAlignment="Center" Margin="0,4,0,0"/>
+                                    </StackPanel>
+                                </Border>
+                                <Border Grid.Column="4" Style="{StaticResource StatCard}">
+                                    <StackPanel HorizontalAlignment="Center">
+                                        <TextBlock Text="243ч" FontSize="28" FontWeight="Black"
+                                                   Foreground="#1A1A18" HorizontalAlignment="Center"
+                                                   FontFamily="{StaticResource HeaderFont}"/>
+                                        <TextBlock Text="Прослушано" FontSize="12" Foreground="#888880"
+                                                   HorizontalAlignment="Center" Margin="0,4,0,0"/>
+                                    </StackPanel>
+                                </Border>
+                                <Border Grid.Column="6" Style="{StaticResource StatCard}">
+                                    <StackPanel HorizontalAlignment="Center">
+                                        <TextBlock Text="847" FontSize="28" FontWeight="Black"
+                                                   Foreground="#1A1A18" HorizontalAlignment="Center"
+                                                   FontFamily="{StaticResource HeaderFont}"/>
+                                        <TextBlock Text="Треков сыграно" FontSize="12" Foreground="#888880"
+                                                   HorizontalAlignment="Center" Margin="0,4,0,0"/>
+                                    </StackPanel>
+                                </Border>
+                            </Grid>
+
+                            <!-- Недавно лайкнутые -->
+                            <TextBlock Text="Недавно лайкнутые" FontSize="16" FontWeight="Black"
+                                       Foreground="#1A1A18" Margin="0,0,0,14"
+                                       FontFamily="{StaticResource HeaderFont}"/>
+                            <Grid Margin="0,24,0,14">
+                                <TextBlock Text="Мои плейлисты" FontSize="16" FontWeight="Black"
+                                           Foreground="#1A1A18"
+                                           FontFamily="{StaticResource HeaderFont}"/>
+                                <TextBlock Text="Все →" FontSize="13" Foreground="{StaticResource AccentColor}"
+                                           HorizontalAlignment="Right" VerticalAlignment="Center"
+                                           Cursor="Hand"/>
+                            </Grid>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="10"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                            </Grid>
+                        </StackPanel>
+
+                        <!-- ======= ТАБ: ЛЮБИМЫЕ ТРЕКИ ======= -->
+                        <StackPanel x:Name="PanelLiked" Visibility="Collapsed">
+                            <Grid Margin="0,0,0,16">
+                                <TextBlock Text="Лайкнутые треки — 38" FontSize="16" FontWeight="Black"
+                                           Foreground="#1A1A18"
+                                           FontFamily="{StaticResource HeaderFont}"/>
+                                <TextBlock Text="Сортировка: Недавние ↓" FontSize="13" Foreground="#888880"
+                                           HorizontalAlignment="Right" VerticalAlignment="Center"
+                                           Cursor="Hand"/>
+                            </Grid>
+                        </StackPanel>
+
+                        <StackPanel x:Name="PanelPlaylists" Visibility="Collapsed">
+                            <Grid Margin="0,0,0,16">
+                                <TextBlock Text="Мои плейлисты — 12" FontSize="16" FontWeight="Black"
+                                           Foreground="#1A1A18"
+                                           FontFamily="{StaticResource HeaderFont}"/>
+                                <Border Background="#E8462A" CornerRadius="8" Padding="14,8"
+                                        HorizontalAlignment="Right" Cursor="Hand">
+                                    <TextBlock Text="+ Новый плейлист" FontSize="13" FontWeight="Bold"
+                                               Foreground="White"/>
+                                </Border>
+                            </Grid>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="10"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+                            </Grid>
+                        </StackPanel>
+
+                        <!-- ======= ТАБ: НАСТРОЙКИ ======= -->
+                        <StackPanel x:Name="PanelSettings" Visibility="Collapsed">
+
+                            <!-- Баннер плана -->
+                            <Border Background="#1A1A18" CornerRadius="16" Padding="22,18"
+                                    Margin="0,0,0,20">
+                                <Grid>
+                                    <StackPanel>
+                                        <Border Background="#E8462A" CornerRadius="5" Padding="8,3"
+                                                HorizontalAlignment="Left" Margin="0,0,0,8">
+                                            <TextBlock Text="ТЕКУЩИЙ ПЛАН" FontSize="10" FontWeight="Bold"
+                                                       Foreground="White"/>
+                                        </Border>
+                                        <TextBlock Text="Rewind Free" FontSize="18" FontWeight="Black"
+                                                   Foreground="White"
+                                                   FontFamily="{StaticResource HeaderFont}"/>
+                                        <TextBlock Text="Обновите для неограниченного доступа без рекламы"
+                                                   FontSize="13" Foreground="#555552" Margin="0,4,0,0"/>
+                                    </StackPanel>
+                                    <Border Background="#E8462A" CornerRadius="10" Padding="20,10"
+                                            HorizontalAlignment="Right" VerticalAlignment="Center" Cursor="Hand">
+                                        <TextBlock Text="Upgrade ↑" FontSize="13" FontWeight="Bold" Foreground="White"/>
+                                    </Border>
+                                </Grid>
+                            </Border>
+
+                            <!-- Данные профиля -->
+                            <TextBlock Text="Данные профиля" FontSize="16" FontWeight="Black"
+                                       Foreground="#1A1A18" Margin="0,0,0,12"
+                                       FontFamily="{StaticResource HeaderFont}"/>
+                            <Border Background="#FFFFFF" CornerRadius="16" BorderBrush="#E0DFD9"
+                                    BorderThickness="1" Margin="0,0,0,20" ClipToBounds="True">
+                                <StackPanel>
+                                    <Border Style="{StaticResource SettingsRow}">
+                                        <Grid>
+                                            <TextBlock Text="Имя пользователя" FontSize="14" FontWeight="SemiBold" Foreground="#1A1A18"/>
+                                            <TextBlock Text="Алексей Иванов" FontSize="13" Foreground="#888880" HorizontalAlignment="Right"/>
+                                        </Grid>
+                                    </Border>
+                                    <Border Style="{StaticResource SettingsRow}">
+                                        <Grid>
+                                            <TextBlock Text="Email" FontSize="14" FontWeight="SemiBold" Foreground="#1A1A18"/>
+                                            <TextBlock Text="alexey@mail.ru" FontSize="13" Foreground="#888880" HorizontalAlignment="Right"/>
+                                        </Grid>
+                                    </Border>
+                                    <Border Style="{StaticResource SettingsRow}">
+                                        <Grid>
+                                            <TextBlock Text="Пароль" FontSize="14" FontWeight="SemiBold" Foreground="#1A1A18"/>
+                                            <TextBlock Text="Изменить →" FontSize="13" Foreground="#E8462A" HorizontalAlignment="Right" Cursor="Hand"/>
+                                        </Grid>
+                                    </Border>
+                                    <Border Style="{StaticResource SettingsRow}">
+                                        <Grid>
+                                            <TextBlock Text="Роль" FontSize="14" FontWeight="SemiBold" Foreground="#1A1A18"/>
+                                            <TextBlock Text="Слушатель" FontSize="13" Foreground="#E8462A" FontWeight="Bold" HorizontalAlignment="Right"/>
+                                        </Grid>
+                                    </Border>
+                                    <Border Padding="18,14">
+                                        <Grid>
+                                            <TextBlock Text="Дата регистрации" FontSize="14" FontWeight="SemiBold" Foreground="#1A1A18"/>
+                                            <TextBlock Text="12 января 2024" FontSize="13" Foreground="#888880" HorizontalAlignment="Right"/>
+                                        </Grid>
+                                    </Border>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Тема оформления -->
+                            <TextBlock Text="Тема оформления" FontSize="16" FontWeight="Black"
+                                       Foreground="#1A1A18" Margin="0,0,0,14"
+                                       FontFamily="{StaticResource HeaderFont}"/>
+                            <Grid Margin="0,0,0,24">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="10"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="10"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="10"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <!-- Классик — активная -->
+                                <Border Grid.Column="0" x:Name="ThemeClassic" Style="{StaticResource ThemeCardActive}">
+                                    <StackPanel>
+                                        <Border Height="60" CornerRadius="10,10,0,0" Background="#F5F4F0">
+                                            <Ellipse Width="10" Height="10" Fill="#E8462A"
+                                                     HorizontalAlignment="Left" VerticalAlignment="Bottom"
+                                                     Margin="10,0,0,10"/>
+                                        </Border>
+                                        <Border Background="#FFFFFF" Padding="10,9" CornerRadius="0,0,10,10"
+                                                BorderBrush="#E0DFD9" BorderThickness="0,1,0,0">
+                                            <TextBlock Text="Классик" FontSize="12" FontWeight="Bold" Foreground="#1A1A18"/>
+                                        </Border>
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- Тёмная -->
+                                <Border Grid.Column="2" x:Name="ThemeDark" Style="{StaticResource ThemeCard}"  >
+                                    <StackPanel>
+                                        <Border Height="60" CornerRadius="10,10,0,0" Background="#1A1A18">
+                                            <Ellipse Width="10" Height="10" Fill="White"
+                                                     HorizontalAlignment="Left" VerticalAlignment="Bottom"
+                                                     Margin="10,0,0,10" Opacity="0.6"/>
+                                        </Border>
+                                        <Border Background="#FFFFFF" Padding="10,9" CornerRadius="0,0,10,10"
+                                                BorderBrush="#E0DFD9" BorderThickness="0,1,0,0">
+                                            <TextBlock Text="Тёмная" FontSize="12" FontWeight="Bold" Foreground="#1A1A18"/>
+                                        </Border>
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- Полночь -->
+                                <Border Grid.Column="4" x:Name="ThemeMidnight" Style="{StaticResource ThemeCard}">
+                                    <StackPanel>
+                                        <Border Height="60" CornerRadius="10,10,0,0" Background="#0A192F">
+                                            <Ellipse Width="10" Height="10" Fill="#64FFDA"
+                                                     HorizontalAlignment="Left" VerticalAlignment="Bottom"
+                                                     Margin="10,0,0,10"/>
+                                        </Border>
+                                        <Border Background="#FFFFFF" Padding="10,9" CornerRadius="0,0,10,10"
+                                                BorderBrush="#E0DFD9" BorderThickness="0,1,0,0">
+                                            <TextBlock Text="Полночь" FontSize="12" FontWeight="Bold" Foreground="#1A1A18"/>
+                                        </Border>
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- Чистая -->
+                                <Border Grid.Column="6" x:Name="ThemeClean" Style="{StaticResource ThemeCard}">
+                                    <StackPanel>
+                                        <Border Height="60" CornerRadius="10,10,0,0" Background="#FFFFFF"
+                                                BorderBrush="#E0DFD9" BorderThickness="1,1,1,0">
+                                            <Ellipse Width="10" Height="10" Fill="#E8462A"
+                                                     HorizontalAlignment="Left" VerticalAlignment="Bottom"
+                                                     Margin="10,0,0,10"/>
+                                        </Border>
+                                        <Border Background="#FFFFFF" Padding="10,9" CornerRadius="0,0,10,10"
+                                                BorderBrush="#E0DFD9" BorderThickness="0,1,0,0">
+                                            <TextBlock Text="Чистая" FontSize="12" FontWeight="Bold" Foreground="#1A1A18"/>
+                                        </Border>
+                                    </StackPanel>
+                                </Border>
+                            </Grid>
+
+                            <!-- Уведомления -->
+                            <TextBlock Text="Уведомления" FontSize="16" FontWeight="Black"
+                                       Foreground="#1A1A18" Margin="0,0,0,12"
+                                       FontFamily="{StaticResource HeaderFont}"/>
+                            <Border Background="#FFFFFF" CornerRadius="16" BorderBrush="#E0DFD9"
+                                    BorderThickness="1" Margin="0,0,0,20" ClipToBounds="True">
+                                <StackPanel>
+                                    <Border Style="{StaticResource SettingsRow}">
+                                        <Grid>
+                                            <TextBlock Text="Новые треки от авторов" FontSize="14" FontWeight="SemiBold" Foreground="#1A1A18" VerticalAlignment="Center"/>
+                                            <Border x:Name="Tog1" Style="{StaticResource ToggleOn}" HorizontalAlignment="Right">
+                                                <Ellipse Width="20" Height="20" Fill="White" HorizontalAlignment="Right" Margin="0,0,3,0"/>
+                                            </Border>
+                                        </Grid>
+                                    </Border>
+                                    <Border Style="{StaticResource SettingsRow}">
+                                        <Grid>
+                                            <TextBlock Text="Push-уведомления" FontSize="14" FontWeight="SemiBold" Foreground="#1A1A18" VerticalAlignment="Center"/>
+                                            <Border x:Name="Tog2" Style="{StaticResource ToggleOff}" HorizontalAlignment="Right">
+                                                <Ellipse Width="20" Height="20" Fill="White" HorizontalAlignment="Left" Margin="3,0,0,0"/>
+                                            </Border>
+                                        </Grid>
+                                    </Border>
+                                    <Border Style="{StaticResource SettingsRow}">
+                                        <Grid>
+                                            <TextBlock Text="Email-рассылка" FontSize="14" FontWeight="SemiBold" Foreground="#1A1A18" VerticalAlignment="Center"/>
+                                            <Border x:Name="Tog3" Style="{StaticResource ToggleOn}" HorizontalAlignment="Right">
+                                                <Ellipse Width="20" Height="20" Fill="White" HorizontalAlignment="Right" Margin="0,0,3,0"/>
+                                            </Border>
+                                        </Grid>
+                                    </Border>
+                                    <Border Padding="18,14">
+                                        <Grid>
+                                            <TextBlock Text="Рекомендации" FontSize="14" FontWeight="SemiBold" Foreground="#1A1A18" VerticalAlignment="Center"/>
+                                            <Border x:Name="Tog4" Style="{StaticResource ToggleOn}" HorizontalAlignment="Right">
+                                                <Ellipse Width="20" Height="20" Fill="White" HorizontalAlignment="Right" Margin="0,0,3,0"/>
+                                            </Border>
+                                        </Grid>
+                                    </Border>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Выход -->
+                            <Border Background="#FFFFFF" BorderBrush="#FFD5CC" BorderThickness="1.5"
+                                    CornerRadius="14" Cursor="Hand" Padding="0,16">
+                                <TextBlock Text="Выйти из аккаунта" FontSize="14" FontWeight="Bold"
+                                           Foreground="#E8462A" HorizontalAlignment="Center"/>
+                            </Border>
+
+                        </StackPanel>
+
+                    </Grid>
+                </ScrollViewer>
+            </Grid>
+        </Grid>
+    </Grid>
+</Window>

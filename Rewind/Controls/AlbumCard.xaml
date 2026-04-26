@@ -1,0 +1,34 @@
+﻿<UserControl x:Class="Rewind.AlbumCard"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Name="thisCard">
+
+    <Border Style="{StaticResource AlbumCardStyle}">
+        <Border.Effect>
+            <DropShadowEffect Color="#000000" Opacity="0.05"
+                              BlurRadius="14" ShadowDepth="2"/>
+        </Border.Effect>
+
+        <StackPanel>
+            <Border Height="110" CornerRadius="10" Margin="0,0,0,12">
+                <Border.Background>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                        <GradientStop Color="{Binding StartColor, ElementName=thisCard}" Offset="0"/>
+                        <GradientStop Color="{Binding EndColor, ElementName=thisCard}" Offset="1"/>
+                    </LinearGradientBrush>
+                </Border.Background>
+                <TextBlock Text="♪" FontSize="36" Foreground="White"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"/>
+            </Border>
+
+            <TextBlock Text="{Binding AlbumTitle, ElementName=thisCard}" 
+                       FontSize="13" FontWeight="SemiBold"
+                       Foreground="#1A1A18" TextTrimming="CharacterEllipsis"/>
+
+            <TextBlock Text="{Binding Artist, ElementName=thisCard}" 
+                       FontSize="11" Foreground="#888880"
+                       Margin="0,3,0,0"/>
+        </StackPanel>
+    </Border>
+</UserControl>
