@@ -94,7 +94,7 @@ namespace Rewind.Pages
                 Session.Email = email;
                 Session.Password = password;
                 Session.UserRole = selectedRoleId == 1 ? "Слушатель" : "Исполнитель";
-                Session.HidedPassword = new string('*', Session.Password.Length);
+                Session.HidedPassword = new string('●', Session.Password.Length);
 
                 Profile profile_window = new Profile();
                 profile_window.Show();
@@ -162,7 +162,7 @@ namespace Rewind.Pages
                 Session.Liked = current_user.FavoritesCount;
                 Session.Listened = current_user.TotalTimeFormatted;
                 Session.Playlists = current_user.PlaylistsCount;
-                Session.HidedPassword = new string('*', Session.Password.Length);
+                Session.HidedPassword = new string('●', Session.Password.Length);
 
 
                 Profile profile_window = new Profile();

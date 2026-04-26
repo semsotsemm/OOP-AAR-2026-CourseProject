@@ -35,7 +35,7 @@
                     <TextBlock Text="МЕНЮ" FontSize="10" FontWeight="Bold"
                                Foreground="{DynamicResource TextMuted}" Margin="12,0,0,10"/>
 
-                    <Button Style="{StaticResource NavButtonStyle}">
+                    <Button Style="{StaticResource NavButtonStyle}" Click="MainPage_Click">
                         <StackPanel Orientation="Horizontal">
                             <Border Width="30" Height="30" CornerRadius="7" Background="#F0EFEB" Margin="0,0,10,0">
                                 <Path Data="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"
@@ -100,17 +100,20 @@
                         Background="{DynamicResource ActiveCardBackground}" CornerRadius="12" Padding="12,10" Cursor="Hand">
                     <StackPanel Orientation="Horizontal">
                         <Border Width="38" Height="38" CornerRadius="19">
-                            <Border.Background>
-                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                                    <GradientStop Color="#E8462A" Offset="0"/>
-                                    <GradientStop Color="#FF8C42" Offset="1"/>
-                                </LinearGradientBrush>
-                            </Border.Background>
-                            <TextBlock Text="АИ" FontSize="13" FontWeight="Bold"
-                                       Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            <Border.BorderBrush>
+                                <SolidColorBrush Color="#2D2D2B"/>
+                            </Border.BorderBrush>
+                            <Ellipse Width="38" Height="38" 
+                                     HorizontalAlignment="Center" 
+                                     VerticalAlignment="Center">    
+                                <Ellipse.Fill>
+                                    <ImageBrush ImageSource="{Binding Path=(local:Session.AvatarPath)}" 
+                                                Stretch="UniformToFill"/>
+                                </Ellipse.Fill>
+                            </Ellipse>
                         </Border>
                         <StackPanel Margin="10,0,0,0" VerticalAlignment="Center">
-                            <TextBlock Text="Алексей И." FontSize="13" FontWeight="SemiBold" Foreground="#1A1A18"/>
+                            <TextBlock Text="{Binding Path=(local:Session.UserName), UpdateSourceTrigger=PropertyChanged}" FontSize="13" FontWeight="SemiBold" Foreground="#1A1A18"/>
                         </StackPanel>
                     </StackPanel>
                 </Border>
@@ -166,21 +169,19 @@
                                 <Border.BorderBrush>
                                     <SolidColorBrush Color="#2D2D2B"/>
                                 </Border.BorderBrush>
-                                <Border.Background>
-                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                                        <GradientStop Color="#E8462A" Offset="0"/>
-                                        <GradientStop Color="#FF8C42" Offset="1"/>
-                                    </LinearGradientBrush>
-                                </Border.Background>
-                                <TextBlock Text="АИ" FontSize="30" FontWeight="Black"
-                                           Foreground="White" HorizontalAlignment="Center"
-                                           VerticalAlignment="Center"
-                                           FontFamily="{StaticResource HeaderFont}"/>
+                                <Ellipse Width="80" Height="80" 
+                                         HorizontalAlignment="Center" 
+                                         VerticalAlignment="Center">        
+                                    <Ellipse.Fill>
+                                        <ImageBrush ImageSource="{Binding Path=(local:Session.AvatarPath)}" 
+                                                    Stretch="UniformToFill"/>
+                                    </Ellipse.Fill>
+                                </Ellipse>
                             </Border>
 
                             <!-- Имя и роль -->
                             <StackPanel Grid.Column="1" VerticalAlignment="Bottom" Margin="0,0,0,18">
-                                <TextBlock Text="{Binding Source={x:Static local:Session.UserName}}" FontSize="24" FontWeight="Black"
+                                <TextBlock Text="{Binding Path=(local:Session.UserName), UpdateSourceTrigger=PropertyChanged}" FontSize="24" FontWeight="Black"
                                            Foreground="White" FontFamily="{StaticResource HeaderFont}"
                                            Margin="0,0,0,6"/>
                                 <Border Background="#2A2A28" CornerRadius="6"
@@ -199,7 +200,8 @@
                             <!-- Кнопка редактировать -->
                             <Border Grid.Column="2" Background="#2A2A28" CornerRadius="10"
                                     Padding="18,10" VerticalAlignment="Bottom" Margin="0,0,0,18" Cursor="Hand"
-                                    BorderBrush="#383836" BorderThickness="1">
+                                    BorderBrush="#383836" BorderThickness="1"
+                                    MouseDown="EditBtn_MouseDown">
                                 <TextBlock Text="Редактировать" FontSize="13" FontWeight="Bold"
                                            Foreground="White"/>
                             </Border>
@@ -443,19 +445,19 @@
                                     <Border Style="{StaticResource SettingsRow}">
                                         <Grid>
                                             <TextBlock Text="Имя пользователя" FontSize="14" FontWeight="SemiBold" Foreground="#1A1A18"/>
-                                            <TextBlock Text="{Binding Source={x:Static local:Session.UserName}}" FontSize="13" Foreground="#888880" HorizontalAlignment="Right"/>
+                                            <TextBlock Text="{Binding Path=(local:Session.UserName), UpdateSourceTrigger=PropertyChanged}" FontSize="13" Foreground="#888880" HorizontalAlignment="Right"/>
                                         </Grid>
                                     </Border>
                                     <Border Style="{StaticResource SettingsRow}">
                                         <Grid>
                                             <TextBlock Text="Email" FontSize="14" FontWeight="SemiBold" Foreground="#1A1A18"/>
-                                            <TextBlock Text="{Binding Source={x:Static local:Session.Email}}" FontSize="13" Foreground="#888880" HorizontalAlignment="Right"/>
+                                            <TextBlock Text="{Binding Path=(local:Session.Email), UpdateSourceTrigger=PropertyChanged}" FontSize="13" Foreground="#888880" HorizontalAlignment="Right"/>
                                         </Grid>
                                     </Border>
                                     <Border Style="{StaticResource SettingsRow}">
                                         <Grid>
                                             <TextBlock Text="Пароль" FontSize="14" FontWeight="SemiBold" Foreground="#1A1A18"/>
-                                            <TextBlock Text="{Binding Source={x:Static local:Session.HidedPassword}}" 
+                                            <TextBlock Text="{Binding Path=(local:Session.Password), UpdateSourceTrigger=PropertyChanged}"
                                                        FontSize="13" Foreground="#888880" HorizontalAlignment="Right" Cursor="Hand"/>
                                         </Grid>
                                     </Border>
@@ -616,6 +618,65 @@
                     </Grid>
                 </ScrollViewer>
             </Grid>
+        </Grid>
+        <Grid x:Name="EditOverlay" Grid.ColumnSpan="2" Visibility="Collapsed">
+            <Border Background="#CC1A1A18" MouseDown="CloseEdit_Click">
+                <Border.Effect>
+                    <BlurEffect Radius="0"/>
+                </Border.Effect>
+            </Border>
+            
+
+            <Border Background="White" 
+                    Width="400" 
+                    VerticalAlignment="Center" 
+                    HorizontalAlignment="Center" 
+                    CornerRadius="20" 
+                    Padding="30"
+                    BorderBrush="#E0DFD9" 
+                    BorderThickness="1">
+
+                <StackPanel>
+                    <TextBlock Text="Фото профиля" FontSize="12" FontWeight="Bold" Foreground="#888880" Margin="0,0,0,5"/>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,15">
+                        <Ellipse Width="60" Height="60" Stroke="#E0DFD9" StrokeThickness="1">
+                            <Ellipse.Fill>
+                                <ImageBrush x:Name="AvatarPreview" ImageSource="{Binding Path=(local:Session.AvatarPath)}" Stretch="UniformToFill"/>
+                            </Ellipse.Fill>
+                        </Ellipse>
+                        <Button Content="Выбрать фото" 
+                                Click="UploadPhoto_Click" 
+                                Margin="15,0,0,0" 
+                                Padding="15,5" 
+                                VerticalAlignment="Center" 
+                                Background="#F5F4F0" 
+                                BorderThickness="1" 
+                                BorderBrush="#E0DFD9"/> 
+                    </StackPanel>
+                    <TextBlock Text="Редактирование" FontSize="20" FontWeight="Black" 
+                               Margin="0,0,0,20" FontFamily="{StaticResource HeaderFont}"/>
+
+                    <TextBlock Text="Имя пользователя" FontSize="12" FontWeight="Bold" Foreground="#888880" Margin="0,0,0,5"/>
+                    <TextBox x:Name="EditNameInput" Margin="0,0,0,15" Padding="10,8"/>
+                    
+                    <TextBlock Text="Электронная почта" FontSize="12" FontWeight="Bold" Foreground="#888880" Margin="0,0,0,5"/>
+                    <TextBox x:Name="EditEmailInput" Margin="0,0,0,15" Padding="10,8"/>
+
+                    <TextBlock Text="Новый пароль" FontSize="12" FontWeight="Bold" Foreground="#888880" Margin="0,0,0,5"/>
+                    <PasswordBox x:Name="EditPassInput" Margin="0,0,0,25" Padding="10,8"/>
+
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition/>
+                            <ColumnDefinition Width="10"/>
+                            <ColumnDefinition/>
+                        </Grid.ColumnDefinitions>
+                        <Button Content="Отмена" Click="CloseEdit_Click" Height="40" Background="#F5F4F0" BorderThickness="0"/>
+                        <Button Grid.Column="2" Content="Сохранить" Click="SaveProfile_Click" Height="40" 
+                                Background="{DynamicResource AccentColor}" Foreground="White" FontWeight="Bold" BorderThickness="0"/>
+                    </Grid>
+                </StackPanel>
+            </Border>
         </Grid>
     </Grid>
 </Window>

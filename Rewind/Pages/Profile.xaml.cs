@@ -1,13 +1,14 @@
-﻿using System.Globalization;
+﻿using Microsoft.Win32;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
 using System.Windows.Input;
+using System.Windows.Media.Imaging;
 
 namespace Rewind.Pages
 {
     public partial class Profile : Window
     {
+        private string tempAvatarPath = Session.AvatarPath;
         public Profile()
         {
             InitializeComponent();
@@ -18,17 +19,51 @@ namespace Rewind.Pages
         private void TabPlaylists_Click(object sender, RoutedEventArgs e) => SetActiveTab(TabPlaylists, PanelPlaylists);
         private void TabSettings_Click(object sender, RoutedEventArgs e) => SetActiveTab(TabSettings, PanelSettings);
 
-        public static void ChangeTheme(Uri themeUri)
+        private void EditBtn_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            ResourceDictionary dict = new ResourceDictionary { Source = themeUri };
+            EditNameInput.Text = Session.UserName;
+            EditEmailInput.Text = Session.Email;
+            EditPassInput.Password = Session.Password;
+            EditOverlay.Visibility = Visibility.Visible;
+        }
 
-            var oldDict = Application.Current.Resources.MergedDictionaries.FirstOrDefault(d => d.Source.OriginalString.Contains("Themes/"));
+        private void MainPage_Click(object sender, RoutedEventArgs e)
+        {
+            MainWindow main_window = new MainWindow();
+            main_window.Show();
+            this.Close();
+        }
+        private void CloseEdit_Click(object sender, RoutedEventArgs e)
+        {
+            EditOverlay.Visibility = Visibility.Collapsed;
+        }
+        private void UploadPhoto_Click(object sender, RoutedEventArgs e)
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            openFileDialog.Filter = "Изображения (*.jpg;*.jpeg;*.png)|*.jpg;*.jpeg;*.png";
 
-            if (oldDict != null)
+            if (openFileDialog.ShowDialog() == true)
             {
-                Application.Current.Resources.MergedDictionaries.Remove(oldDict);
+                tempAvatarPath = openFileDialog.FileName;
+                AvatarPreview.ImageSource = new BitmapImage(new Uri(tempAvatarPath));
             }
-            Application.Current.Resources.MergedDictionaries.Add(dict);
+        }
+        private void SaveProfile_Click(object sender, RoutedEventArgs e)
+        {
+            if (!(string.IsNullOrEmpty(EditNameInput.Text) && string.IsNullOrEmpty(EditEmailInput.Text) && string.IsNullOrEmpty(EditPassInput.Password)))
+            {
+                Session.UserName = EditNameInput.Text;
+                Session.Email = EditEmailInput.Text;
+                Session.Password = EditPassInput.Password;
+                Session.HidedPassword = new string('●', Session.Password.Length);
+                Session.AvatarPath = tempAvatarPath;
+                MessageBox.Show("Данные аккаунта успешно изменены");
+                EditOverlay.Visibility = Visibility.Collapsed;
+            }
+            else 
+            {
+                MessageBox.Show("Ошибка ввода, проверь данные");
+            }
         }
         private void LogOut_MouseDown(object sender, MouseButtonEventArgs e) 
         {

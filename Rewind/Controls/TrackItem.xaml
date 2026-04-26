@@ -1,14 +1,15 @@
 ﻿<UserControl x:Class="Rewind.TrackItem"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             mc:Ignorable="d" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d"
+             x:Name="this"
              d:DesignWidth="800">
 
     <Border Style="{StaticResource TrackCardStyle}">
         <Border.Effect>
-            <DropShadowEffect Color="#000000" Opacity="0.04"
-                              BlurRadius="12" ShadowDepth="2"/>
+            <DropShadowEffect Color="#000000" Opacity="0.04" BlurRadius="12" ShadowDepth="2"/>
         </Border.Effect>
         <Grid>
             <Grid.ColumnDefinitions>
@@ -18,35 +19,53 @@
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
+            <!-- Обложка -->
             <Border Grid.Column="0" Width="52" Height="52" CornerRadius="10" Margin="0,0,14,0">
                 <Border.Background>
                     <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                        <GradientStop Color="#667EEA" Offset="0"/>
-                        <GradientStop Color="#764BA2" Offset="1"/>
+                        <GradientStop Color="#2AE876" Offset="0"/>
+                        <GradientStop Color="#23C13A" Offset="1"/>
                     </LinearGradientBrush>
                 </Border.Background>
                 <TextBlock Text="♪" FontSize="20" Foreground="White"
                            HorizontalAlignment="Center" VerticalAlignment="Center"/>
             </Border>
 
+            <!-- Название и артист -->
             <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                <TextBlock x:Name="TrackTitle" Text="Название трека" FontSize="14" FontWeight="SemiBold"
-                           Foreground="#1A1A18"/>
-                <TextBlock x:Name="ArtistName" Text="Исполнитель" FontSize="12" Foreground="#888880"
+                <TextBlock x:Name="TrackTitleText" FontSize="14" FontWeight="SemiBold"
+                           Foreground="#1A1A18" TextTrimming="CharacterEllipsis"/>
+                <TextBlock x:Name="ArtistNameText" FontSize="12" Foreground="#888880"
                            Margin="0,3,0,0"/>
             </StackPanel>
 
-            <TextBlock Grid.Column="2" Text="♡" FontSize="18"
+            <!-- Кнопка лайк -->
+            <TextBlock x:Name="LikeBtn" Grid.Column="2" Text="♡" FontSize="20"
                        Foreground="#DEDEDA" VerticalAlignment="Center"
-                       Margin="0,0,14,0" Cursor="Hand"/>
+                       Margin="0,0,16,0" Cursor="Hand"
+                       MouseLeftButtonDown="LikeBtn_Click"/>
 
-            <StackPanel Grid.Column="3" Orientation="Horizontal"
-                        VerticalAlignment="Center">
+            <!-- Длительность и плей -->
+            <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Center">
                 <TextBlock x:Name="DurationText" Text="0:00" FontSize="12" Foreground="#BBBBB5"
-                           VerticalAlignment="Center" Margin="0,0,14,0"/>
-                <Button Style="{StaticResource PlayButtonStyle}" Click="Play_Click">
-                    <TextBlock Text="▶" FontSize="12" Foreground="White"
-                               Margin="2,0,0,0"/>
+                           VerticalAlignment="Center" Margin="0,0,12,0"/>
+                <Button x:Name="PlayBtn" Style="{StaticResource PlayButtonStyle}" Click="Play_Click"
+                        Width="36" Height="36">
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Border x:Name="Bd" Width="36" Height="36" CornerRadius="18"
+                                    Background="{StaticResource AccentColor}" Cursor="Hand">
+                                <TextBlock x:Name="PlayIcon" Text="▶" FontSize="12" Foreground="White"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center"
+                                           Margin="2,0,0,0"/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="Bd" Property="Opacity" Value="0.85"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Button.Template>
                 </Button>
             </StackPanel>
         </Grid>
