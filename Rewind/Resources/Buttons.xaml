@@ -494,6 +494,26 @@
         </Setter>
     </Style>
 
+    <Style x:Key="ActionButtonStyle" TargetType="Button">
+        <Setter Property="Background" Value="#2A2A2A"/>
+        <Setter Property="Width" Value="36"/>
+        <Setter Property="Height" Value="32"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border Background="{TemplateBinding Background}" CornerRadius="6">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="#3A3A3A"/>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+    
     <Style x:Key="ModeBtnActive" TargetType="Button" BasedOn="{StaticResource ModeBtn}">
         <Setter Property="Background" Value="{DynamicResource BgSidebar}"/>
         <Setter Property="Foreground" Value="#1A1A18"/>

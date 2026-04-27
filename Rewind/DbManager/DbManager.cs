@@ -220,13 +220,13 @@ namespace Rewind.DbManager
                 return db.Users.FirstOrDefault(u => u.Email == email);
             }
         }
-        public static void AddUser(User newUser)
+        public static int AddUser(User newUser)
         {
             using (var db = new AppDbContext())
             {
                 db.Users.Add(newUser);
-
                 db.SaveChanges();
+                return newUser.UserId;
             }
         }
 
@@ -306,9 +306,19 @@ namespace Rewind.DbManager
         public static void AddTrack(Track track)
         {
             using var db = new AppDbContext();
-            track.UploadDate = DateTime.UtcNow;
+
             db.Tracks.Add(track);
-            db.Statistics.Add(new Statistic { TrackID = track.TrackID });
+
+            db.SaveChanges();
+
+            var newStat = new Statistic
+            {
+                TrackID = track.TrackID, 
+                PlayCount = 0,
+                LikesCount = 0
+            };
+
+            db.Statistics.Add(newStat);
             db.SaveChanges();
         }
 

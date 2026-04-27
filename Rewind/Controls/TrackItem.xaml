@@ -18,19 +18,18 @@
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
+            <Border Grid.Column="0" Width="52" Height="52" CornerRadius="10" Margin="0,0,14,0" Background="#F5F4F0">
+                <Grid>
+                    <Border CornerRadius="10">
+                        <Border.Background>
+                            <ImageBrush x:Name="TrackCoverBrush" Stretch="UniformToFill"/>
+                        </Border.Background>
+                    </Border>
 
-            <!-- Обложка -->
-            <Border Grid.Column="0" Width="52" Height="52" CornerRadius="10" Margin="0,0,14,0">
-                <Border.Background>
-                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                        <GradientStop Color="#2AE876" Offset="0"/>
-                        <GradientStop Color="#23C13A" Offset="1"/>
-                    </LinearGradientBrush>
-                </Border.Background>
-                <TextBlock Text="♪" FontSize="20" Foreground="White"
-                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    <TextBlock x:Name="CoverPlaceholder" Text="♪" FontSize="20" Foreground="#888880"
+                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </Grid>
             </Border>
-
             <!-- Название и артист -->
             <StackPanel Grid.Column="1" VerticalAlignment="Center">
                 <TextBlock x:Name="TrackTitleText" FontSize="14" FontWeight="SemiBold"

@@ -88,15 +88,14 @@ namespace Rewind.Pages
                     RoleId = selectedRoleId
                 };
 
-                UserService.AddUser(newUser);
-
+                Session.UserId = UserService.AddUser(newUser);
                 Session.UserName = nickname;
                 Session.Email = email;
                 Session.Password = password;
                 Session.UserRole = selectedRoleId == 1 ? "Слушатель" : "Исполнитель";
                 Session.HidedPassword = new string('●', Session.Password.Length);
 
-                Profile profile_window = new Profile();
+                MainWindow profile_window = new MainWindow();
                 profile_window.Show();
                 this.Close();
             }
@@ -153,6 +152,7 @@ namespace Rewind.Pages
                 UserStatisticsDto current_user = new UserStatisticsDto();
                 UserStatisticsDto.GetUserStats(checking_user.UserId);
 
+                Session.UserId = checking_user.UserId;
                 Session.UserName = checking_user.Nickname;
                 Session.Email = checking_user.Email;
                 Session.Password = password;
@@ -165,7 +165,7 @@ namespace Rewind.Pages
                 Session.HidedPassword = new string('●', Session.Password.Length);
 
 
-                Profile profile_window = new Profile();
+                MainWindow profile_window = new MainWindow();
                 profile_window.Show();
                 this.Close();
             }

@@ -41,7 +41,7 @@ namespace Rewind
             set { _hidedPassword = value; OnStaticPropertyChanged(); }
         }
 
-        private static string _avatarPath = "/Assets/default_avatar.png";
+        private static string _avatarPath = "C:\\Users\\untermensh\\Useless\\OOP-AAR-2026-CourseProject\\Rewind\\Images\\default_avatar.jpg";
         public static string AvatarPath
         {
             get => _avatarPath;
@@ -52,7 +52,6 @@ namespace Rewind
         public static string UserRole { get; set; } = "Слушатель";
         public static string ActiveTheme { get; set; } = "ThemeClassic";
 
-        // Статистика с уведомлениями
         private static int _tracksListened = 0;
         public static int TracksListened
         {
@@ -60,7 +59,6 @@ namespace Rewind
             set { _tracksListened = value; OnStaticPropertyChanged(); }
         }
 
-        // Прослушано в минутах
         private static int _listened = 0;
         public static int Listened
         {
@@ -89,11 +87,9 @@ namespace Rewind
             set { _subscriptions = value; OnStaticPropertyChanged(); }
         }
 
-        // Добавить прослушанный трек: +1 трек, +длительность в минутах
         public static void AddListenedTrack(double durationSeconds)
         {
             TracksListened++;
-            // Добавляем минуты (округляем до целых)
             Listened += (int)Math.Round(durationSeconds / 60.0);
         }
     }

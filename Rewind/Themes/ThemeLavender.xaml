@@ -17,6 +17,7 @@
     <SolidColorBrush x:Key="TextMuted" Color="#B0A9C1"/>
     <SolidColorBrush x:Key="BorderColor" Color="#EAE4F5"/>
     <SolidColorBrush x:Key="PlayerBg" Color="#2D263D"/>
+    
     <LinearGradientBrush x:Key="GreenGradientStyle" StartPoint="1,0" EndPoint="0,1">
         <GradientStop Color="#A388EE" Offset="0"/>
         <GradientStop Color="#6C4AB6" Offset="1"/>

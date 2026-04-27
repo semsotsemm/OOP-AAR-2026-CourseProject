@@ -1,0 +1,548 @@
+﻿<UserControl x:Class="Rewind.Controls.ProfilePage"
+              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+              xmlns:local="clr-namespace:Rewind"
+              mc:Ignorable="d"
+              Height="auto" Width="auto">
+    <Grid>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- ===== HERO BANNER ===== -->
+            <Border Grid.Row="0" Background="{DynamicResource GreenGradientStyle}">
+                <Grid>
+                    <StackPanel>
+                        <!-- Верхняя часть: аватар + имя + кнопка -->
+                        <Grid Margin="32,28,32,28">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Аватар -->
+                            <Border Grid.Column="0" Width="88" Height="88" CornerRadius="44"
+                            BorderThickness="3" VerticalAlignment="Bottom" Margin="0,0,20,18">
+                                <Border.BorderBrush>
+                                    <SolidColorBrush Color="#2D2D2B"/>
+                                </Border.BorderBrush>
+                                <Ellipse Width="80" Height="80" 
+                                 HorizontalAlignment="Center" 
+                                 VerticalAlignment="Center">
+                                    <Ellipse.Fill>
+                                        <ImageBrush ImageSource="{Binding Path=(local:Session.AvatarPath)}" 
+                                            Stretch="UniformToFill"/>
+                                    </Ellipse.Fill>
+                                </Ellipse>
+                            </Border>
+
+                            <!-- Имя и роль -->
+                            <StackPanel Grid.Column="1" VerticalAlignment="Bottom" Margin="0,0,0,18">
+                                <TextBlock Text="{Binding Path=(local:Session.UserName), UpdateSourceTrigger=PropertyChanged}" FontSize="24" FontWeight="Black"
+                                   Foreground="White" FontFamily="{StaticResource HeaderFont}"
+                                   Margin="0,0,0,6"/>
+                                <Border Background="#2A2A28" CornerRadius="6"
+                                Padding="10,4" HorizontalAlignment="Left">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Path Data="M12 2a4 4 0 1 1 0 8 4 4 0 0 1 0-8zm0 10c5 0 8 2.24 8 4v1H4v-1c0-1.76 3-4 8-4z"
+                                      Fill="#888880" Stretch="Uniform" Width="11" Height="11"
+                                      VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                        <TextBlock Text="{Binding Source={x:Static local:Session.UserRole}}"
+                                           FontSize="11" FontWeight="SemiBold"
+                                           Foreground="#888880" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+
+                            <!-- Кнопка редактировать -->
+                            <Border Grid.Column="2" Background="#2A2A28" CornerRadius="10"
+                            Padding="18,10" VerticalAlignment="Bottom" Margin="0,0,0,18" Cursor="Hand"
+                            BorderBrush="#383836" BorderThickness="1"
+                            MouseDown="EditBtn_MouseDown">
+                                <TextBlock Text="Редактировать" FontSize="13" FontWeight="Bold"
+                                   Foreground="White"/>
+                            </Border>
+                        </Grid>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- ===== КОНТЕНТ С ТАБАМИ ===== -->
+            <Grid Grid.Row="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <!-- Табы -->
+                <Border Grid.Row="0" Background="{DynamicResource BgCard}" BorderBrush="#E0DFD9" BorderThickness="0,0,0,1"
+                Padding="28,12">
+                    <StackPanel Orientation="Horizontal">
+                        <Border Background="#F5F4F0" CornerRadius="12" Padding="4">
+                            <StackPanel Orientation="Horizontal">
+                                <Button x:Name="TabOverview" Content="Обзор"
+                                Click="TabOverview_Click"
+                                Style="{StaticResource ProfileTabActive}"
+                                Width="115"/>
+                                <Button x:Name="TabLiked" Content="Популярые треки"
+                                Click="TabLiked_Click"
+                                Style="{StaticResource ProfileTab}"
+                                Width="135"/>
+                                <Button x:Name="TabPlaylists" Content="Плейлисты"
+                                Style="{StaticResource ProfileTab}"
+                                Click="TabPlaylists_Click"
+                                Width="110"/>
+                                <Button x:Name="TabSettings" Content="Настройки"
+                                Click="TabSettings_Click"
+                                Style="{StaticResource ProfileTab}"
+                                Width="110"/>
+                                <Button x:Name="TabArtistStudio" 
+                                Content="Студия"
+                                Click="TabArtistStudio_Click"
+                                Width="110">
+                                    <Button.Style>
+                                        <Style TargetType="Button" BasedOn="{StaticResource ProfileTab}">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding Source={x:Static local:Session.UserRole}}" Value="исполнитель">
+                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Button.Style>
+                                </Button>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </Border>
+
+                <!-- Содержимое табов -->
+                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto"
+                      HorizontalScrollBarVisibility="Disabled" Background="{DynamicResource BgMain}">
+                    <Grid Margin="32,24,32,32">
+
+                        <!-- ======= ТАБ: ОБЗОР ======= -->
+                        <StackPanel x:Name="PanelOverview" Visibility="Visible">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="7*"/>
+                                    <ColumnDefinition Width="40"/>
+                                    <ColumnDefinition Width="2*"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <Grid Margin="0,0,0,14">
+                                        <TextBlock Text="Мои плейлисты" FontSize="16" FontWeight="Black"
+                                                    Foreground="#1A1A18" FontFamily="{StaticResource HeaderFont}"/>
+                                        <TextBlock Text="Все →" FontSize="13" Foreground="{StaticResource AccentColor}"
+                                                    HorizontalAlignment="Right" VerticalAlignment="Center" Cursor="Hand"/>
+                                    </Grid>
+
+                                    <local:PlaylistItem DataContext="{Binding Track1}" />
+                                    <local:PlaylistItem DataContext="{Binding Track2}" />
+                                    <local:PlaylistItem DataContext="{Binding Track3}" />
+                                    <local:PlaylistItem DataContext="{Binding Track4}" />
+                                    <local:PlaylistItem DataContext="{Binding Track5}" />
+                                    <local:PlaylistItem DataContext="{Binding Track6}" />
+                                </StackPanel>
+
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Text="Недавно лайкнутые" FontSize="16" FontWeight="Black"
+                                               Foreground="#1A1A18" Margin="0,0,0,14"
+                                               FontFamily="{StaticResource HeaderFont}"/>
+                                    <local:ProfileTrackItem DataContext="{Binding Tracks1}" />
+                                </StackPanel>
+                            </Grid>
+                        </StackPanel>
+
+                        <!-- ======= ТАБ: ЛЮБИМЫЕ ТРЕКИ ======= -->
+                        <StackPanel x:Name="PanelLiked" Visibility="Collapsed">
+                            <Grid Margin="0,0,0,16">
+                                <TextBlock FontSize="16" FontWeight="Black"
+                                   Foreground="#1A1A18"
+                                   FontFamily="{StaticResource HeaderFont}">
+                                    <TextBlock.Text>
+                                        <Binding Source="{x:Static local:Session.Liked}" 
+                                            StringFormat="Лайкнутые треки: {0}" />
+                                    </TextBlock.Text>
+                                </TextBlock>
+                                <TextBlock Text="Сортировка: Недавние ↓" FontSize="13" Foreground="#888880"
+                                   HorizontalAlignment="Right" VerticalAlignment="Center"
+                                   Cursor="Hand"/>
+                            </Grid>
+                        </StackPanel>
+
+                        <StackPanel x:Name="PanelPlaylists" Visibility="Collapsed">
+                            <Grid Margin="0,0,0,16">
+                                <TextBlock FontSize="16" FontWeight="Black"
+                                   Foreground="#1A1A18"
+                                   FontFamily="{StaticResource HeaderFont}">
+                                    <TextBlock.Text>
+                                        <Binding Source="{x:Static local:Session.Playlists}" 
+                                        StringFormat="Мои плейлисты: {0}" />
+                                    </TextBlock.Text>
+                                </TextBlock>
+                                <Border Background="{DynamicResource AccentColor}" CornerRadius="8" Padding="14,8"
+                                HorizontalAlignment="Right" Cursor="Hand">
+                                    <TextBlock Text="+ Новый плейлист" FontSize="13" FontWeight="Bold"
+                                       Foreground="White"/>
+                                </Border>
+                            </Grid>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="10"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+                            </Grid>
+                        </StackPanel>
+
+                        <!-- ======= ТАБ: НАСТРОЙКИ ======= -->
+                        <StackPanel x:Name="PanelSettings" Visibility="Collapsed">
+
+                            <!-- Данные профиля -->
+                            <TextBlock Text="Данные профиля" FontSize="16" FontWeight="Black"
+                               Foreground="#1A1A18" Margin="0,0,0,12"
+                               FontFamily="{StaticResource HeaderFont}"/>
+                            <Border Background="#FFFFFF" CornerRadius="16" BorderBrush="#E0DFD9"
+                            BorderThickness="1" Margin="0,0,0,20" ClipToBounds="True">
+                                <StackPanel>
+                                    <Border Style="{StaticResource SettingsRow}">
+                                        <Grid>
+                                            <TextBlock Text="Имя пользователя" FontSize="14" FontWeight="SemiBold" Foreground="#1A1A18"/>
+                                            <TextBlock Text="{Binding Path=(local:Session.UserName), UpdateSourceTrigger=PropertyChanged}" FontSize="13" Foreground="#888880" HorizontalAlignment="Right"/>
+                                        </Grid>
+                                    </Border>
+                                    <Border Style="{StaticResource SettingsRow}">
+                                        <Grid>
+                                            <TextBlock Text="Email" FontSize="14" FontWeight="SemiBold" Foreground="#1A1A18"/>
+                                            <TextBlock Text="{Binding Path=(local:Session.Email), UpdateSourceTrigger=PropertyChanged}" FontSize="13" Foreground="#888880" HorizontalAlignment="Right"/>
+                                        </Grid>
+                                    </Border>
+                                    <Border Style="{StaticResource SettingsRow}">
+                                        <Grid>
+                                            <TextBlock Text="Пароль" FontSize="14" FontWeight="SemiBold" Foreground="#1A1A18"/>
+                                            <TextBlock Text="{Binding Path=(local:Session.Password), UpdateSourceTrigger=PropertyChanged}"
+                                               FontSize="13" Foreground="#888880" HorizontalAlignment="Right" Cursor="Hand"/>
+                                        </Grid>
+                                    </Border>
+                                    <Border Style="{StaticResource SettingsRow}">
+                                        <Grid>
+                                            <TextBlock Text="Роль" FontSize="14" FontWeight="SemiBold" Foreground="#1A1A18"/>
+                                            <TextBlock Text="{Binding Source={x:Static local:Session.UserRole}}" FontSize="13" Foreground="{DynamicResource AccentColor}" FontWeight="Bold" HorizontalAlignment="Right"/>
+                                        </Grid>
+                                    </Border>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Тема оформления -->
+                            <TextBlock Text="Тема оформления" FontSize="16" FontWeight="Black"
+                               Foreground="#1A1A18" Margin="0,0,0,14"
+                               FontFamily="{StaticResource HeaderFont}"/>
+                            <Grid Margin="0,0,0,24">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="10"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="10"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="10"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <!-- Классик — активная -->
+                                <Border Grid.Column="0" x:Name="ThemeClassic" 
+                                Style="{StaticResource ThemeCardActive}"
+                                MouseDown="ThemeClassic_MouseDown">
+                                    <StackPanel>
+                                        <Border Height="60" CornerRadius="10,10,0,0" Background="#F5F4F0">
+                                            <Ellipse Width="10" Height="10" Fill="#2AE876"
+                                             HorizontalAlignment="Left" VerticalAlignment="Bottom"
+                                             Margin="10,0,0,10"/>
+                                        </Border>
+                                        <Border Background="#FFFFFF" Padding="10,9" CornerRadius="0,0,10,10"
+                                        BorderBrush="#E0DFD9" BorderThickness="0,1,0,0">
+                                            <TextBlock Text="Классик" FontSize="12" FontWeight="Bold" Foreground="#1A1A18"/>
+                                        </Border>
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- Сакура -->
+                                <Border Grid.Column="2" x:Name="ThemePink" 
+                                Style="{StaticResource ThemeCard}"  
+                                MouseDown="ThemeClassic_MouseDown">
+                                    <StackPanel>
+                                        <Border Height="60" CornerRadius="10,10,0,0" Background="#F5F4F0">
+                                            <Ellipse Width="10" Height="10" Fill="#FF6B95"
+                                             HorizontalAlignment="Left" VerticalAlignment="Bottom"
+                                             Margin="10,0,0,10" Opacity="0.6"/>
+                                        </Border>
+                                        <Border Background="#FFFFFF" Padding="10,9" CornerRadius="0,0,10,10"
+                                        BorderBrush="#E0DFD9" BorderThickness="0,1,0,0">
+                                            <TextBlock Text="Сакура" FontSize="12" FontWeight="Bold" Foreground="#1A1A18"/>
+                                        </Border>
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- Полночь -->
+                                <Border Grid.Column="4" x:Name="ThemeMidnight"
+                                Style="{StaticResource ThemeCard}"
+                                MouseDown="ThemeClassic_MouseDown">
+                                    <StackPanel>
+                                        <Border Height="60" CornerRadius="10,10,0,0" Background="#0A192F">
+                                            <Ellipse Width="10" Height="10" Fill="#64FFDA"
+                                             HorizontalAlignment="Left" VerticalAlignment="Bottom"
+                                             Margin="10,0,0,10"/>
+                                        </Border>
+                                        <Border Background="#FFFFFF" Padding="10,9" CornerRadius="0,0,10,10"
+                                        BorderBrush="#E0DFD9" BorderThickness="0,1,0,0">
+                                            <TextBlock Text="Полночь" FontSize="12" FontWeight="Bold" Foreground="#1A1A18"/>
+                                        </Border>
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- Лаванда -->
+                                <Border Grid.Column="6" x:Name="ThemeLavender" 
+                                Style="{StaticResource ThemeCard}"
+                                MouseDown="ThemeClassic_MouseDown">
+                                    <StackPanel>
+                                        <Border Height="60" CornerRadius="10,10,0,0" Background="#FFFFFF"
+                                        BorderBrush="#E0DFD9" BorderThickness="1,1,1,0">
+                                            <Ellipse Width="10" Height="10" Fill="#8B6CE0"
+                                             HorizontalAlignment="Left" VerticalAlignment="Bottom"
+                                             Margin="10,0,0,10"/>
+                                        </Border>
+                                        <Border Background="#FFFFFF" Padding="10,9" CornerRadius="0,0,10,10"
+                                        BorderBrush="#E0DFD9" BorderThickness="0,1,0,0">
+                                            <TextBlock Text="Лаванда" FontSize="12" FontWeight="Bold" Foreground="#1A1A18"/>
+                                        </Border>
+                                    </StackPanel>
+                                </Border>
+                            </Grid>
+
+                            <!-- Уведомления -->
+                            <TextBlock Text="Уведомления" FontSize="16" FontWeight="Black"
+                               Foreground="#1A1A18" Margin="0,0,0,12"
+                               FontFamily="{StaticResource HeaderFont}"/>
+                            <Border Background="#FFFFFF" CornerRadius="16" BorderBrush="#E0DFD9"
+                            BorderThickness="1" Margin="0,0,0,20" ClipToBounds="True">
+                                <StackPanel>
+                                    <Border Style="{StaticResource SettingsRow}">
+                                        <Grid>
+                                            <TextBlock Text="Новые треки от авторов" FontSize="14" FontWeight="SemiBold" Foreground="#1A1A18" VerticalAlignment="Center"/>
+                                            <CheckBox x:Name="Tog1" 
+                                              Style="{StaticResource ModernToggleStyle}" 
+                                              HorizontalAlignment="Right" 
+                                              IsChecked="True" />
+                                        </Grid>
+                                    </Border>
+                                    <Border Style="{StaticResource SettingsRow}">
+                                        <Grid>
+                                            <TextBlock Text="Push-уведомления" FontSize="14" FontWeight="SemiBold" Foreground="#1A1A18" VerticalAlignment="Center"/>
+                                            <CheckBox x:Name="Tog2" 
+                                             Style="{StaticResource ModernToggleStyle}" 
+                                             HorizontalAlignment="Right" 
+                                             IsChecked="True" />
+                                        </Grid>
+                                    </Border>
+                                    <Border Style="{StaticResource SettingsRow}">
+                                        <Grid>
+                                            <TextBlock Text="Email-рассылка" FontSize="14" FontWeight="SemiBold" Foreground="#1A1A18" VerticalAlignment="Center"/>
+                                            <CheckBox x:Name="Tog3" 
+                                             Style="{StaticResource ModernToggleStyle}" 
+                                             HorizontalAlignment="Right" 
+                                             IsChecked="True" />
+                                        </Grid>
+                                    </Border>
+                                    <Border Padding="18,14">
+                                        <Grid>
+                                            <TextBlock Text="Рекомендации" FontSize="14" FontWeight="SemiBold" Foreground="#1A1A18" VerticalAlignment="Center"/>
+                                            <CheckBox x:Name="Tog4" 
+                                             Style="{StaticResource ModernToggleStyle}" 
+                                             HorizontalAlignment="Right" 
+                                             IsChecked="True" />
+                                        </Grid>
+                                    </Border>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Выход -->
+                            <Border Background="#FFFFFF" BorderBrush="#FFD5CC" 
+                            MouseDown="LogOut_MouseDown"
+                            BorderThickness="1.5"
+                            CornerRadius="14" Cursor="Hand" Padding="0,16"
+                            >
+                                <TextBlock Text="Выйти из аккаунта" FontSize="14" 
+                                   FontWeight="Bold"
+                                   Foreground="Red" 
+                                   HorizontalAlignment="Center"/>
+                            </Border>
+                        </StackPanel>
+
+
+                        <StackPanel x:Name="PanelArtistStudio" Visibility="Collapsed">
+                            <Grid Margin="0,0,0,16">
+                                <TextBlock Text="Студия исполнителя" FontSize="16" FontWeight="Black"
+                                Foreground="#1A1A18" FontFamily="{StaticResource HeaderFont}"/>
+                            </Grid>
+
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="1.5*"/>
+                                    <ColumnDefinition Width="20"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <Border Grid.Column="0" Background="White" CornerRadius="16" Padding="25" BorderBrush="#E0DFD9" BorderThickness="1">
+                                    <StackPanel>
+                                        <TextBlock Text="🚀 Загрузить новый трек" FontWeight="Black" FontSize="18" Margin="0,0,0,20"/>
+
+                                        <TextBlock Text="Название трека" FontSize="12" FontWeight="Bold" Foreground="#888880" Margin="0,0,0,5"/>
+                                        <TextBox x:Name="NewTrackName" Margin="0,0,0,15" Padding="10,8" Tag="Введите название..."/>
+
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+
+                                            <StackPanel Grid.Column="0" Margin="0,0,20,0">
+                                                <TextBlock Text="Обложка" FontSize="12" FontWeight="Bold" Foreground="#888880" Margin="0,0,0,5"/>
+                                                <Border Width="120" Height="120" Background="#F5F4F0" CornerRadius="8" BorderBrush="#E0DFD9" BorderThickness="1" Cursor="Hand" MouseDown="SelectCover_Click">
+                                                    <Grid>
+                                                        <Image x:Name="NewTrackCoverPreview" Stretch="UniformToFill"/>
+                                                        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" x:Name="CoverPlaceholder">
+                                                            <Path Data="M19 7v2.99s-1.99.01-2 0V7h-3s.01-1.99 0-2h3V2h2v3h3v2h-3zm-3 4V8h-3V5H5c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2v-8h-3zM5 19l3-4 2 3 3-4 4 5H5z" 
+                                                            Fill="#888880" Stretch="Uniform" Width="24" Height="24" Margin="0,0,0,5"/>
+                                                            <TextBlock Text="Выбрать" FontSize="10" Foreground="#888880" HorizontalAlignment="Center"/>
+                                                        </StackPanel>
+                                                    </Grid>
+                                                </Border>
+                                            </StackPanel>
+
+                                            <StackPanel Grid.Column="1" VerticalAlignment="Top">
+                                                <TextBlock Text="Аудиофайл" FontSize="12" FontWeight="Bold" Foreground="#888880" Margin="0,0,0,5"/>
+                                                <Button Content="🎵 Выбрать MP3/WAV" Click="SelectAudio_Click" Height="40" Background="#F5F4F0" BorderBrush="#E0DFD9" HorizontalContentAlignment="Left" Padding="15,0"/>
+                                                <TextBlock x:Name="AudioFileName" Text="Файл не выбран" FontSize="11" Foreground="#888880" Margin="5,5,0,0"/>
+
+                                                <TextBlock Text="Жанр" FontSize="12" FontWeight="Bold" Foreground="#888880" Margin="0,15,0,5"/>
+                                                <ComboBox x:Name="GenreSelector" Height="35">
+                                                    <ComboBoxItem Content="Pop" IsSelected="True"/>
+                                                    <ComboBoxItem Content="Rock"/>
+                                                    <ComboBoxItem Content="Hip-Hop"/>
+                                                    <ComboBoxItem Content="Electronic"/>
+                                                </ComboBox>
+                                            </StackPanel>
+                                        </Grid>
+
+                                        <Separator Margin="0,20" Background="#F5F4F0"/>
+
+                                        <Button Content="Опубликовать трек" 
+                                        Click="UploadTrack_Click" 
+                                        Height="45" 
+                                        Background="{DynamicResource AccentColor}" 
+                                        Foreground="White" 
+                                        FontWeight="Bold" 
+                                        BorderThickness="0"
+                                        Cursor="Hand"/>
+                                    </StackPanel>
+                                </Border>
+
+                                <StackPanel Grid.Column="2">
+                                    <Border Background="#F0F9F4" CornerRadius="12" Padding="15" Margin="0,0,0,15">
+                                        <StackPanel>
+                                            <TextBlock Text="Совет" FontWeight="Bold" Foreground="#2A8C54" Margin="0,0,0,5"/>
+                                            <TextBlock Text="Используйте изображения высокого качества (1000x1000px) для обложек ваших треков." 
+                                            FontSize="12" Foreground="#4A6E59" TextWrapping="Wrap"/>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <Border Background="White" CornerRadius="12" Padding="15" BorderBrush="#E0DFD9" BorderThickness="1">
+                                        <StackPanel>
+                                            <TextBlock Text="Ваша статистика" FontWeight="Bold" Margin="0,0,0,10"/>
+                                            <Grid Margin="0,0,0,5">
+                                                <TextBlock Text="Прослушивания:" FontSize="12" Foreground="#888880"/>
+                                                <TextBlock Text="0" HorizontalAlignment="Right" FontWeight="Bold"/>
+                                            </Grid>
+                                            <Grid>
+                                                <TextBlock Text="Подписчики:" FontSize="12" Foreground="#888880"/>
+                                                <TextBlock Text="128" HorizontalAlignment="Right" FontWeight="Bold"/>
+                                            </Grid>
+                                        </StackPanel>
+                                    </Border>
+                                </StackPanel>
+                            </Grid>
+                        </StackPanel>
+                    </Grid>
+                </ScrollViewer>
+            </Grid>
+        </Grid>
+        <Grid x:Name="EditOverlay" Grid.ColumnSpan="2" Visibility="Collapsed">
+            <Border Background="#CC1A1A18" MouseDown="CloseEdit_Click">
+                <Border.Effect>
+                    <BlurEffect Radius="0"/>
+                </Border.Effect>
+            </Border>
+
+
+            <Border Background="White" 
+            Width="400" 
+            VerticalAlignment="Center" 
+            HorizontalAlignment="Center" 
+            CornerRadius="20" 
+            Padding="30"
+            BorderBrush="#E0DFD9" 
+            BorderThickness="1">
+
+                <StackPanel>
+                    <TextBlock Text="Фото профиля" FontSize="12" FontWeight="Bold" Foreground="#888880" Margin="0,0,0,5"/>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,15">
+                        <Ellipse Width="60" Height="60" Stroke="#E0DFD9" StrokeThickness="1">
+                            <Ellipse.Fill>
+                                <ImageBrush x:Name="AvatarPreview" ImageSource="{Binding Path=(local:Session.AvatarPath)}" Stretch="UniformToFill"/>
+                            </Ellipse.Fill>
+                        </Ellipse>
+                        <Button Content="Выбрать фото" 
+                        Click="UploadPhoto_Click" 
+                        Margin="15,0,0,0" 
+                        Padding="15,5" 
+                        VerticalAlignment="Center" 
+                        Background="#F5F4F0" 
+                        BorderThickness="1" 
+                        BorderBrush="#E0DFD9"/>
+                    </StackPanel>
+                    <TextBlock Text="Редактирование" FontSize="20" FontWeight="Black" 
+                       Margin="0,0,0,20" FontFamily="{StaticResource HeaderFont}"/>
+
+                    <TextBlock Text="Имя пользователя" FontSize="12" FontWeight="Bold" Foreground="#888880" Margin="0,0,0,5"/>
+                    <TextBox x:Name="EditNameInput" Margin="0,0,0,15" Padding="10,8"/>
+
+                    <TextBlock Text="Электронная почта" FontSize="12" FontWeight="Bold" Foreground="#888880" Margin="0,0,0,5"/>
+                    <TextBox x:Name="EditEmailInput" Margin="0,0,0,15" Padding="10,8"/>
+
+                    <TextBlock Text="Новый пароль" FontSize="12" FontWeight="Bold" Foreground="#888880" Margin="0,0,0,5"/>
+                    <PasswordBox x:Name="EditPassInput" Margin="0,0,0,25" Padding="10,8"/>
+
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition/>
+                            <ColumnDefinition Width="10"/>
+                            <ColumnDefinition/>
+                        </Grid.ColumnDefinitions>
+                        <Button Content="Отмена" Click="CloseEdit_Click" Height="40" Background="#F5F4F0" BorderThickness="0"/>
+                        <Button Grid.Column="2" Content="Сохранить" Click="SaveProfile_Click" Height="40" 
+                        Background="{DynamicResource AccentColor}" Foreground="White" FontWeight="Bold" BorderThickness="0"/>
+                    </Grid>
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>

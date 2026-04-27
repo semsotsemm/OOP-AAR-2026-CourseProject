@@ -94,7 +94,7 @@
                                 <TextBox x:Name="UserLoginValue" Style="{StaticResource InputField}" Tag="alexey@mail.ru" Margin="0,0,0,16"/>
 
                                 <TextBlock Text="ПАРОЛЬ" Style="{StaticResource FieldLabel}"/>
-                                <PasswordBox x:Name="UserPasswordValue" Style="{StaticResource PasswordField}" Margin="0,0,0,6"/>
+                                <PasswordBox x:Name="UserPasswordValue" Style="{StaticResource PasswordField}" Margin="0,0,0,20"/>
 
                                 <Button Content="Войти в Rewind" Style="{StaticResource BtnRed}" Click="LoginButton_Click"/>
                             </StackPanel>
