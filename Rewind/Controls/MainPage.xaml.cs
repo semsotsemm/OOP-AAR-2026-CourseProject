@@ -121,9 +121,6 @@ namespace Rewind.Controls
                     string durStr = FormatDuration(track.Duration);
                     string fullPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "MusicLibrary", track.FilePath);
                     var item = new TrackItem(track.Title, UserService.GetUserById(track.ArtistID).Nickname, durStr, fullPath,  track.CoverPath , track.Duration);
-
-                    item.MouseDown += (s, e) => PlayMusic(item.FilePath, item.TrackName, item.ArtistName, item.DurationSeconds);
-
                     _trackItems.Add(item);
                     MusicContainer.Children.Add(item);
                 }
