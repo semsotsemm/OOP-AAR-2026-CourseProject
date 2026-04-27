@@ -9,7 +9,7 @@
                 <ResourceDictionary Source="/Resources/Buttons.xaml"/>
                 <ResourceDictionary Source="/Resources/Cards.xaml"/>
                 <ResourceDictionary Source="/Resources/Fonts.xaml"/>
-                <ResourceDictionary Source="/Themes/ThemeClassic.xaml"/>
+                <ResourceDictionary Source="/Resources/Themes/ThemeClassic.xaml"/>
                 <ResourceDictionary Source="/Resources/Animation.xaml"/>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>

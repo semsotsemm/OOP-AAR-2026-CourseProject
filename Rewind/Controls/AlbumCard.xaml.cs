@@ -2,7 +2,7 @@
 using System.Windows.Controls;
 using System.Windows.Media;
 
-namespace Rewind
+namespace Rewind.Contols
 {
     public partial class AlbumCard : UserControl
     {

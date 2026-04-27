@@ -2,10 +2,10 @@
 using Rewind.Pages;
 using System.Windows;
 using Microsoft.Win32;
-using Rewind.DbManager;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
+using Rewind.Helpers;
 
 namespace Rewind.Controls
 {
@@ -22,6 +22,7 @@ namespace Rewind.Controls
             {
                 TabArtistStudio.Visibility = Visibility.Visible;
             }
+
         }
 
         private void TabOverview_Click(object sender, RoutedEventArgs e) => SetActiveTab(TabOverview, PanelOverview);
@@ -137,7 +138,7 @@ namespace Rewind.Controls
         {
             try
             {
-                var uri = new Uri($"Themes/{themeFileName}", UriKind.Relative);
+                var uri = new Uri($"Resources/Themes/{themeFileName}", UriKind.Relative);
                 ResourceDictionary newDict = new ResourceDictionary { Source = uri };
 
                 var oldDict = Application.Current.Resources.MergedDictionaries
@@ -245,7 +246,12 @@ namespace Rewind.Controls
             Style inactiveStyle = (Style)FindResource("ProfileTab");
 
             TabOverview.Style = TabLiked.Style = TabPlaylists.Style =
-            TabSettings.Style = TabArtistStudio.Style = inactiveStyle;
+            TabSettings.Style = inactiveStyle;
+
+            if (Session.UserRole?.ToLower() == "исполнитель")
+            {
+                TabArtistStudio.Style = inactiveStyle;
+            }
 
             PanelOverview.Visibility = PanelLiked.Visibility =
             PanelPlaylists.Visibility = PanelSettings.Visibility =

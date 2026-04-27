@@ -1,6 +1,6 @@
 ﻿using System.Windows.Controls;
 
-namespace Rewind
+namespace Rewind.Contols
 {
     public partial class ProfileTrackItem : UserControl
     {

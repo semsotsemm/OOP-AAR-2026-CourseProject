@@ -1,10 +1,8 @@
-﻿using System;
-using System.Windows;
+﻿using System.Windows;
 using System.ComponentModel;
 using System.Windows.Controls;
-using System.Windows.Threading;
 
-namespace Rewind
+namespace Rewind.Contols
 {
     public partial class PlayerBar : UserControl, INotifyPropertyChanged
     {

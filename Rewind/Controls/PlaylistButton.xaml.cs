@@ -1,7 +1,7 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
 
-namespace Rewind
+namespace Rewind.Contols
 {
     public partial class PlaylistButton : UserControl
     {

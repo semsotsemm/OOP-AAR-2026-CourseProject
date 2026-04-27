@@ -26,4 +26,8 @@
     <Resource Include="Images\rewind_logo.png" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Tabs\AdminTabs\" />
+  </ItemGroup>
+
 </Project>

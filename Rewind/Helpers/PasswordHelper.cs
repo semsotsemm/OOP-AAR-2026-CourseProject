@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Security.Cryptography;
 
-namespace Rewind
+namespace Rewind.Helpers
 {
     public static class PasswordHelper
     {

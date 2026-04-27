@@ -1,5 +1,6 @@
-﻿using System.Windows;
-using Rewind.DbManager;
+﻿using System.IO;
+using System.Windows;
+using Rewind.Helpers;
 using System.Windows.Controls;
 
 namespace Rewind.Pages
@@ -80,10 +81,15 @@ namespace Rewind.Pages
 
             try
             {
+                string exePath = AppDomain.CurrentDomain.BaseDirectory;
+
+                string avatarFileName = "default_avatar.jpg";
+                string fullPath = Path.Combine(exePath, "Images", avatarFileName);
                 User newUser = new User
                 {
                     Email = email,
                     Nickname = nickname,
+                    ProfilePhotoPath = fullPath,
                     PasswordHash = PasswordHelper.HashPassword(password),
                     RoleId = selectedRoleId
                 };
@@ -94,6 +100,7 @@ namespace Rewind.Pages
                 Session.Password = password;
                 Session.UserRole = selectedRoleId == 1 ? "Слушатель" : "Исполнитель";
                 Session.HidedPassword = new string('●', Session.Password.Length);
+                Session.AvatarPath = fullPath;
 
                 MainWindow profile_window = new MainWindow();
                 profile_window.Show();
@@ -163,7 +170,7 @@ namespace Rewind.Pages
                 Session.Listened = current_user.TotalTimeFormatted;
                 Session.Playlists = current_user.PlaylistsCount;
                 Session.HidedPassword = new string('●', Session.Password.Length);
-
+                Session.AvatarPath = checking_user.ProfilePhotoPath;
 
                 MainWindow profile_window = new MainWindow();
                 profile_window.Show();

@@ -1,12 +1,12 @@
-﻿using System.IO;
-using System.Windows;
-using Rewind.DbManager;
+﻿using System.Windows;
+using Rewind.Contols;
 using System.Windows.Media;
 using System.Windows.Input;
 using System.Windows.Controls;
 using System.Windows.Threading;
+using Rewind.Helpers;
 
-namespace Rewind.Controls
+namespace Rewind.Tabs.UsersTabs
 {
     public partial class MainPage : UserControl
     {
@@ -74,29 +74,11 @@ namespace Rewind.Controls
             var parentWindow = Window.GetWindow(this);
             if (parentWindow != null)
             {
-                // Подписываемся на события Окна, а не Контрола
                 parentWindow.StateChanged += MainWindow_StateChanged;
                 parentWindow.Deactivated += (_, _) => { if (IsPlaying) ShowIsland(); };
                 parentWindow.Activated += (_, _) => HideIsland();
             }
             LoadMusicFromFolder();
-        }
-
-        // --- Метод для смены темы (если карточки тем остались в MainPage) ---
-        // Если они в другом месте, этот метод можно удалить
-        private void ApplyTheme(string fileName)
-        {
-            try
-            {
-                var uri = new Uri($"Themes/{fileName}", UriKind.Relative);
-                var newDict = new ResourceDictionary { Source = uri };
-                var old = Application.Current.Resources.MergedDictionaries
-                    .FirstOrDefault(d => d.Source?.OriginalString.Contains("Themes/") == true);
-                if (old != null)
-                    Application.Current.Resources.MergedDictionaries.Remove(old);
-                Application.Current.Resources.MergedDictionaries.Add(newDict);
-            }
-            catch (Exception ex) { MessageBox.Show(ex.Message); }
         }
 
         private void UpdateGreeting()
@@ -120,7 +102,7 @@ namespace Rewind.Controls
                 {
                     string durStr = FormatDuration(track.Duration);
                     string fullPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "MusicLibrary", track.FilePath);
-                    var item = new TrackItem(track.Title, UserService.GetUserById(track.ArtistID).Nickname, durStr, fullPath,  track.CoverPath , track.Duration);
+                    var item = new TrackItem(track.TrackID, track.Title, UserService.GetUserById(track.ArtistID).Nickname, durStr, fullPath,  track.CoverPath , track.Duration);
                     _trackItems.Add(item);
                     MusicContainer.Children.Add(item);
                 }

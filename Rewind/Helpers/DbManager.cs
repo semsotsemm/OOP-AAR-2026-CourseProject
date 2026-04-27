@@ -2,27 +2,25 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Rewind.DbManager
+namespace Rewind.Helpers
 {
+    // ─────────────────────────────────────────────────────────────
+    //  МОДЕЛИ
+    // ─────────────────────────────────────────────────────────────
+
     public class Role
     {
-        [Key]
-        public int RoleId { get; set; }
-        [Required, MaxLength(20)]
-        public string RoleName { get; set; }
+        [Key] public int RoleId { get; set; }
+        [Required, MaxLength(20)] public string RoleName { get; set; }
         public List<User> Users { get; set; } = new();
     }
 
     public class User
     {
-        [Key]
-        public int UserId { get; set; }
-        [Required, MaxLength(50)]
-        public string Nickname { get; set; }
-        [Required, MaxLength(100)]
-        public string Email { get; set; }
-        [Required]
-        public string PasswordHash { get; set; }
+        [Key] public int UserId { get; set; }
+        [Required, MaxLength(50)] public string Nickname { get; set; }
+        [Required, MaxLength(100)] public string Email { get; set; }
+        [Required] public string PasswordHash { get; set; }
         public string? ProfilePhotoPath { get; set; }
         public string? Status { get; set; }
         public int RoleId { get; set; }
@@ -30,16 +28,14 @@ namespace Rewind.DbManager
         public List<Track> Tracks { get; set; } = new();
         public List<Playlist> Playlists { get; set; } = new();
         public List<Favorite> Favorites { get; set; } = new();
+        public List<ListeningHistory> History { get; set; } = new();
     }
 
     public class Track
     {
-        [Key]
-        public int TrackID { get; set; }
-        [Required, MaxLength(255)]
-        public string Title { get; set; }
-        [Required]
-        public string FilePath { get; set; }
+        [Key] public int TrackID { get; set; }
+        [Required, MaxLength(255)] public string Title { get; set; }
+        [Required] public string FilePath { get; set; }
         public string? CoverPath { get; set; }
         public int Duration { get; set; }
         public DateTime UploadDate { get; set; } = DateTime.UtcNow;
@@ -47,18 +43,20 @@ namespace Rewind.DbManager
         public User Artist { get; set; }
         public Statistic Statistics { get; set; }
         public List<PlaylistTrack> PlaylistTracks { get; set; } = new();
+        public List<Favorite> Favorites { get; set; } = new();
+        public List<ListeningHistory> History { get; set; } = new();
     }
 
     public class ListeningHistory
     {
-        [Key]
-        public int HistoryId { get; set; }
+        [Key] public int HistoryId { get; set; }
         public int UserID { get; set; }
         public User User { get; set; }
         public int TrackID { get; set; }
         public Track Track { get; set; }
         public DateTime ListenedAt { get; set; } = DateTime.UtcNow;
     }
+
     public class Statistic
     {
         [Key, ForeignKey("Track")]
@@ -70,12 +68,14 @@ namespace Rewind.DbManager
 
     public class Playlist
     {
-        [Key]
-        public int PlaylistID { get; set; }
-        [Required, MaxLength(100)]
-        public string Title { get; set; }
+        [Key] public int PlaylistID { get; set; }
+        [Required, MaxLength(100)] public string Title { get; set; }
         public int OwnerID { get; set; }
         public User Owner { get; set; }
+        /// <summary>true = виден только владельцу, false = публичный</summary>
+        public bool IsPrivate { get; set; } = false;
+        /// <summary>Путь к картинке обложки (локальный или относительный)</summary>
+        public string? CoverPath { get; set; }
         public List<PlaylistTrack> PlaylistTracks { get; set; } = new();
     }
 
@@ -85,45 +85,6 @@ namespace Rewind.DbManager
         public Playlist Playlist { get; set; }
         public int TrackID { get; set; }
         public Track Track { get; set; }
-    }
-
-    public class UserStatisticsDto
-    {
-        public int SubscriptionsCount { get; set; } 
-        public int TotalTracksListened { get; set; } 
-        public int TotalTimeFormatted { get; set; } 
-        public int PlaylistsCount { get; set; } 
-        public int FavoritesCount { get; set; }
-        public static UserStatisticsDto GetUserStats(int userId)
-        {
-            using (var db = new AppDbContext())
-            {
-                var subsCount = db.Subscriptions.Count(s => s.FollowerID == userId);
-
-                var playlistsCount = db.Playlists.Count(p => p.OwnerID == userId);
-
-                var favoritesCount = db.Favorites.Count(f => f.UserID == userId);
-
-                var historyData = db.History
-                    .Where(h => h.UserID == userId)
-                    .Select(h => h.Track.Duration)
-                    .ToList();
-
-                int totalTracks = historyData.Count;
-                int totalSeconds = historyData.Sum();
-
-                var time = TimeSpan.FromSeconds(totalSeconds);
-
-                return new UserStatisticsDto
-                {
-                    SubscriptionsCount = subsCount,
-                    PlaylistsCount = playlistsCount,
-                    FavoritesCount = favoritesCount,
-                    TotalTracksListened = totalTracks,
-                    TotalTimeFormatted = time.Minutes
-                };
-            }
-        }
     }
 
     public class Subscription
@@ -142,12 +103,54 @@ namespace Rewind.DbManager
         public Track Track { get; set; }
     }
 
+    // ─────────────────────────────────────────────────────────────
+    //  DTO СТАТИСТИКИ
+    // ─────────────────────────────────────────────────────────────
+
+    public class UserStatisticsDto
+    {
+        public int SubscriptionsCount { get; set; }
+        public int TotalTracksListened { get; set; }
+        public int TotalTimeFormatted { get; set; }
+        public int PlaylistsCount { get; set; }
+        public int FavoritesCount { get; set; }
+
+        public static UserStatisticsDto GetUserStats(int userId)
+        {
+            using var db = new AppDbContext();
+
+            var subsCount = db.Subscriptions.Count(s => s.FollowerID == userId);
+            var playlistsCount = db.Playlists.Count(p => p.OwnerID == userId);
+            var favoritesCount = db.Favorites.Count(f => f.UserID == userId);
+
+            var durations = db.History
+                .Where(h => h.UserID == userId)
+                .Select(h => h.Track.Duration)
+                .ToList();
+
+            int totalTracks = durations.Count;
+            int totalSeconds = durations.Sum();
+            int totalMinutes = (int)TimeSpan.FromSeconds(totalSeconds).TotalMinutes;
+
+            return new UserStatisticsDto
+            {
+                SubscriptionsCount = subsCount,
+                PlaylistsCount = playlistsCount,
+                FavoritesCount = favoritesCount,
+                TotalTracksListened = totalTracks,
+                TotalTimeFormatted = totalMinutes
+            };
+        }
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    //  КОНТЕКСТ
+    // ─────────────────────────────────────────────────────────────
+
     public class AppDbContext : DbContext
     {
-        public AppDbContext()
-        {
-            Database.EnsureCreated();
-        }
+        public AppDbContext() { Database.EnsureCreated(); }
+
         public DbSet<Role> Roles { get; set; }
         public DbSet<User> Users { get; set; }
         public DbSet<Track> Tracks { get; set; }
@@ -158,28 +161,25 @@ namespace Rewind.DbManager
         public DbSet<Favorite> Favorites { get; set; }
         public DbSet<ListeningHistory> History { get; set; }
 
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        protected override void OnConfiguring(DbContextOptionsBuilder o)
+            => o.UseNpgsql("Host=localhost;Port=5432;Database=rewinddb;Username=postgres;Password=5329965");
+
+        protected override void OnModelCreating(ModelBuilder m)
         {
-            optionsBuilder.UseNpgsql("Host=localhost;Port=5432;Database=rewinddb;Username=postgres;Password=5329965");
-        }
+            m.Entity<User>().HasIndex(u => u.Nickname).IsUnique();
+            m.Entity<User>().HasIndex(u => u.Email).IsUnique();
 
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            // Почта и логин уникальные
-            modelBuilder.Entity<User>().HasIndex(u => u.Nickname).IsUnique();
-            modelBuilder.Entity<User>().HasIndex(u => u.Email).IsUnique();
+            m.Entity<PlaylistTrack>().HasKey(pt => new { pt.PlaylistID, pt.TrackID });
+            m.Entity<Favorite>().HasKey(f => new { f.UserID, f.TrackID });
+            m.Entity<Subscription>().HasKey(s => new { s.FollowerID, s.ArtistID });
 
-            // Состовные первичные ключи
-            modelBuilder.Entity<PlaylistTrack>().HasKey(pt => new { pt.PlaylistID, pt.TrackID });
-            modelBuilder.Entity<Favorite>().HasKey(f => new { f.UserID, f.TrackID });
-            modelBuilder.Entity<Subscription>().HasKey(s => new { s.FollowerID, s.ArtistID });
+            m.Entity<ListeningHistory>().HasIndex(h => h.UserID);
+            m.Entity<ListeningHistory>().HasIndex(h => h.TrackID);
 
-            // Индексы для истории прослушивания 
-            modelBuilder.Entity<ListeningHistory>().HasIndex(h => h.UserID);
-            modelBuilder.Entity<ListeningHistory>().HasIndex(h => h.TrackID);
+            // Публичные плейлисты: один пользователь может видеть чужие
+            // (фильтр применяется на уровне запросов, не FK)
 
-            // Роли заполняем
-            modelBuilder.Entity<Role>().HasData(
+            m.Entity<Role>().HasData(
                 new Role { RoleId = 1, RoleName = "Admin" },
                 new Role { RoleId = 2, RoleName = "Artist" },
                 new Role { RoleId = 3, RoleName = "Listener" }
@@ -187,138 +187,101 @@ namespace Rewind.DbManager
         }
     }
 
+    // ─────────────────────────────────────────────────────────────
+    //  СЕРВИСЫ
+    // ─────────────────────────────────────────────────────────────
+
     public static class UserService
     {
-
         public static List<User> GetAllUsers()
         {
-            using (var db = new AppDbContext())
-            {
-                return db.Users.Include(u => u.Role).ToList();
-            }
+            using var db = new AppDbContext();
+            return db.Users.Include(u => u.Role).ToList();
         }
 
         public static User? GetUserById(int id)
         {
-            using (var db = new AppDbContext())
-            {
-                return db.Users.Include(u => u.Role).Include(u => u.Tracks).FirstOrDefault(u => u.UserId == id);
-            }
+            using var db = new AppDbContext();
+            return db.Users.Include(u => u.Role).Include(u => u.Tracks)
+                           .FirstOrDefault(u => u.UserId == id);
         }
+
         public static User? GetUserByNickname(string nickname)
         {
-            using (var db = new AppDbContext())
-            {
-                return db.Users.Include(u => u.Role).FirstOrDefault(u => u.Nickname == nickname);
-            }
+            using var db = new AppDbContext();
+            return db.Users.Include(u => u.Role).FirstOrDefault(u => u.Nickname == nickname);
         }
 
         public static User? GetUserByEmail(string email)
         {
-            using (var db = new AppDbContext())
-            {
-                return db.Users.FirstOrDefault(u => u.Email == email);
-            }
+            using var db = new AppDbContext();
+            return db.Users.FirstOrDefault(u => u.Email == email);
         }
+
         public static int AddUser(User newUser)
         {
-            using (var db = new AppDbContext())
-            {
-                db.Users.Add(newUser);
-                db.SaveChanges();
-                return newUser.UserId;
-            }
+            using var db = new AppDbContext();
+            db.Users.Add(newUser);
+            db.SaveChanges();
+            return newUser.UserId;
         }
 
         public static bool DeleteUser(int id)
         {
-            using (var db = new AppDbContext())
-            {
-                var user = db.Users.FirstOrDefault(u => u.UserId == id);
-
-                if (user != null)
-                {
-                    db.Users.Remove(user);
-                    db.SaveChanges();
-                    return true;
-                }
-                return false;
-            }
+            using var db = new AppDbContext();
+            var user = db.Users.FirstOrDefault(u => u.UserId == id);
+            if (user == null) return false;
+            db.Users.Remove(user);
+            db.SaveChanges();
+            return true;
         }
 
         public static void UpdateUser(User currentUser, User newUser)
         {
-            using (var db = new AppDbContext())
-            {
-                var userInDb = db.Users.Find(currentUser.UserId);
+            using var db = new AppDbContext();
+            var userInDb = db.Users.Find(currentUser.UserId)
+                ?? throw new Exception("Пользователь не найден в базе данных.");
 
-                if (userInDb != null)
-                {
-                    userInDb.Nickname = newUser.Nickname;
-                    userInDb.Email = newUser.Email;
-                    userInDb.RoleId = newUser.RoleId;
+            userInDb.Nickname = newUser.Nickname;
+            userInDb.Email = newUser.Email;
+            userInDb.RoleId = newUser.RoleId;
+            userInDb.ProfilePhotoPath = newUser.ProfilePhotoPath;
 
-                    if (!string.IsNullOrWhiteSpace(newUser.PasswordHash))
-                    {
-                        userInDb.PasswordHash = newUser.PasswordHash;
-                    }
+            if (!string.IsNullOrWhiteSpace(newUser.PasswordHash))
+                userInDb.PasswordHash = newUser.PasswordHash;
 
-                    db.SaveChanges();
-                }
-                else
-                {
-                    throw new Exception("Пользователь не найден в базе данных.");
-                }
-            }
+            db.SaveChanges();
         }
     }
-  
-    
+
     public static class TrackService
     {
         public static List<Track> GetAllTracks()
         {
             using var db = new AppDbContext();
-            return db.Tracks
-                .Include(t => t.Artist)
-                .Include(t => t.Statistics)
-                .ToList();
+            return db.Tracks.Include(t => t.Artist).Include(t => t.Statistics).ToList();
         }
 
         public static Track? GetTrackById(int id)
         {
             using var db = new AppDbContext();
-            return db.Tracks
-                .Include(t => t.Artist)
-                .Include(t => t.Statistics)
-                .FirstOrDefault(t => t.TrackID == id);
+            return db.Tracks.Include(t => t.Artist).Include(t => t.Statistics)
+                            .FirstOrDefault(t => t.TrackID == id);
         }
 
         public static List<Track> GetTracksByArtist(int artistId)
         {
             using var db = new AppDbContext();
-            return db.Tracks
-                .Include(t => t.Statistics)
-                .Where(t => t.ArtistID == artistId)
-                .ToList();
+            return db.Tracks.Include(t => t.Statistics)
+                            .Where(t => t.ArtistID == artistId).ToList();
         }
 
         public static void AddTrack(Track track)
         {
             using var db = new AppDbContext();
-
             db.Tracks.Add(track);
-
             db.SaveChanges();
-
-            var newStat = new Statistic
-            {
-                TrackID = track.TrackID, 
-                PlayCount = 0,
-                LikesCount = 0
-            };
-
-            db.Statistics.Add(newStat);
+            db.Statistics.Add(new Statistic { TrackID = track.TrackID });
             db.SaveChanges();
         }
 
@@ -339,8 +302,7 @@ namespace Rewind.DbManager
             db.SaveChanges();
         }
     }
-   
-    
+
     public static class StatisticService
     {
         public static Statistic? GetStatsByTrack(int trackId)
@@ -387,16 +349,27 @@ namespace Rewind.DbManager
                 .ToList();
         }
     }
-    
-    
+
     public static class PlaylistService
     {
+        /// <summary>Плейлисты пользователя (его собственные — все, чужие — только публичные).</summary>
         public static List<Playlist> GetPlaylistsByUser(int userId)
         {
             using var db = new AppDbContext();
             return db.Playlists
                 .Include(p => p.PlaylistTracks).ThenInclude(pt => pt.Track)
                 .Where(p => p.OwnerID == userId)
+                .ToList();
+        }
+
+        /// <summary>Публичные плейлисты всех пользователей (для раздела «Сохранённые»).</summary>
+        public static List<Playlist> GetPublicPlaylists(int excludeUserId = 0)
+        {
+            using var db = new AppDbContext();
+            return db.Playlists
+                .Include(p => p.Owner)
+                .Include(p => p.PlaylistTracks).ThenInclude(pt => pt.Track)
+                .Where(p => !p.IsPrivate && p.OwnerID != excludeUserId)
                 .ToList();
         }
 
@@ -412,6 +385,8 @@ namespace Rewind.DbManager
         public static void AddPlaylist(Playlist playlist)
         {
             using var db = new AppDbContext();
+            // Сбрасываем навигационные свойства чтобы EF не дублировал Owner
+            playlist.Owner = null!;
             db.Playlists.Add(playlist);
             db.SaveChanges();
         }
@@ -436,9 +411,8 @@ namespace Rewind.DbManager
         public static bool AddTrackToPlaylist(int playlistId, int trackId)
         {
             using var db = new AppDbContext();
-            bool alreadyExists = db.PlaylistTracks
-                .Any(pt => pt.PlaylistID == playlistId && pt.TrackID == trackId);
-            if (alreadyExists) return false;
+            if (db.PlaylistTracks.Any(pt => pt.PlaylistID == playlistId && pt.TrackID == trackId))
+                return false;
             db.PlaylistTracks.Add(new PlaylistTrack { PlaylistID = playlistId, TrackID = trackId });
             db.SaveChanges();
             return true;
@@ -447,39 +421,34 @@ namespace Rewind.DbManager
         public static bool RemoveTrackFromPlaylist(int playlistId, int trackId)
         {
             using var db = new AppDbContext();
-            var entry = db.PlaylistTracks
-                .FirstOrDefault(pt => pt.PlaylistID == playlistId && pt.TrackID == trackId);
+            var entry = db.PlaylistTracks.FirstOrDefault(pt => pt.PlaylistID == playlistId && pt.TrackID == trackId);
             if (entry == null) return false;
             db.PlaylistTracks.Remove(entry);
             db.SaveChanges();
             return true;
         }
     }
-    
-    
+
     public static class FavoriteService
     {
-        public static List<Track> GetFavoritesByUser(int userId)
+        /// <summary>Возвращает треки из избранного (для инициализации сессии).</summary>
+        public static List<Favorite> GetFavoritesByUser(int userId)
         {
             using var db = new AppDbContext();
             return db.Favorites
                 .Where(f => f.UserID == userId)
                 .Include(f => f.Track).ThenInclude(t => t.Artist)
-                .Select(f => f.Track)
                 .ToList();
         }
 
         public static bool AddFavorite(int userId, int trackId)
         {
             using var db = new AppDbContext();
-            bool alreadyExists = db.Favorites.Any(f => f.UserID == userId && f.TrackID == trackId);
-            if (alreadyExists) return false;
+            if (db.Favorites.Any(f => f.UserID == userId && f.TrackID == trackId)) return false;
             db.Favorites.Add(new Favorite { UserID = userId, TrackID = trackId });
-            db.SaveChanges();
-
             var stat = db.Statistics.FirstOrDefault(s => s.TrackID == trackId);
-            if (stat != null) { stat.LikesCount++; db.SaveChanges(); }
-
+            if (stat != null) stat.LikesCount++;
+            db.SaveChanges();
             return true;
         }
 
@@ -489,10 +458,8 @@ namespace Rewind.DbManager
             var fav = db.Favorites.FirstOrDefault(f => f.UserID == userId && f.TrackID == trackId);
             if (fav == null) return false;
             db.Favorites.Remove(fav);
-
             var stat = db.Statistics.FirstOrDefault(s => s.TrackID == trackId);
             if (stat != null && stat.LikesCount > 0) stat.LikesCount--;
-
             db.SaveChanges();
             return true;
         }
@@ -504,35 +471,27 @@ namespace Rewind.DbManager
         }
     }
 
-
     public static class SubscriptionService
     {
         public static List<User> GetFollowing(int followerId)
         {
             using var db = new AppDbContext();
-            return db.Subscriptions
-                .Where(s => s.FollowerID == followerId)
-                .Include(s => s.Artist)
-                .Select(s => s.Artist)
-                .ToList();
+            return db.Subscriptions.Where(s => s.FollowerID == followerId)
+                .Include(s => s.Artist).Select(s => s.Artist).ToList();
         }
 
         public static List<User> GetFollowers(int artistId)
         {
             using var db = new AppDbContext();
-            return db.Subscriptions
-                .Where(s => s.ArtistID == artistId)
-                .Include(s => s.Follower)
-                .Select(s => s.Follower)
-                .ToList();
+            return db.Subscriptions.Where(s => s.ArtistID == artistId)
+                .Include(s => s.Follower).Select(s => s.Follower).ToList();
         }
 
         public static bool Subscribe(int followerId, int artistId)
         {
             using var db = new AppDbContext();
             if (followerId == artistId) return false;
-            bool exists = db.Subscriptions.Any(s => s.FollowerID == followerId && s.ArtistID == artistId);
-            if (exists) return false;
+            if (db.Subscriptions.Any(s => s.FollowerID == followerId && s.ArtistID == artistId)) return false;
             db.Subscriptions.Add(new Subscription { FollowerID = followerId, ArtistID = artistId });
             db.SaveChanges();
             return true;
@@ -541,8 +500,7 @@ namespace Rewind.DbManager
         public static bool Unsubscribe(int followerId, int artistId)
         {
             using var db = new AppDbContext();
-            var sub = db.Subscriptions
-                .FirstOrDefault(s => s.FollowerID == followerId && s.ArtistID == artistId);
+            var sub = db.Subscriptions.FirstOrDefault(s => s.FollowerID == followerId && s.ArtistID == artistId);
             if (sub == null) return false;
             db.Subscriptions.Remove(sub);
             db.SaveChanges();
@@ -555,7 +513,6 @@ namespace Rewind.DbManager
             return db.Subscriptions.Any(s => s.FollowerID == followerId && s.ArtistID == artistId);
         }
     }
-
 
     public static class RoleService
     {
