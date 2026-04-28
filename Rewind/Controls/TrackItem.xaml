@@ -7,7 +7,7 @@
              x:Name="this"
              d:DesignWidth="800">
 
-    <Border Style="{StaticResource TrackCardStyle}">
+    <Border Style="{StaticResource TrackCardStyle}" MouseLeftButtonDown="TrackCard_MouseLeftButtonDown">
         <Border.Effect>
             <DropShadowEffect Color="#000000" Opacity="0.04" BlurRadius="12" ShadowDepth="2"/>
         </Border.Effect>
@@ -15,6 +15,7 @@
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
@@ -44,8 +45,16 @@
                        Margin="0,0,16,0" Cursor="Hand"
                        MouseLeftButtonDown="LikeBtn_Click"/>
 
+            <Border Grid.Column="3" Width="30" Height="30" CornerRadius="15"
+                    Background="#F0EFEB" Cursor="Hand" Margin="0,0,12,0"
+                    MouseLeftButtonDown="AddToPlaylist_Click">
+                <TextBlock Text="+" FontSize="16" FontWeight="Bold"
+                           Foreground="#1A1A18"
+                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </Border>
+
             <!-- Длительность и плей -->
-            <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Center">
+            <StackPanel Grid.Column="4" Orientation="Horizontal" VerticalAlignment="Center">
                 <TextBlock x:Name="DurationText" Text="0:00" FontSize="12" Foreground="#BBBBB5"
                            VerticalAlignment="Center" Margin="0,0,12,0"/>
                 <Button x:Name="PlayBtn" Style="{StaticResource PlayButtonStyle}" Click="Play_Click"

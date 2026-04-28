@@ -142,19 +142,14 @@
                                         <TextBlock Text="Все →" FontSize="13" Foreground="{StaticResource AccentColor}"
                                                     HorizontalAlignment="Right" VerticalAlignment="Center" Cursor="Hand"/>
                                     </Grid>
-                                    <local:PlaylistItem DataContext="{Binding Track1}" />
-                                    <local:PlaylistItem DataContext="{Binding Track2}" />
-                                    <local:PlaylistItem DataContext="{Binding Track3}" />
-                                    <local:PlaylistItem DataContext="{Binding Track4}" />
-                                    <local:PlaylistItem DataContext="{Binding Track5}" />
-                                    <local:PlaylistItem DataContext="{Binding Track6}" />
+                                    <StackPanel x:Name="OverviewPlaylistsContainer"/>
                                 </StackPanel>
 
                                 <StackPanel Grid.Column="2">
                                     <TextBlock Text="Недавно лайкнутые" FontSize="16" FontWeight="Black"
                                                Foreground="#1A1A18" Margin="0,0,0,14"
                                                FontFamily="{StaticResource HeaderFont}"/>
-                                    <local:ProfileTrackItem DataContext="{Binding Tracks1}" />
+                                    <StackPanel x:Name="OverviewLikedContainer"/>
                                 </StackPanel>
                             </Grid>
                         </StackPanel>
@@ -174,6 +169,7 @@
                                    HorizontalAlignment="Right" VerticalAlignment="Center"
                                    Cursor="Hand"/>
                             </Grid>
+                            <StackPanel x:Name="LikedTracksContainer"/>
                         </StackPanel>
 
                         <StackPanel x:Name="PanelPlaylists" Visibility="Collapsed">
@@ -187,22 +183,12 @@
                                     </TextBlock.Text>
                                 </TextBlock>
                                 <Border Background="{DynamicResource AccentColor}" CornerRadius="8" Padding="14,8"
-                                HorizontalAlignment="Right" Cursor="Hand">
+                                HorizontalAlignment="Right" Cursor="Hand" MouseDown="OpenPlaylistsPage_MouseDown">
                                     <TextBlock Text="+ Новый плейлист" FontSize="13" FontWeight="Bold"
                                        Foreground="White"/>
                                 </Border>
                             </Grid>
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="10"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                </Grid.RowDefinitions>
-                            </Grid>
+                            <StackPanel x:Name="ProfilePlaylistsContainer"/>
                         </StackPanel>
 
                         <!-- ======= ТАБ: НАСТРОЙКИ ======= -->
@@ -370,6 +356,39 @@
                                              HorizontalAlignment="Right" 
                                              IsChecked="True" />
                                         </Grid>
+                                    </Border>
+                                </StackPanel>
+                            </Border>
+
+                            <TextBlock Text="Динамический остров" FontSize="16" FontWeight="Black"
+                               Foreground="#1A1A18" Margin="0,0,0,12"
+                               FontFamily="{StaticResource HeaderFont}"/>
+                            <Border Background="#FFFFFF" CornerRadius="16" BorderBrush="#E0DFD9"
+                            BorderThickness="1" Margin="0,0,0,20" ClipToBounds="True">
+                                <StackPanel>
+                                    <Border Style="{StaticResource SettingsRow}">
+                                        <Grid>
+                                            <TextBlock Text="Показывать динамический остров" FontSize="14" FontWeight="SemiBold" Foreground="#1A1A18" VerticalAlignment="Center"/>
+                                            <CheckBox x:Name="IslandEnabledProfileToggle"
+                                              Style="{StaticResource ModernToggleStyle}"
+                                              HorizontalAlignment="Right"
+                                              Checked="IslandProfileSettings_Changed"
+                                              Unchecked="IslandProfileSettings_Changed"/>
+                                        </Grid>
+                                    </Border>
+                                    <Border Style="{StaticResource SettingsRow}">
+                                        <StackPanel>
+                                            <TextBlock Text="Размер острова" FontSize="14" FontWeight="SemiBold" Foreground="#1A1A18" Margin="0,0,0,8"/>
+                                            <Slider x:Name="IslandSizeProfileSlider" Minimum="0.8" Maximum="1.5"
+                                            ValueChanged="IslandProfileSettings_Changed"/>
+                                        </StackPanel>
+                                    </Border>
+                                    <Border Padding="18,14">
+                                        <StackPanel>
+                                            <TextBlock Text="Прозрачность острова" FontSize="14" FontWeight="SemiBold" Foreground="#1A1A18" Margin="0,0,0,8"/>
+                                            <Slider x:Name="IslandOpacityProfileSlider" Minimum="0.25" Maximum="1.0"
+                                            ValueChanged="IslandProfileSettings_Changed"/>
+                                        </StackPanel>
                                     </Border>
                                 </StackPanel>
                             </Border>

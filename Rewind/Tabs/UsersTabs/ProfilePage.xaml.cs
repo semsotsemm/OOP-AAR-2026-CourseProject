@@ -6,6 +6,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
 using Rewind.Helpers;
+using System.Linq;
 
 namespace Rewind.Controls
 {
@@ -23,11 +24,26 @@ namespace Rewind.Controls
                 TabArtistStudio.Visibility = Visibility.Visible;
             }
 
+            Loaded += (_, _) => SyncIslandSettingsFromMainWindow();
+            LoadOverviewSection();
+
         }
 
-        private void TabOverview_Click(object sender, RoutedEventArgs e) => SetActiveTab(TabOverview, PanelOverview);
-        private void TabLiked_Click(object sender, RoutedEventArgs e) => SetActiveTab(TabLiked, PanelLiked);
-        private void TabPlaylists_Click(object sender, RoutedEventArgs e) => SetActiveTab(TabPlaylists, PanelPlaylists);
+        private void TabOverview_Click(object sender, RoutedEventArgs e)
+        {
+            LoadOverviewSection();
+            SetActiveTab(TabOverview, PanelOverview);
+        }
+        private void TabLiked_Click(object sender, RoutedEventArgs e)
+        {
+            LoadLikedSection();
+            SetActiveTab(TabLiked, PanelLiked);
+        }
+        private void TabPlaylists_Click(object sender, RoutedEventArgs e)
+        {
+            LoadPlaylistsSection();
+            SetActiveTab(TabPlaylists, PanelPlaylists);
+        }
         private void TabSettings_Click(object sender, RoutedEventArgs e) => SetActiveTab(TabSettings, PanelSettings);
 
         private void EditBtn_MouseDown(object sender, MouseButtonEventArgs e)
@@ -50,7 +66,7 @@ namespace Rewind.Controls
 
             if (openFileDialog.ShowDialog() == true)
             {
-                tempAvatarPath = openFileDialog.FileName;
+                tempAvatarPath = CopyImageToProjectFolder(openFileDialog.FileName, "AvatarsLibrary", keepOriginalName: true, returnAbsolutePath: true);
                 AvatarPreview.ImageSource = new BitmapImage(new Uri(tempAvatarPath));
             }
         }
@@ -192,23 +208,16 @@ namespace Rewind.Controls
 
             try
             {
-                // Используем сохраненный путь _selectedAudioPath
-                string extension = System.IO.Path.GetExtension(_selectedAudioPath);
-
-                string musicFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "MusicLibrary");
-                if (!Directory.Exists(musicFolder)) Directory.CreateDirectory(musicFolder);
-
-                string uniqueFileName = Guid.NewGuid().ToString() + extension;
-                string destPath = Path.Combine(musicFolder, uniqueFileName);
-
-                // Копируем файл
-                File.Copy(_selectedAudioPath, destPath, true);
+                string uniqueFileName = CopyAudioToMusicLibrary(_selectedAudioPath, trackName);
+                string destPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "MusicLibrary", uniqueFileName);
 
                 int duration = GetTrackDuration(destPath);
 
-                // Копирование обложки (советую тоже сделать копию в папку приложения)
-                string? finalCoverPath = _selectedCoverPath;
-                // Если хочешь, чтобы обложка тоже была относительной, сделай для неё такую же логику копирования
+                string? finalCoverPath = null;
+                if (!string.IsNullOrWhiteSpace(_selectedCoverPath))
+                {
+                    finalCoverPath = CopyImageToProjectFolder(_selectedCoverPath, "CoversLibrary", keepOriginalName: true, returnAbsolutePath: true);
+                }
 
                 Track newTrack = new Track
                 {
@@ -241,6 +250,61 @@ namespace Rewind.Controls
                 return (int)file.Properties.Duration.TotalSeconds;
             }
         }
+
+        private static string CopyAudioToMusicLibrary(string sourcePath, string trackName)
+        {
+            string extension = Path.GetExtension(sourcePath);
+            string safeName = SanitizeFileName(trackName);
+            if (string.IsNullOrWhiteSpace(safeName))
+                safeName = "track";
+
+            string musicFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "MusicLibrary");
+            if (!Directory.Exists(musicFolder)) Directory.CreateDirectory(musicFolder);
+
+            string fileName = $"{safeName}{extension}";
+            string fullDestPath = Path.Combine(musicFolder, fileName);
+            int counter = 1;
+            while (File.Exists(fullDestPath))
+            {
+                fileName = $"{safeName}_{counter}{extension}";
+                fullDestPath = Path.Combine(musicFolder, fileName);
+                counter++;
+            }
+
+            File.Copy(sourcePath, fullDestPath, false);
+            return fileName;
+        }
+
+        private static string CopyImageToProjectFolder(string sourcePath, string folderName, bool keepOriginalName, bool returnAbsolutePath)
+        {
+            string folder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, folderName);
+            if (!Directory.Exists(folder)) Directory.CreateDirectory(folder);
+
+            string extension = Path.GetExtension(sourcePath);
+            string baseName = keepOriginalName
+                ? Path.GetFileNameWithoutExtension(sourcePath)
+                : Guid.NewGuid().ToString();
+
+            string fileName = $"{baseName}{extension}";
+            string fullDestPath = Path.Combine(folder, fileName);
+            int counter = 1;
+            while (File.Exists(fullDestPath))
+            {
+                fileName = $"{baseName}_{counter}{extension}";
+                fullDestPath = Path.Combine(folder, fileName);
+                counter++;
+            }
+
+            File.Copy(sourcePath, fullDestPath, false);
+            return returnAbsolutePath ? fullDestPath : fileName;
+        }
+
+        private static string SanitizeFileName(string name)
+        {
+            var invalid = Path.GetInvalidFileNameChars();
+            var chars = name.Select(ch => invalid.Contains(ch) ? '_' : ch).ToArray();
+            return new string(chars).Trim();
+        }
         private void SetActiveTab(Button activeTabBtn, UIElement activePanel)
         {
             Style inactiveStyle = (Style)FindResource("ProfileTab");
@@ -259,6 +323,152 @@ namespace Rewind.Controls
 
             activeTabBtn.Style = (Style)FindResource("ProfileTabActive");
             activePanel.Visibility = Visibility.Visible;
+        }
+
+        private void LoadOverviewSection()
+        {
+            OverviewPlaylistsContainer.Children.Clear();
+            OverviewLikedContainer.Children.Clear();
+
+            var ownPlaylists = Session.CachedPlaylists.Where(p => p.OwnerID == Session.UserId).Take(6).ToList();
+            if (ownPlaylists.Count == 0)
+            {
+                OverviewPlaylistsContainer.Children.Add(MakeEmptyCard("Плейлистов пока нет"));
+            }
+            else
+            {
+                foreach (var playlist in ownPlaylists)
+                {
+                    var trackCount = playlist.PlaylistTracks?.Count ?? 0;
+                    OverviewPlaylistsContainer.Children.Add(MakeOverviewCard(playlist.Title, $"{trackCount} треков"));
+                }
+            }
+
+            var likedTracks = Session.LikedTrackIds
+                .Take(6)
+                .Select(id => TrackService.GetTrackById(id))
+                .Where(t => t != null)
+                .Cast<Track>()
+                .ToList();
+
+            if (likedTracks.Count == 0)
+            {
+                OverviewLikedContainer.Children.Add(MakeEmptyCard("Лайков пока нет"));
+            }
+            else
+            {
+                foreach (var track in likedTracks)
+                {
+                    var artist = UserService.GetUserById(track.ArtistID)?.Nickname ?? "Неизвестный артист";
+                    OverviewLikedContainer.Children.Add(MakeOverviewCard(track.Title, artist));
+                }
+            }
+        }
+
+        private void LoadLikedSection()
+        {
+            LikedTracksContainer.Children.Clear();
+            var tracks = TrackService.GetAllTracks().Take(25).ToList();
+            if (tracks.Count == 0)
+            {
+                LikedTracksContainer.Children.Add(MakeEmptyCard("Треков пока нет"));
+                return;
+            }
+
+            foreach (var track in tracks)
+            {
+                var artist = UserService.GetUserById(track.ArtistID)?.Nickname ?? "Неизвестный артист";
+                LikedTracksContainer.Children.Add(MakeOverviewCard(track.Title, artist));
+            }
+        }
+
+        private void LoadPlaylistsSection()
+        {
+            ProfilePlaylistsContainer.Children.Clear();
+            var ownPlaylists = Session.CachedPlaylists.Where(p => p.OwnerID == Session.UserId).ToList();
+            if (ownPlaylists.Count == 0)
+            {
+                ProfilePlaylistsContainer.Children.Add(MakeEmptyCard("Плейлистов пока нет"));
+                return;
+            }
+
+            foreach (var playlist in ownPlaylists)
+            {
+                var trackCount = playlist.PlaylistTracks?.Count ?? 0;
+                var likes = PlaylistAnalyticsService.GetLikesCount(playlist.PlaylistID);
+                var listens = PlaylistAnalyticsService.GetListenersCount(playlist.PlaylistID);
+                ProfilePlaylistsContainer.Children.Add(MakeOverviewCard(playlist.Title, $"{trackCount} треков • ♥ {likes} • ▶ {listens}"));
+            }
+        }
+
+        private void OpenPlaylistsPage_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (Window.GetWindow(this) is MainWindow mainWindow)
+                mainWindow.ShowPlaylistsPage();
+        }
+
+        private void SyncIslandSettingsFromMainWindow()
+        {
+            if (Window.GetWindow(this) is not MainWindow mainWindow) return;
+            IslandEnabledProfileToggle.IsChecked = mainWindow.IslandEnabled;
+            IslandSizeProfileSlider.Value = mainWindow.IslandScale;
+            IslandOpacityProfileSlider.Value = mainWindow.IslandOpacity;
+        }
+
+        private void IslandProfileSettings_Changed(object sender, RoutedEventArgs e)
+        {
+            if (Window.GetWindow(this) is not MainWindow mainWindow) return;
+            mainWindow.UpdateIslandSettings(
+                IslandEnabledProfileToggle.IsChecked == true,
+                IslandSizeProfileSlider.Value,
+                IslandOpacityProfileSlider.Value);
+        }
+
+        private UIElement MakeOverviewCard(string title, string subtitle)
+        {
+            var card = new Border
+            {
+                Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(245, 244, 240)),
+                CornerRadius = new CornerRadius(12),
+                Padding = new Thickness(12, 10, 12, 10),
+                Margin = new Thickness(0, 0, 0, 8)
+            };
+
+            var stack = new StackPanel();
+            stack.Children.Add(new TextBlock
+            {
+                Text = title,
+                FontWeight = FontWeights.SemiBold,
+                FontSize = 13,
+                TextTrimming = TextTrimming.CharacterEllipsis
+            });
+            stack.Children.Add(new TextBlock
+            {
+                Text = subtitle,
+                FontSize = 12,
+                Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(136, 136, 128)),
+                Margin = new Thickness(0, 4, 0, 0),
+                TextTrimming = TextTrimming.CharacterEllipsis
+            });
+
+            card.Child = stack;
+            return card;
+        }
+
+        private UIElement MakeEmptyCard(string text)
+        {
+            return new Border
+            {
+                Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(245, 244, 240)),
+                CornerRadius = new CornerRadius(12),
+                Padding = new Thickness(12),
+                Child = new TextBlock
+                {
+                    Text = text,
+                    FontSize = 12,
+                    Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(136, 136, 128))
+                }
+            };
         }
     }
 }

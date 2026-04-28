@@ -5,7 +5,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:local="clr-namespace:Rewind.Contols"
              mc:Ignorable="d"
-             Height="780" Width="1040">
+             Height="auto" Width="auto">
 
     <Grid Background="{StaticResource BgMain}">
 

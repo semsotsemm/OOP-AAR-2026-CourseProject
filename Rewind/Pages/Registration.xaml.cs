@@ -7,7 +7,7 @@ namespace Rewind.Pages
 {
     public partial class Registration : Window
     {
-        // 1 = Пользователь, 2 = Исполнитель, 3 = Админ
+        // UI роли: 1 = Пользователь, 2 = Исполнитель, 3 = Админ
         private int selectedRoleId = 1;
 
         // true = Вход, false = Регистрация
@@ -18,6 +18,22 @@ namespace Rewind.Pages
             InitializeComponent();
             UpdateUI();
         }
+
+        private static string NormalizeRoleName(int roleId) => roleId switch
+        {
+            1 => "Слушатель",
+            2 => "Исполнитель",
+            3 => "Администратор",
+            _ => "Слушатель"
+        };
+
+        private static int UiRoleToDbRoleId(int uiRoleId) => uiRoleId switch
+        {
+            1 => 3, // Listener
+            2 => 2, // Artist
+            3 => 1, // Admin
+            _ => 3
+        };
 
         // Регистрация
         private void RegisterButton_Click(object sender, RoutedEventArgs e)
@@ -91,19 +107,30 @@ namespace Rewind.Pages
                     Nickname = nickname,
                     ProfilePhotoPath = fullPath,
                     PasswordHash = PasswordHelper.HashPassword(password),
-                    RoleId = selectedRoleId
+                    RoleId = UiRoleToDbRoleId(selectedRoleId)
                 };
 
                 Session.UserId = UserService.AddUser(newUser);
                 Session.UserName = nickname;
                 Session.Email = email;
                 Session.Password = password;
-                Session.UserRole = selectedRoleId == 1 ? "Слушатель" : "Исполнитель";
+                Session.UserRole = NormalizeRoleName(selectedRoleId);
                 Session.HidedPassword = new string('●', Session.Password.Length);
                 Session.AvatarPath = fullPath;
+                Session.LoadFromDatabase();
 
-                MainWindow profile_window = new MainWindow();
-                profile_window.Show();
+                if (selectedRoleId == 3)
+                {
+                    var adminWindow = new AdminPanel();
+                    Application.Current.MainWindow = adminWindow;
+                    adminWindow.Show();
+                }
+                else
+                {
+                    MainWindow profile_window = new MainWindow();
+                    Application.Current.MainWindow = profile_window;
+                    profile_window.Show();
+                }
                 this.Close();
             }
             catch (Exception ex)
@@ -147,33 +174,44 @@ namespace Rewind.Pages
                 return;
             }
 
-            if (PasswordHelper.VerifyPassword(password, checking_user.PasswordHash))
+            bool verified = PasswordHelper.VerifyPassword(password, checking_user.PasswordHash);
+            if (!verified && checking_user.PasswordHash == password)
             {
-                if (checking_user.RoleId != selectedRoleId)
+                // Восстановление аккаунтов, где хеш был поврежден и записан как plain-text
+                checking_user.PasswordHash = PasswordHelper.HashPassword(password);
+                UserService.UpdateUser(checking_user, checking_user);
+                verified = true;
+            }
+
+            if (verified)
+            {
+                if (checking_user.RoleId != UiRoleToDbRoleId(selectedRoleId))
                 {
                     MessageBox.Show("Выбранная роль не соответствует вашему аккаунту", "Доступ запрещен");
                     return;
                 }
 
-                // Получаем текущего пользователя
-                UserStatisticsDto current_user = new UserStatisticsDto();
-                UserStatisticsDto.GetUserStats(checking_user.UserId);
-
                 Session.UserId = checking_user.UserId;
                 Session.UserName = checking_user.Nickname;
                 Session.Email = checking_user.Email;
                 Session.Password = password;
-                Session.UserRole = selectedRoleId == 1 ? "Слушатель" : "Исполнитель";
-                Session.TracksListened = current_user.TotalTracksListened;
-                Session.Subscriptions = current_user.SubscriptionsCount;
-                Session.Liked = current_user.FavoritesCount;
-                Session.Listened = current_user.TotalTimeFormatted;
-                Session.Playlists = current_user.PlaylistsCount;
+                Session.UserRole = NormalizeRoleName(selectedRoleId);
                 Session.HidedPassword = new string('●', Session.Password.Length);
                 Session.AvatarPath = checking_user.ProfilePhotoPath;
+                Session.LoadFromDatabase();
 
-                MainWindow profile_window = new MainWindow();
-                profile_window.Show();
+                if (selectedRoleId == 3)
+                {
+                    var adminWindow = new AdminPanel();
+                    Application.Current.MainWindow = adminWindow;
+                    adminWindow.Show();
+                }
+                else
+                {
+                    MainWindow profile_window = new MainWindow();
+                    Application.Current.MainWindow = profile_window;
+                    profile_window.Show();
+                }
                 this.Close();
             }
             else 

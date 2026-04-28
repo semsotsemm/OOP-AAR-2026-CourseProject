@@ -52,7 +52,7 @@
                         </StackPanel>
                     </Button>
 
-                    <Button Style="{StaticResource NavButtonStyle}" x:Name="BtnSearch">
+                    <Button Style="{StaticResource NavButtonStyle}" x:Name="BtnSearch" Click="ShowSearch_Click">
                         <StackPanel Orientation="Horizontal">
                             <Border Width="30" Height="30" CornerRadius="7" Background="#F0EFEB" Margin="0,0,10,0">
                                 <Path Data="M10 2a8 8 0 1 0 4.5 14.71l4.9 4.9 1.41-1.42-4.9-4.9A8 8 0 0 0 10 2zm0 2a6 6 0 1 1 0 12 6 6 0 0 1 0-12z"

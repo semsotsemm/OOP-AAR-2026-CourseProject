@@ -31,6 +31,12 @@ namespace Rewind
             ApplyCover(coverPath);
         }
 
+        public void ApplyVisualSettings(double scale, double opacity)
+        {
+            RootBorder.Opacity = opacity;
+            LayoutTransform = new ScaleTransform(scale, scale);
+        }
+
         private void ApplyCover(string? coverPath)
         {
             try

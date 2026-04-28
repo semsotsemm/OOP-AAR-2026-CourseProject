@@ -1,5 +1,7 @@
 ﻿using Rewind.Contols;
 using Rewind.Controls;
+using Rewind.Helpers;
+using Rewind.Pages;
 using Rewind.Tabs.UsersTabs;
 using System.Windows;
 using System.Windows.Controls;
@@ -17,7 +19,11 @@ namespace Rewind
 
         private TrackItem? _currentTrackItem;
         private IslandWindow? _island;
+        private NowPlaying? _nowPlayingWindow;
         private bool _isPlaying;
+        private bool _islandEnabled = true;
+        private double _islandScale = 1.0;
+        private double _islandOpacity = 1.0;
 
         public MainWindow()
         {
@@ -39,12 +45,13 @@ namespace Rewind
             };
 
             StateChanged += MainWindow_StateChanged;
-            Deactivated += (_, _) => { if (_isPlaying) ShowIsland(); };
-            Activated += (_, _) => HideIsland();
+            Closing += MainWindow_Closing;
 
             MainContentArea.Content = new MainPage();
             HighlightActiveButton(BtnHome);
         }
+
+        public event Action? PlaybackStateChanged;
 
         public void PlayTrackFromContext(TrackItem selectedTrack, IReadOnlyList<TrackItem> contextTracks)
         {
@@ -76,6 +83,8 @@ namespace Rewind
                 _island.UpdateTrackInfo(selectedTrack.TrackName, selectedTrack.ArtistName, selectedTrack.CoverPath);
                 _island.SetPlayPauseIcon(true);
             }
+            UpdateIslandVisibility();
+            PlaybackStateChanged?.Invoke();
         }
 
         public void TogglePlayPause()
@@ -88,7 +97,6 @@ namespace Rewind
                 _isPlaying = false;
                 GlobalPlayerBar.PlayPauseIcon = "▶";
                 _island?.SetPlayPauseIcon(false);
-                HideIsland();
             }
             else
             {
@@ -97,6 +105,8 @@ namespace Rewind
                 GlobalPlayerBar.PlayPauseIcon = "⏸";
                 _island?.SetPlayPauseIcon(true);
             }
+            UpdateIslandVisibility();
+            PlaybackStateChanged?.Invoke();
         }
 
         public void NextTrack()
@@ -104,6 +114,7 @@ namespace Rewind
             if (_playContext.Count == 0) return;
             int idx = _currentTrackItem == null ? 0 : (_playContext.IndexOf(_currentTrackItem) + 1) % _playContext.Count;
             PlayTrackFromContext(_playContext[idx], _playContext);
+            PlaybackStateChanged?.Invoke();
         }
 
         public void PreviousTrack()
@@ -111,6 +122,7 @@ namespace Rewind
             if (_playContext.Count == 0) return;
             int idx = _currentTrackItem == null ? 0 : (_playContext.IndexOf(_currentTrackItem) - 1 + _playContext.Count) % _playContext.Count;
             PlayTrackFromContext(_playContext[idx], _playContext);
+            PlaybackStateChanged?.Invoke();
         }
 
         private void Timer_Tick(object? sender, EventArgs e)
@@ -119,12 +131,14 @@ namespace Rewind
             if (!_mediaPlayer.NaturalDuration.HasTimeSpan) return;
             if (!GlobalPlayerBar.IsUserDragging)
                 GlobalPlayerBar.CurrentSeconds = _mediaPlayer.Position.TotalSeconds;
+            PlaybackStateChanged?.Invoke();
         }
 
         private void MediaPlayer_MediaOpened(object? sender, EventArgs e)
         {
             if (_mediaPlayer.NaturalDuration.HasTimeSpan)
                 GlobalPlayerBar.TotalSeconds = _mediaPlayer.NaturalDuration.TimeSpan.TotalSeconds;
+            PlaybackStateChanged?.Invoke();
         }
 
         private void MediaPlayer_MediaEnded(object? sender, EventArgs e)
@@ -132,11 +146,51 @@ namespace Rewind
             _isPlaying = false;
             GlobalPlayerBar.PlayPauseIcon = "▶";
             NextTrack();
+            UpdateIslandVisibility();
+            PlaybackStateChanged?.Invoke();
+        }
+
+        public TrackItem? CurrentTrack => _currentTrackItem;
+        public IReadOnlyList<TrackItem> CurrentContext => _playContext;
+        public bool IsPlaying => _isPlaying;
+        public bool IslandEnabled => _islandEnabled;
+        public double IslandScale => _islandScale;
+        public double IslandOpacity => _islandOpacity;
+        public double CurrentSeconds => _mediaPlayer.Source == null ? 0 : _mediaPlayer.Position.TotalSeconds;
+        public double TotalSeconds => _mediaPlayer.NaturalDuration.HasTimeSpan ? _mediaPlayer.NaturalDuration.TimeSpan.TotalSeconds : 0;
+        public double Volume
+        {
+            get => _mediaPlayer.Volume;
+            set => _mediaPlayer.Volume = Math.Clamp(value, 0, 1);
+        }
+
+        public void SeekTo(double seconds)
+        {
+            if (_mediaPlayer.Source == null || !_mediaPlayer.NaturalDuration.HasTimeSpan) return;
+            _mediaPlayer.Position = TimeSpan.FromSeconds(Math.Clamp(seconds, 0, TotalSeconds));
+            PlaybackStateChanged?.Invoke();
+        }
+
+        public void OpenNowPlaying(string sourcePage)
+        {
+            if (_currentTrackItem == null) return;
+
+            if (_nowPlayingWindow == null || !_nowPlayingWindow.IsLoaded)
+            {
+                _nowPlayingWindow = new NowPlaying(this, sourcePage);
+                _nowPlayingWindow.Owner = this;
+                _nowPlayingWindow.Closed += (_, _) => _nowPlayingWindow = null;
+                _nowPlayingWindow.Show();
+                return;
+            }
+
+            _nowPlayingWindow.UpdateSourcePage(sourcePage);
+            _nowPlayingWindow.Activate();
         }
 
         private void ShowIsland()
         {
-            if (!_isPlaying || _currentTrackItem == null) return;
+            if (!_islandEnabled || _currentTrackItem == null) return;
             if (_island == null)
             {
                 _island = new IslandWindow { Topmost = true, ShowInTaskbar = false };
@@ -146,17 +200,26 @@ namespace Rewind
 
             _island.UpdateTrackInfo(_currentTrackItem.TrackName, _currentTrackItem.ArtistName, _currentTrackItem.CoverPath);
             _island.SetPlayPauseIcon(_isPlaying);
+            _island.ApplyVisualSettings(_islandScale, _islandOpacity);
             _island.Left = (SystemParameters.PrimaryScreenWidth - _island.Width) / 2;
             _island.Top = 0;
+            _island.Topmost = true;
             _island.Show();
         }
 
         private void HideIsland() => _island?.Hide();
 
+        private void UpdateIslandVisibility()
+        {
+            bool hasTrack = _currentTrackItem != null && _mediaPlayer.Source != null;
+            bool shouldShow = _islandEnabled && hasTrack && WindowState == WindowState.Minimized;
+            if (shouldShow) ShowIsland();
+            else HideIsland();
+        }
+
         private void MainWindow_StateChanged(object? sender, EventArgs e)
         {
-            if (WindowState == WindowState.Minimized && _isPlaying) ShowIsland();
-            else if (WindowState == WindowState.Normal) HideIsland();
+            UpdateIslandVisibility();
         }
 
         private void ShowProfile_Click(object sender, RoutedEventArgs e)
@@ -171,6 +234,18 @@ namespace Rewind
             HighlightActiveButton(BtnPlaylists);
         }
 
+        public void ShowPlaylistsPage()
+        {
+            MainContentArea.Content = new PlaylistsPage();
+            HighlightActiveButton(BtnPlaylists);
+        }
+
+        public void OpenPlaylistDetails(Playlist playlist)
+        {
+            MainContentArea.Content = new PlaylistDetailsPage(playlist);
+            HighlightActiveButton(BtnPlaylists);
+        }
+
         private void ShowHome_Click(object sender, RoutedEventArgs e)
         {
             MainContentArea.Content = new MainPage();
@@ -181,6 +256,28 @@ namespace Rewind
         {
             MainContentArea.Content = new FavoritesPage();
             HighlightActiveButton(BtnFavorites);
+        }
+
+        private void ShowSearch_Click(object sender, RoutedEventArgs e)
+        {
+            MainContentArea.Content = new SearchPage();
+            HighlightActiveButton(BtnSearch);
+        }
+
+        public void UpdateIslandSettings(bool enabled, double scale, double opacity)
+        {
+            _islandEnabled = enabled;
+            _islandScale = Math.Clamp(scale, 0.8, 1.5);
+            _islandOpacity = Math.Clamp(opacity, 0.25, 1.0);
+
+            if (!_islandEnabled)
+            {
+                HideIsland();
+                return;
+            }
+
+            _island?.ApplyVisualSettings(_islandScale, _islandOpacity);
+            UpdateIslandVisibility();
         }
 
         private void HighlightActiveButton(Button activeBtn)
@@ -221,6 +318,19 @@ namespace Rewind
                         textBlock.FontWeight = isActive ? FontWeights.Bold : FontWeights.Normal;
                     }
                 }
+            }
+        }
+
+        private void MainWindow_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
+        {
+            _timer.Stop();
+            _mediaPlayer.Stop();
+            _mediaPlayer.Close();
+
+            if (_island != null)
+            {
+                try { _island.Close(); } catch { }
+                _island = null;
             }
         }
     }

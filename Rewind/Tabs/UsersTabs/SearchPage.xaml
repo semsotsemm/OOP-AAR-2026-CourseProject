@@ -1,0 +1,27 @@
+<UserControl x:Class="Rewind.Tabs.UsersTabs.SearchPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d">
+    <Grid Background="{StaticResource BgMain}">
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <StackPanel Margin="32,28,32,120">
+                <TextBlock Text="Поиск" FontSize="28" FontWeight="Bold" Margin="0,0,0,16"/>
+                <Border Background="{StaticResource BgSidebar}" CornerRadius="14" BorderBrush="{StaticResource BorderColor}" BorderThickness="1.5" Margin="0,0,0,18">
+                    <TextBox x:Name="SearchBox"
+                             Height="46"
+                             FontSize="14"
+                             Background="Transparent"
+                             BorderThickness="0"
+                             VerticalContentAlignment="Center"
+                             Padding="16,0"
+                             Tag="Треки, исполнители, плейлисты..."
+                             TextChanged="SearchBox_TextChanged"
+                             Style="{StaticResource SearchBoxStyle}"/>
+                </Border>
+                <StackPanel x:Name="ResultsContainer"/>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

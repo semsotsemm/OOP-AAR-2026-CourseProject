@@ -149,7 +149,11 @@ namespace Rewind.Helpers
 
     public class AppDbContext : DbContext
     {
-        public AppDbContext() { Database.EnsureCreated(); }
+        public AppDbContext()
+        {
+            Database.EnsureCreated();
+            SeedDefaultAdmin();
+        }
 
         public DbSet<Role> Roles { get; set; }
         public DbSet<User> Users { get; set; }
@@ -184,6 +188,29 @@ namespace Rewind.Helpers
                 new Role { RoleId = 2, RoleName = "Artist" },
                 new Role { RoleId = 3, RoleName = "Listener" }
             );
+        }
+
+        private void SeedDefaultAdmin()
+        {
+            try
+            {
+                if (Users.Any(u => u.Nickname == "Alexey")) return;
+
+                Users.Add(new User
+                {
+                    Nickname = "Alexey",
+                    Email = "alexey@rewind.local",
+                    PasswordHash = PasswordHelper.HashPassword("20062018no"),
+                    ProfilePhotoPath = null,
+                    RoleId = 1,
+                    Status = "Активен"
+                });
+                SaveChanges();
+            }
+            catch
+            {
+                // Игнорируем на старте, чтобы не ронять приложение.
+            }
         }
     }
 

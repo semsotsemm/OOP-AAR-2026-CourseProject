@@ -6,6 +6,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Rewind.Helpers;
+using Rewind.Pages;
 using Rewind.Tabs.UsersTabs;
 
 namespace Rewind.Contols
@@ -51,6 +52,7 @@ namespace Rewind.Contols
             RefreshLikeIcon();
 
             UpdateCover(coverPath);
+            BuildPlaylistContextMenu();
         }
 
         // ─────────────────────────────────────────────
@@ -67,12 +69,29 @@ namespace Rewind.Contols
 
                 if (File.Exists(fullPath))
                 {
-                    TrackCoverBrush.ImageSource = new BitmapImage(new Uri(fullPath));
+                    BitmapImage bitmap = new BitmapImage();
+                    bitmap.BeginInit();
+                    bitmap.UriSource = new Uri(fullPath);
+
+                    bitmap.DecodePixelWidth = 100;
+
+                    bitmap.CacheOption = BitmapCacheOption.OnLoad;
+                    bitmap.EndInit();
+
+                    bitmap.Freeze();
+
+                    RenderOptions.SetBitmapScalingMode(TrackCoverBrush, BitmapScalingMode.Fant);
+
+                    TrackCoverBrush.ImageSource = bitmap;
+
                     if (CoverPlaceholder != null)
                         CoverPlaceholder.Visibility = Visibility.Collapsed;
                 }
             }
-            catch { /* оставляем ноту-заглушку */ }
+            catch
+            {
+                /* оставляем ноту-заглушку */
+            }
         }
 
         // ─────────────────────────────────────────────
@@ -82,7 +101,7 @@ namespace Rewind.Contols
         {
             DependencyObject parent = VisualTreeHelper.GetParent(this);
 
-            while (parent != null && parent is not MainPage && parent is not FavoritesPage)
+            while (parent != null && parent is not MainPage && parent is not FavoritesPage && parent is not PlaylistDetailsPage && parent is not SearchPage)
             {
                 parent = VisualTreeHelper.GetParent(parent);
             }
@@ -97,12 +116,21 @@ namespace Rewind.Contols
             {
                 mainWindow.PlayTrackFromContext(this, favPage.GetTrackItems());
             }
+            else if (parent is PlaylistDetailsPage playlistPage)
+            {
+                mainWindow.PlayTrackFromContext(this, playlistPage.GetTrackItems());
+            }
+            else if (parent is SearchPage searchPage)
+            {
+                mainWindow.PlayTrackFromContext(this, searchPage.GetTrackItems());
+            }
         }
         // ─────────────────────────────────────────────
         //  Лайк — работает через Session-кеш
         // ─────────────────────────────────────────────
         private void LikeBtn_Click(object sender, MouseButtonEventArgs e)
         {
+            e.Handled = true;
             // Переключаем состояние в кеше сессии
             bool isNowLiked = Session.ToggleLike(TrackId);
 
@@ -137,6 +165,94 @@ namespace Rewind.Contols
 
             scale.BeginAnimation(System.Windows.Media.ScaleTransform.ScaleXProperty, anim);
             scale.BeginAnimation(System.Windows.Media.ScaleTransform.ScaleYProperty, anim);
+        }
+
+        private void BuildPlaylistContextMenu()
+        {
+            ContextMenu = new ContextMenu();
+            ContextMenu.Opened += (_, _) => RebuildPlaylistMenu();
+            RebuildPlaylistMenu();
+        }
+
+        private void RebuildPlaylistMenu()
+        {
+            if (ContextMenu == null) return;
+            ContextMenu.Items.Clear();
+
+            var ownPlaylists = Session.CachedPlaylists.Where(p => p.OwnerID == Session.UserId).ToList();
+            if (ownPlaylists.Count == 0)
+            {
+                ContextMenu.Items.Add(new MenuItem
+                {
+                    Header = "Нет плейлистов",
+                    IsEnabled = false
+                });
+                return;
+            }
+
+            foreach (var playlist in ownPlaylists)
+            {
+                var menuItem = new MenuItem
+                {
+                    Header = $"Добавить в: {playlist.Title}",
+                    Tag = playlist
+                };
+                menuItem.Click += AddTrackToPlaylist_Click;
+                ContextMenu.Items.Add(menuItem);
+            }
+        }
+
+        private void AddTrackToPlaylist_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is not MenuItem item || item.Tag is not Playlist playlist) return;
+
+            bool added = Session.AddTrackToPlaylist(playlist, TrackId);
+            if (!added)
+            {
+                MessageBox.Show("Трек уже есть в этом плейлисте.", "Rewind", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            MessageBox.Show($"Трек добавлен в плейлист \"{playlist.Title}\".", "Rewind", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
+        private void AddToPlaylist_Click(object sender, MouseButtonEventArgs e)
+        {
+            e.Handled = true;
+            if (ContextMenu == null) return;
+            RebuildPlaylistMenu();
+            ContextMenu.PlacementTarget = sender as FrameworkElement ?? this;
+            ContextMenu.IsOpen = true;
+        }
+
+        private void TrackCard_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            var origin = e.OriginalSource as DependencyObject;
+            while (origin != null)
+            {
+                if (origin is Button || origin is MenuItem || origin is ContextMenu || origin is Slider)
+                    return;
+                origin = VisualTreeHelper.GetParent(origin);
+            }
+
+            if (Window.GetWindow(this) is not MainWindow mainWindow) return;
+
+            string sourcePage = "Главная";
+            DependencyObject parent = VisualTreeHelper.GetParent(this);
+            while (parent != null && parent is not MainPage && parent is not FavoritesPage && parent is not PlaylistDetailsPage && parent is not SearchPage)
+                parent = VisualTreeHelper.GetParent(parent);
+
+            if (parent is FavoritesPage) sourcePage = "Любимые";
+            else if (parent is PlaylistDetailsPage) sourcePage = "Плейлист";
+            else if (parent is SearchPage) sourcePage = "Поиск";
+
+            if (mainWindow.CurrentTrack == null || mainWindow.CurrentTrack.TrackId != TrackId)
+            {
+                Play_Click(PlayBtn, new RoutedEventArgs());
+            }
+
+            mainWindow.OpenNowPlaying(sourcePage);
+            e.Handled = true;
         }
 
         // ─────────────────────────────────────────────

@@ -19,6 +19,8 @@ namespace Rewind.Tabs.UsersTabs
             public Playlist Source { get; set; }
             public string Title => Source.Title;
             public int TrackCount => Source.PlaylistTracks?.Count ?? 0;
+            public int LikesCount => PlaylistAnalyticsService.GetLikesCount(Source.PlaylistID);
+            public int ListensCount => PlaylistAnalyticsService.GetListenersCount(Source.PlaylistID);
             public bool IsPrivate => Source.IsPrivate;
             public bool IsOwned { get; set; }
             public string GradStart { get; set; } = "#2AE876";
@@ -185,7 +187,7 @@ namespace Rewind.Tabs.UsersTabs
             });
             info.Children.Add(new TextBlock
             {
-                Text = $"{vm.TrackCount} треков",
+                Text = $"{vm.TrackCount} треков  •  ♥ {vm.LikesCount}  •  ▶ {vm.ListensCount}",
                 FontSize = 11,
                 FontFamily = (FontFamily)Application.Current.Resources["HeaderFont"],
                 Foreground = (Brush)Application.Current.Resources["TextSecondary"],
@@ -270,7 +272,7 @@ namespace Rewind.Tabs.UsersTabs
                 FontFamily = (FontFamily)Application.Current.Resources["HeaderFont"],
                 Foreground = (Brush)Application.Current.Resources["TextPrimary"]
             });
-            var meta = $"{vm.TrackCount} треков  •  {(vm.IsPrivate ? "🔒 Приватный" : "Публичный")}";
+            var meta = $"{vm.TrackCount} треков  •  {(vm.IsPrivate ? "🔒 Приватный" : "Публичный")}  •  ♥ {vm.LikesCount}  •  ▶ {vm.ListensCount}";
             if (!vm.IsOwned) meta += "  •  👤";
             info.Children.Add(new TextBlock
             {
@@ -312,8 +314,8 @@ namespace Rewind.Tabs.UsersTabs
         // ─────────────────────────────────────────────
         private void OpenPlaylist(PlaylistVM vm)
         {
-            // NavigationHelper.Navigate(new PlaylistDetailPage(vm.Source.PlaylistID));
-            MessageBox.Show($"Открываем: {vm.Title}", "Rewind");
+            if (Window.GetWindow(this) is MainWindow mainWindow)
+                mainWindow.OpenPlaylistDetails(vm.Source);
         }
 
         // ─────────────────────────────────────────────

@@ -26,6 +26,91 @@
         </Setter>
     </Style>
 
+    <!-- ToggleSwitch — красивый тумблер вместо стандартного чекбокса -->
+    <Style x:Key="ToggleSwitchStyle" TargetType="CheckBox">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="CheckBox">
+                    <Grid Width="44" Height="24">
+                        <!-- Дорожка -->
+                        <Border x:Name="Track" CornerRadius="12"
+                            Background="#DDDDD8" Width="44" Height="24"/>
+                        <!-- Кружок -->
+                        <Border x:Name="Thumb" Width="18" Height="18"
+                            CornerRadius="9" Background="White"
+                            HorizontalAlignment="Left" VerticalAlignment="Center"
+                            Margin="3,0,0,0">
+                            <Border.Effect>
+                                <DropShadowEffect BlurRadius="4" ShadowDepth="1"
+                                              Opacity="0.2" Direction="270"/>
+                            </Border.Effect>
+                        </Border>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="Track" Property="Background" Value="#38C96A"/>
+                            <Setter TargetName="Thumb" Property="Margin" Value="23,0,0,0"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- GreenSliderStyle — стильный слайдер под цвет приложения -->
+    <Style x:Key="GreenSliderStyle" TargetType="Slider">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Slider">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto" MinHeight="{TemplateBinding MinHeight}"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <Track x:Name="PART_Track" Grid.Row="1">
+                            <Track.DecreaseRepeatButton>
+                                <RepeatButton Command="Slider.DecreaseLarge">
+                                    <RepeatButton.Template>
+                                        <ControlTemplate TargetType="RepeatButton">
+                                            <Border Height="4" CornerRadius="2" Background="#38C96A"/>
+                                        </ControlTemplate>
+                                    </RepeatButton.Template>
+                                </RepeatButton>
+                            </Track.DecreaseRepeatButton>
+                            <Track.IncreaseRepeatButton>
+                                <RepeatButton Command="Slider.IncreaseLarge">
+                                    <RepeatButton.Template>
+                                        <ControlTemplate TargetType="RepeatButton">
+                                            <Border Height="4" CornerRadius="2" Background="#E0DFD9"/>
+                                        </ControlTemplate>
+                                    </RepeatButton.Template>
+                                </RepeatButton>
+                            </Track.IncreaseRepeatButton>
+                            <Track.Thumb>
+                                <Thumb>
+                                    <Thumb.Template>
+                                        <ControlTemplate TargetType="Thumb">
+                                            <Grid>
+                                                <Ellipse Width="18" Height="18" Fill="White">
+                                                    <Ellipse.Effect>
+                                                        <DropShadowEffect BlurRadius="6" ShadowDepth="2"
+                                                                      Opacity="0.2" Direction="270"/>
+                                                    </Ellipse.Effect>
+                                                </Ellipse>
+                                                <Ellipse Width="8" Height="8" Fill="#38C96A"/>
+                                            </Grid>
+                                        </ControlTemplate>
+                                    </Thumb.Template>
+                                </Thumb>
+                            </Track.Thumb>
+                        </Track>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    
     <!-- Активный элемент меню -->
     <Style x:Key="ActiveNavButtonStyle" TargetType="Button" BasedOn="{StaticResource NavButtonStyle}">
         <Setter Property="Background" Value="{DynamicResource ActiveCardBackground}"/>
@@ -153,7 +238,7 @@
                                 <RepeatButton Command="Slider.DecreaseLarge">
                                     <RepeatButton.Template>
                                         <ControlTemplate TargetType="RepeatButton">
-                                            <Border Height="3" Background="#E8462A" CornerRadius="2"/>
+                                            <Border Height="3" Background="{DynamicResource AccentColor}" CornerRadius="2"/>
                                         </ControlTemplate>
                                     </RepeatButton.Template>
                                 </RepeatButton>
@@ -162,7 +247,7 @@
                                 <Thumb>
                                     <Thumb.Template>
                                         <ControlTemplate TargetType="Thumb">
-                                            <Ellipse Width="12" Height="12" Fill="White" Stroke="{DynamicResource AccentColor}" StrokeThickness="2"/>
+                                            <Ellipse Width="12" Height="12" Fill="White" StrokeThickness="2"/>
                                         </ControlTemplate>
                                     </Thumb.Template>
                                 </Thumb>

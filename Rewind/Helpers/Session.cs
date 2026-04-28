@@ -150,6 +150,7 @@ namespace Rewind.Helpers
         private static readonly List<Playlist> _cachedPlaylists = new();
         private static readonly List<Playlist> _playlistsToAdd = new();
         private static readonly List<int> _playlistsToDel = new();
+        private static readonly List<(Playlist Playlist, int TrackId)> _playlistTracksToAdd = new();
 
         public static IReadOnlyList<Playlist> CachedPlaylists => _cachedPlaylists;
 
@@ -158,6 +159,7 @@ namespace Rewind.Helpers
             _cachedPlaylists.Clear();
             _playlistsToAdd.Clear();
             _playlistsToDel.Clear();
+            _playlistTracksToAdd.Clear();
             _cachedPlaylists.AddRange(playlistsFromDb);
             Playlists = _cachedPlaylists.Count;
         }
@@ -186,7 +188,27 @@ namespace Rewind.Helpers
                 _playlistsToAdd.Remove(pl);   // не дошло до БД — просто забываем
             else if (pl.PlaylistID > 0)
                 _playlistsToDel.Add(pl.PlaylistID);
+
+            _playlistTracksToAdd.RemoveAll(x => x.Playlist == pl || x.Playlist.PlaylistID == pl.PlaylistID);
             Playlists = _cachedPlaylists.Count;
+        }
+
+        /// <summary>Добавляет трек в плейлист в кеше (в БД уйдёт при Flush).</summary>
+        public static bool AddTrackToPlaylist(Playlist playlist, int trackId)
+        {
+            if (playlist == null || trackId <= 0) return false;
+
+            playlist.PlaylistTracks ??= new List<PlaylistTrack>();
+            if (playlist.PlaylistTracks.Any(pt => pt.TrackID == trackId)) return false;
+
+            playlist.PlaylistTracks.Add(new PlaylistTrack
+            {
+                PlaylistID = playlist.PlaylistID,
+                TrackID = trackId
+            });
+
+            _playlistTracksToAdd.Add((playlist, trackId));
+            return true;
         }
 
         // ─────────────────────────────────────────────
@@ -225,7 +247,16 @@ namespace Rewind.Helpers
                 foreach (var id in _playlistsToDel)
                     PlaylistService.DeletePlaylist(id);
 
-                // 5. Обновляем данные пользователя
+                // 5. Связи треков с плейлистами
+                foreach (var item in _playlistTracksToAdd.ToList())
+                {
+                    var playlistId = item.Playlist.PlaylistID;
+                    if (playlistId <= 0) continue;
+                    if (_playlistsToDel.Contains(playlistId)) continue;
+                    PlaylistService.AddTrackToPlaylist(playlistId, item.TrackId);
+                }
+
+                // 6. Обновляем данные пользователя
                 var userInDb = UserService.GetUserById(UserId);
                 if (userInDb != null)
                 {
@@ -233,7 +264,7 @@ namespace Rewind.Helpers
                     userInDb.Email = Email;
                     userInDb.ProfilePhotoPath = AvatarPath;
                     if (!string.IsNullOrWhiteSpace(Password))
-                        userInDb.PasswordHash = Password;
+                        userInDb.PasswordHash = PasswordHelper.HashPassword(Password);
                     UserService.UpdateUser(userInDb, userInDb);
                 }
 
@@ -241,6 +272,7 @@ namespace Rewind.Helpers
                 _removedInSession.Clear();
                 _playlistsToAdd.Clear();
                 _playlistsToDel.Clear();
+                _playlistTracksToAdd.Clear();
             }
             catch (Exception ex)
             {
@@ -255,19 +287,27 @@ namespace Rewind.Helpers
         public static void LoadFromDatabase()
         {
             if (UserId == 0) return;
+            try
+            {
+                var favTrackIds = FavoriteService.GetFavoritesByUser(UserId)
+                                                 .Select(t => t.TrackID)
+                                                 .ToList();
+                InitFavorites(favTrackIds);
 
-            var favTrackIds = FavoriteService.GetFavoritesByUser(UserId)
-                                             .Select(t => t.TrackID)
-                                             .ToList();
-            InitFavorites(favTrackIds);
+                var playlists = PlaylistService.GetPlaylistsByUser(UserId);
+                InitPlaylists(playlists);
 
-            var playlists = PlaylistService.GetPlaylistsByUser(UserId);
-            InitPlaylists(playlists);
-
-            var stats = UserStatisticsDto.GetUserStats(UserId);
-            Subscriptions = stats.SubscriptionsCount;
-            TracksListened = stats.TotalTracksListened;
-            Listened = stats.TotalTimeFormatted;
+                var stats = UserStatisticsDto.GetUserStats(UserId);
+                Subscriptions = stats.SubscriptionsCount;
+                TracksListened = stats.TotalTracksListened;
+                Listened = stats.TotalTimeFormatted;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[Session.Load] {ex.Message}");
+                InitFavorites(Array.Empty<int>());
+                InitPlaylists(Array.Empty<Playlist>());
+            }
         }
     }
 }

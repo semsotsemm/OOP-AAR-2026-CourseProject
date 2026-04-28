@@ -3,19 +3,26 @@ using Rewind.Contols;
 using System.Windows.Input;
 using System.Windows.Controls;
 using Rewind.Helpers;
+using System.Windows.Media;
 
 namespace Rewind.Tabs.UsersTabs
 {
     public partial class MainPage : UserControl
     {
         private readonly List<TrackItem> _trackItems = new();
+        private bool _showAllTracks;
+        private bool _settingsInitialized;
 
         public MainPage()
         {
             InitializeComponent();
 
             UpdateGreeting();
-            Loaded += (_, _) => LoadMusicFromFolder();
+            Loaded += (_, _) =>
+            {
+                LoadMusicFromFolder();
+                LoadPopularPlaylists();
+            };
         }
 
         private void UpdateGreeting()
@@ -34,6 +41,8 @@ namespace Rewind.Tabs.UsersTabs
                 _trackItems.Clear();
 
                 List<Track> tracks = TrackService.GetAllTracks();
+                if (!_showAllTracks)
+                    tracks = tracks.Take(7).ToList();
 
                 foreach (var track in tracks)
                 {
@@ -45,6 +54,31 @@ namespace Rewind.Tabs.UsersTabs
                 }
             }
             catch { }
+        }
+
+        private void LoadPopularPlaylists()
+        {
+            PopularPlaylistsContainer.Children.Clear();
+            var top = PlaylistAnalyticsService.GetTopPlaylists(8);
+            foreach (var playlist in top)
+            {
+                var likes = PlaylistAnalyticsService.GetLikesCount(playlist.PlaylistID);
+                var listens = PlaylistAnalyticsService.GetListenersCount(playlist.PlaylistID);
+                var card = new AlbumCard
+                {
+                    AlbumTitle = playlist.Title,
+                    Artist = $"♥ {likes}  •  ▶ {listens}",
+                    StartColor = (Color)ColorConverter.ConvertFromString("#11998e"),
+                    EndColor = (Color)ColorConverter.ConvertFromString("#38ef7d"),
+                    Cursor = Cursors.Hand
+                };
+                card.MouseLeftButtonDown += (_, _) =>
+                {
+                    if (Window.GetWindow(this) is MainWindow mainWindow)
+                        mainWindow.OpenPlaylistDetails(playlist);
+                };
+                PopularPlaylistsContainer.Children.Add(card);
+            }
         }
 
         private static string FormatDuration(double seconds)
@@ -64,6 +98,46 @@ namespace Rewind.Tabs.UsersTabs
         {
             if (Window.GetWindow(this) is MainWindow mainWindow)
                 mainWindow.PlayTrackFromContext(_trackItems[0], _trackItems);
+        }
+
+        private void ShowAllTracksBtn_Click(object sender, MouseButtonEventArgs e)
+        {
+            _showAllTracks = !_showAllTracks;
+            ShowAllTracksBtn.Text = _showAllTracks ? "Свернуть ↑" : "Все →";
+            LoadMusicFromFolder();
+        }
+
+        private void Bell_Click(object sender, MouseButtonEventArgs e)
+        {
+            NotificationsPanel.Visibility = NotificationsPanel.Visibility == Visibility.Visible
+                ? Visibility.Collapsed
+                : Visibility.Visible;
+
+            if (!_settingsInitialized)
+            {
+                if (Window.GetWindow(this) is MainWindow mainWindow)
+                {
+                    IslandEnabledToggle.IsChecked = mainWindow.IslandEnabled;
+                    IslandSizeSlider.Value = mainWindow.IslandScale;
+                    IslandOpacitySlider.Value = mainWindow.IslandOpacity;
+                }
+                _settingsInitialized = true;
+                ApplyIslandSettings();
+            }
+        }
+
+        private void IslandSettings_Changed(object sender, RoutedEventArgs e)
+            => ApplyIslandSettings();
+
+        private void ApplyIslandSettings()
+        {
+            if (Window.GetWindow(this) is MainWindow mainWindow)
+            {
+                mainWindow.UpdateIslandSettings(
+                    IslandEnabledToggle.IsChecked == true,
+                    IslandSizeSlider.Value,
+                    IslandOpacitySlider.Value);
+            }
         }
 
         public IReadOnlyList<TrackItem> GetTrackItems() => _trackItems;
