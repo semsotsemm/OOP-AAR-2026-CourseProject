@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Rewind"
+        xmlns:controls="clr-namespace:Rewind.Contols"
         mc:Ignorable="d"
         Title="Rewind"
         Icon="/Images/rewind_logo.png"
@@ -13,6 +14,10 @@
             <ColumnDefinition Width="240"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
 
         <!-- ==================== SIDEBAR ==================== -->
         <Border Grid.Column="0" Background="{DynamicResource BgSidebar}"
@@ -97,6 +102,12 @@
                 </StackPanel>
             </DockPanel>
         </Border>
-        <ContentControl x:Name="MainContentArea" Grid.Column="1" />
+        <ContentControl x:Name="MainContentArea" Grid.Column="1" Grid.Row="0" />
+        <controls:PlayerBar x:Name="GlobalPlayerBar"
+                            Grid.Column="1"
+                            Grid.Row="1"
+                            Height="100"
+                            Visibility="Collapsed"
+                            Panel.ZIndex="50"/>
     </Grid>
 </Window>

@@ -225,12 +225,5 @@
 
             </StackPanel>
         </ScrollViewer>
-        <!-- Плеер снизу -->
-        <local:PlayerBar x:Name="BottomPlayerBar"
-                       Grid.ColumnSpan="2"
-                       VerticalAlignment="Bottom"
-                       Visibility="Collapsed"
-                       Height="100"
-                       Panel.ZIndex="50"/>
     </Grid>
 </UserControl>

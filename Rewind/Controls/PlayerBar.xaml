@@ -28,14 +28,14 @@
 
                 <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,5">
                     <Button Content="⇄" Style="{StaticResource PlayerControlBtnStyle}"/>
-                    <Button Content="⏮" Style="{StaticResource PlayerControlBtnStyle}"/>
+                    <Button Content="⏮" Style="{StaticResource PlayerControlBtnStyle}" Click="PreviousButton_Click"/>
                     <Button Click="PlayButton_Click" Background="Transparent" BorderThickness="0" Margin="10,0">
                         <Border Width="40" Height="40" Background="White" CornerRadius="20">
                             <TextBlock Text="{Binding PlayPauseIcon, ElementName=thisPlayer}" 
                                        FontSize="16" Foreground="#1A1A18" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                     </Button>
-                    <Button Content="⏭" Style="{StaticResource PlayerControlBtnStyle}"/>
+                    <Button Content="⏭" Style="{StaticResource PlayerControlBtnStyle}" Click="NextButton_Click"/>
                     <Button Content="↺" Style="{StaticResource PlayerControlBtnStyle}"/>
                 </StackPanel>
 

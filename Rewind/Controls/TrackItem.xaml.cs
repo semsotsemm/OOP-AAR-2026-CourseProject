@@ -82,21 +82,20 @@ namespace Rewind.Contols
         {
             DependencyObject parent = VisualTreeHelper.GetParent(this);
 
-            // Ищем родителя, пока не упремся в потолок или не найдем одну из двух страниц
             while (parent != null && parent is not MainPage && parent is not FavoritesPage)
             {
                 parent = VisualTreeHelper.GetParent(parent);
             }
 
-            // Если нашли главную — вызываем у неё
+            if (Window.GetWindow(this) is not MainWindow mainWindow) return;
+
             if (parent is MainPage mainPage)
             {
-                mainPage.PlayMusic(FilePath, TrackName, ArtistName, DurationSeconds);
+                mainWindow.PlayTrackFromContext(this, mainPage.GetTrackItems());
             }
-            // Если нашли страницу лайков — вызываем у неё
             else if (parent is FavoritesPage favPage)
             {
-                favPage.PlayMusic(FilePath, TrackName, ArtistName, DurationSeconds);
+                mainWindow.PlayTrackFromContext(this, favPage.GetTrackItems());
             }
         }
         // ─────────────────────────────────────────────

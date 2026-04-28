@@ -6,6 +6,11 @@ namespace Rewind.Contols
 {
     public partial class PlayerBar : UserControl, INotifyPropertyChanged
     {
+        public event RoutedEventHandler PlayPauseClicked;
+        public event RoutedEventHandler PreviousClicked;
+        public event RoutedEventHandler NextClicked;
+        public event EventHandler<double> SeekRequested;
+
         public PlayerBar()
         {
             InitializeComponent();
@@ -83,6 +88,7 @@ namespace Rewind.Contols
         private void MusicSlider_PreviewMouseUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
             IsUserDragging = false;
+            SeekRequested?.Invoke(this, CurrentSeconds);
         }
         private void UpdateTextTimes()
         {
@@ -99,8 +105,17 @@ namespace Rewind.Contols
 
         private void PlayButton_Click(object sender, RoutedEventArgs e)
         {
-            // Логика смены иконки (событие прокидывается в MainWindow через Click в XAML)
-            PlayPauseIcon = PlayPauseIcon == "▶" ? "⏸" : "▶";
+            PlayPauseClicked?.Invoke(this, e);
+        }
+
+        private void PreviousButton_Click(object sender, RoutedEventArgs e)
+        {
+            PreviousClicked?.Invoke(this, e);
+        }
+
+        private void NextButton_Click(object sender, RoutedEventArgs e)
+        {
+            NextClicked?.Invoke(this, e);
         }
     }
 }

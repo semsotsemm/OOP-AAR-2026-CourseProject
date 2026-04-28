@@ -1,12 +1,8 @@
 ﻿using Rewind.Contols;
 using Rewind.Helpers;
-using System.Timers;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Threading;
 
 namespace Rewind.Tabs.UsersTabs
 {
@@ -18,13 +14,6 @@ namespace Rewind.Tabs.UsersTabs
         private string _activeFilter = "Все";
         private string _sortMode = "recent";
         private readonly List<TrackItem> _trackItems = new();
-        private readonly MediaPlayer _mediaPlayer = new MediaPlayer();
-        private readonly DispatcherTimer _timer;
-        public bool IsPlaying { get; private set; } = false;
-        private string _currentTrackTitle = "";
-        private double _currentTrackDuration = 0;
-        private TrackItem _currentTrackItem = null;
-        private IslandWindow _island;
 
         private static readonly string[] SortModes = { "recent", "az", "artist", "duration" };
         private static readonly string[] SortLabels = { "Недавние", "А → Я", "Исполнитель", "Длительность" };
@@ -52,77 +41,19 @@ namespace Rewind.Tabs.UsersTabs
             catch { }
         }
 
-        private void FavortiteWindow_StateChanged(object sender, EventArgs e)
-        {
-            var win = sender as Window;
-            if (win?.WindowState == WindowState.Minimized && IsPlaying) ShowIsland();
-            else if (win?.WindowState == WindowState.Normal) HideIsland();
-        }
         private void FavortitePage_Loaded(object sender, RoutedEventArgs e)
         {
-            var parentWindow = Window.GetWindow(this);
-            if (parentWindow != null)
-            {
-                parentWindow.StateChanged += FavortiteWindow_StateChanged;
-                parentWindow.Deactivated += (_, _) => { if (IsPlaying) ShowIsland(); };
-                parentWindow.Activated += (_, _) => HideIsland();
-            }
             LoadMusicFromFolder();
         }
-        private void ShowIsland()
-        {
-            if (!IsPlaying) return;
-            if (_island == null)
-            {
-                _island = new IslandWindow { Topmost = true, ShowInTaskbar = false };
-                _island.Closed += (_, _) => _island = null;
-            }
-            _island.TrackTitle.Text = _currentTrackTitle;
-            _island.Left = (SystemParameters.PrimaryScreenWidth - _island.Width) / 2;
-            _island.Top = 0;
-            _island.Show();
-        }
 
-        public void TogglePlayPause()
-        {
-            if (_mediaPlayer.Source == null) return;
-
-            if (IsPlaying)
-            {
-                _mediaPlayer.Pause();
-                IsPlaying = false;
-                BottomPlayerBar.PlayPauseIcon = "▶";
-                HideIsland(); // Если хочешь прятать остров на паузе
-            }
-            else
-            {
-                _mediaPlayer.Play();
-                IsPlaying = true;
-                BottomPlayerBar.PlayPauseIcon = "⏸";
-                // ShowIsland(); // Можно вызвать показ острова здесь
-            }
-        }
-        private void HideIsland() => _island?.Hide();
         public FavoritesPage()
         {
             InitializeComponent();
-
-            _timer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(250) };
-            _timer.Tick += Timer_Tick;
-
 
             this.Loaded += FavortitePage_Loaded;
             LoadFavorites();
             BuildGenreFilters();
             Render();
-        }
-
-        private void Timer_Tick(object sender, EventArgs e)
-        {
-            if (!IsPlaying || _mediaPlayer.Source == null) return;
-            if (!_mediaPlayer.NaturalDuration.HasTimeSpan) return;
-            if (!BottomPlayerBar.IsUserDragging)
-                BottomPlayerBar.CurrentSeconds = _mediaPlayer.Position.TotalSeconds;
         }
 
         // Метод для кнопки "Воспроизвести всё"
@@ -133,27 +64,12 @@ namespace Rewind.Tabs.UsersTabs
                 PlayTrack(_shown[0]);
             }
         }
+
         public void PlayMusic(string path, string title, string artist, double durationSeconds = 0)
         {
-            _currentTrackItem?.SetPlaying(false);
-            _currentTrackTitle = title;
-            _currentTrackDuration = durationSeconds;
-
-            _mediaPlayer.Open(new Uri(path));
-            _mediaPlayer.Play();
-            IsPlaying = true;
-            _timer.Start();
-
-            BottomPlayerBar.CurrentTrack = title;
-            BottomPlayerBar.CurrentArtist = artist;
-            BottomPlayerBar.Visibility = Visibility.Visible;
-            BottomPlayerBar.PlayPauseIcon = "⏸";
-
-            if (durationSeconds > 0)
-                BottomPlayerBar.TotalSeconds = durationSeconds;
-
-            _currentTrackItem = _trackItems.FirstOrDefault(t => t.FilePath == path);
-            _currentTrackItem?.SetPlaying(true);
+            var selected = _trackItems.FirstOrDefault(t => t.FilePath == path);
+            if (selected != null && Window.GetWindow(this) is MainWindow mainWindow)
+                mainWindow.PlayTrackFromContext(selected, _trackItems);
         }
 
         // Метод для переключения сортировки
@@ -246,6 +162,9 @@ namespace Rewind.Tabs.UsersTabs
         {
             _playingId = (_playingId == t.TrackID) ? null : t.TrackID;
             Render();
+            var selected = _trackItems.FirstOrDefault(i => i.TrackId == t.TrackID);
+            if (selected != null && Window.GetWindow(this) is MainWindow mainWindow)
+                mainWindow.PlayTrackFromContext(selected, _trackItems);
         }
 
         private void UpdateStats()
@@ -270,5 +189,6 @@ namespace Rewind.Tabs.UsersTabs
 
         private string FormatDuration(int sec) => $"{sec / 60}:{sec % 60:D2}";
         private void SearchBox_TextChanged(object sender, TextChangedEventArgs e) => Render();
+        public IReadOnlyList<TrackItem> GetTrackItems() => _trackItems;
     }
 }
