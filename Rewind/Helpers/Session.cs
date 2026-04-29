@@ -210,6 +210,17 @@ namespace Rewind.Helpers
             _playlistTracksToAdd.Add((playlist, trackId));
             return true;
         }
+        public static void AddListenedTrack(int trackId, double durationSeconds)
+        {
+            // 1. Обновляем счетчики текущего пользователя (для красоты в профиле)
+            TracksListened++;
+            Listened += (int)Math.Round(durationSeconds / 60.0);
+
+            // 2. Инкрементируем прослушивания в таблице Statistics для конкретного трека
+            // Мы вызываем метод сервиса напрямую, так как прослушивания обычно 
+            // записываются сразу, а не "пачкой" при выходе.
+            TrackService.IncrementPlayCount(trackId);
+        }
 
         // ─────────────────────────────────────────────
         //  История прослушивания

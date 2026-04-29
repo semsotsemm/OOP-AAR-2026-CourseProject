@@ -99,6 +99,7 @@ namespace Rewind.Contols
         // ─────────────────────────────────────────────
         private void Play_Click(object sender, RoutedEventArgs e)
         {
+            Session.AddListenedTrack(TrackId, DurationSeconds);
             DependencyObject parent = VisualTreeHelper.GetParent(this);
 
             while (parent != null && parent is not MainPage && parent is not FavoritesPage && parent is not PlaylistDetailsPage && parent is not SearchPage)

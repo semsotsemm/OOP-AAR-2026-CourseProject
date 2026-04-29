@@ -303,6 +303,25 @@ namespace Rewind.Helpers
                             .Where(t => t.ArtistID == artistId).ToList();
         }
 
+        public static Track? GetMostPopularTrack()
+        {
+            using var db = new AppDbContext();
+
+            return db.Tracks.Include(t => t.Artist).Include(t => t.Statistics).OrderByDescending(t => (t.Statistics.PlayCount + (t.Statistics.LikesCount * 10))).FirstOrDefault();
+        }
+        public static void IncrementPlayCount(int trackId)
+        {
+            using var db = new AppDbContext();
+
+            var stats = db.Statistics.FirstOrDefault(s => s.TrackID == trackId);
+
+            if (stats != null)
+            {
+                stats.PlayCount++;
+                db.SaveChanges();
+            }
+        }
+
         public static void AddTrack(Track track)
         {
             using var db = new AppDbContext();

@@ -12,6 +12,7 @@ namespace Rewind.Tabs.UsersTabs
         private readonly List<TrackItem> _trackItems = new();
         private bool _showAllTracks;
         private bool _settingsInitialized;
+        private Track? _featuredTrack;
 
         public MainPage()
         {
@@ -22,7 +23,34 @@ namespace Rewind.Tabs.UsersTabs
             {
                 LoadMusicFromFolder();
                 LoadPopularPlaylists();
+                LoadFeaturedTrack();
             };
+        }
+
+        private void LoadFeaturedTrack()
+        {
+            try
+            {
+                _featuredTrack = TrackService.GetMostPopularTrack();
+                if (_featuredTrack == null) return;
+
+                var artistName = UserService.GetUserById(_featuredTrack.ArtistID)?.Nickname ?? "Неизвестен";
+
+                FeaturedTrackTitle.Text = _featuredTrack.Title;
+                FeaturedTrackArtist.Text = $"{artistName} · {_featuredTrack.Statistics?.PlayCount ?? 0} прослушиваний";
+
+                if (!string.IsNullOrWhiteSpace(_featuredTrack.CoverPath))
+                {
+                    var cover = IconAssets.LoadBitmap(_featuredTrack.CoverPath);
+                    if (cover != null)
+                    {
+                        FeaturedTrackCover.Source = cover;
+                        FeaturedTrackCover.Width = 100;
+                        FeaturedTrackCover.Height = 100;
+                    }
+                }
+            }
+            catch { }
         }
 
         private void UpdateGreeting()
@@ -90,8 +118,28 @@ namespace Rewind.Tabs.UsersTabs
 
         private void FeaturedPlay_Click(object sender, MouseButtonEventArgs e)
         {
-            if (_trackItems.Count > 0) PlayFirst();
-            else MessageBox.Show("Нет треков");
+            if (_featuredTrack == null)
+            {
+                if (_trackItems.Count > 0) PlayFirst();
+                return;
+            }
+
+            string fullPath = System.IO.Path.Combine(
+                AppDomain.CurrentDomain.BaseDirectory, "MusicLibrary", _featuredTrack.FilePath);
+            string durStr = FormatDuration(_featuredTrack.Duration);
+            var artistName = UserService.GetUserById(_featuredTrack.ArtistID)?.Nickname ?? "";
+
+            var featuredItem = new TrackItem(
+                _featuredTrack.TrackID,
+                _featuredTrack.Title,
+                artistName,
+                durStr,
+                fullPath,
+                _featuredTrack.CoverPath,
+                _featuredTrack.Duration);
+
+            if (Window.GetWindow(this) is MainWindow mainWindow)
+                mainWindow.PlayTrackFromContext(featuredItem, _trackItems);
         }
 
         private void PlayFirst()

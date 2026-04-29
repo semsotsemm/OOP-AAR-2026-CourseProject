@@ -329,7 +329,7 @@
         <Setter Property="Foreground" Value="#1A1A18"/>
         <Setter Property="FontSize" Value="14"/>
         <Setter Property="Padding" Value="12,10"/>
-        <Setter Property="CaretBrush" Value="#E8462A"/>
+        <Setter Property="CaretBrush" Value="{StaticResource AccentColor}"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="TextBox">
@@ -463,7 +463,6 @@
     </Style>
 
 
-    <!-- Роли в меню регистрации -->
     <!-- Роли в меню регистрации -->
     <Style x:Key="RoleCardButtonStyle" TargetType="ListBoxItem">
         <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
