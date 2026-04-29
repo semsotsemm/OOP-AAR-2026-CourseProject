@@ -1,6 +1,7 @@
 ﻿<UserControl x:Class="Rewind.Contols.AlbumCard"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:help="clr-namespace:Rewind.Helpers"
              x:Name="thisCard">
 
     <Border Style="{StaticResource AlbumCardStyle}">
@@ -17,9 +18,7 @@
                         <GradientStop Color="{Binding EndColor, ElementName=thisCard}" Offset="1"/>
                     </LinearGradientBrush>
                 </Border.Background>
-                <TextBlock Text="♪" FontSize="36" Foreground="White"
-                           HorizontalAlignment="Center"
-                           VerticalAlignment="Center"/>
+                <Image Source="{help:Icon music_note.png}" Width="36" Height="36"/>
             </Border>
 
             <TextBlock Text="{Binding AlbumTitle, ElementName=thisCard}" 

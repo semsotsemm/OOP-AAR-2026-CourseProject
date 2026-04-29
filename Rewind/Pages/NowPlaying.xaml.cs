@@ -49,7 +49,7 @@ namespace Rewind.Pages
 
             TrackTitleText.Text = track.TrackName;
             TrackArtistText.Text = track.ArtistName;
-            PlayPauseBtn.Content = _host.IsPlaying ? "⏸" : "▶";
+            NowPlayingPausePlayIcon.Source = IconAssets.LoadBitmap(_host.IsPlaying ? "player_pause.png" : "player_play.png");
             CurrentTimeText.Text = FormatTime(_host.CurrentSeconds);
             TotalTimeText.Text = FormatTime(_host.TotalSeconds);
 
@@ -59,7 +59,7 @@ namespace Rewind.Pages
                 ProgressSlider.Value = Math.Clamp(_host.CurrentSeconds, 0, ProgressSlider.Maximum);
             }
 
-            LikeText.Text = Session.IsLiked(track.TrackId) ? "♥" : "♡";
+            LikeIcon.Source = IconAssets.LoadBitmap(Session.IsLiked(track.TrackId) ? "like_filled.png" : "like_outline.png");
             ApplyCover(track.CoverPath);
             RenderQueue();
         }

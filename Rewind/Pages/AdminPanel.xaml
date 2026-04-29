@@ -1,8 +1,9 @@
 ﻿<Window x:Class="Rewind.Pages.AdminPanel"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:help="clr-namespace:Rewind.Helpers"
         Title="Rewind — Администратор"
-        Icon="/Images/rewind_logo.png"
+        Icon="{help:Icon rewind_logo.png}"
         Height="780" Width="1280"
         WindowStartupLocation="CenterScreen"
         Background="#F5F4F0">

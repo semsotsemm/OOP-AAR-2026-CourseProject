@@ -50,9 +50,7 @@
                                 <Border Background="#2A2A28" CornerRadius="6"
                                 Padding="10,4" HorizontalAlignment="Left">
                                     <StackPanel Orientation="Horizontal">
-                                        <Path Data="M12 2a4 4 0 1 1 0 8 4 4 0 0 1 0-8zm0 10c5 0 8 2.24 8 4v1H4v-1c0-1.76 3-4 8-4z"
-                                      Fill="#888880" Stretch="Uniform" Width="11" Height="11"
-                                      VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                        <Image Source="{help:Icon nav_profile.png}" Width="11" Height="11" Margin="0,0,6,0"/>
                                         <TextBlock Text="{Binding Source={x:Static help:Session.UserRole}}"
                                            FontSize="11" FontWeight="SemiBold"
                                            Foreground="#888880" VerticalAlignment="Center"/>
@@ -422,7 +420,10 @@
 
                                 <Border Grid.Column="0" Background="White" CornerRadius="16" Padding="25" BorderBrush="#E0DFD9" BorderThickness="1">
                                     <StackPanel>
-                                        <TextBlock Text="🚀 Загрузить новый трек" FontWeight="Black" FontSize="18" Margin="0,0,0,20"/>
+                                        <StackPanel Orientation="Horizontal" Margin="0,0,0,20">
+                                            <Image Source="{help:Icon upload.png}" Width="18" Height="18" Margin="0,0,8,0"/>
+                                            <TextBlock Text="Загрузить новый трек" FontWeight="Black" FontSize="18"/>
+                                        </StackPanel>
 
                                         <TextBlock Text="Название трека" FontSize="12" FontWeight="Bold" Foreground="#888880" Margin="0,0,0,5"/>
                                         <TextBox x:Name="NewTrackName" Margin="0,0,0,15" Padding="10,8" Tag="Введите название..."/>
@@ -439,8 +440,7 @@
                                                     <Grid>
                                                         <Image x:Name="NewTrackCoverPreview" Stretch="UniformToFill"/>
                                                         <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" x:Name="CoverPlaceholder">
-                                                            <Path Data="M19 7v2.99s-1.99.01-2 0V7h-3s.01-1.99 0-2h3V2h2v3h3v2h-3zm-3 4V8h-3V5H5c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2v-8h-3zM5 19l3-4 2 3 3-4 4 5H5z" 
-                                                            Fill="#888880" Stretch="Uniform" Width="24" Height="24" Margin="0,0,0,5"/>
+                                                            <Image Source="{help:Icon image_add.png}" Width="24" Height="24" Margin="0,0,0,5"/>
                                                             <TextBlock Text="Выбрать" FontSize="10" Foreground="#888880" HorizontalAlignment="Center"/>
                                                         </StackPanel>
                                                     </Grid>
@@ -449,7 +449,12 @@
 
                                             <StackPanel Grid.Column="1" VerticalAlignment="Top">
                                                 <TextBlock Text="Аудиофайл" FontSize="12" FontWeight="Bold" Foreground="#888880" Margin="0,0,0,5"/>
-                                                <Button Content="🎵 Выбрать MP3/WAV" Click="SelectAudio_Click" Height="40" Background="#F5F4F0" BorderBrush="#E0DFD9" HorizontalContentAlignment="Left" Padding="15,0"/>
+                                                <Button Click="SelectAudio_Click" Height="40" Background="#F5F4F0" BorderBrush="#E0DFD9" HorizontalContentAlignment="Left" Padding="15,0">
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <Image Source="{help:Icon music_note.png}" Width="14" Height="14" Margin="0,0,6,0"/>
+                                                        <TextBlock Text="Выбрать MP3/WAV"/>
+                                                    </StackPanel>
+                                                </Button>
                                                 <TextBlock x:Name="AudioFileName" Text="Файл не выбран" FontSize="11" Foreground="#888880" Margin="5,5,0,0"/>
 
                                                 <TextBlock Text="Жанр" FontSize="12" FontWeight="Bold" Foreground="#888880" Margin="0,15,0,5"/>

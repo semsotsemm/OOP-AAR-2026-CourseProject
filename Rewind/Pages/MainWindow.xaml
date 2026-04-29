@@ -5,9 +5,10 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Rewind"
         xmlns:controls="clr-namespace:Rewind.Contols"
+        xmlns:help="clr-namespace:Rewind.Helpers"
         mc:Ignorable="d"
         Title="Rewind"
-        Icon="/Images/rewind_logo.png"
+        Icon="{help:Icon rewind_logo.png}"
         Height="780" Width="1280">
     <Grid>
         <Grid.ColumnDefinitions>
@@ -28,7 +29,7 @@
                 <StackPanel DockPanel.Dock="Top" Margin="24,26,24,24">
                     <StackPanel Orientation="Horizontal">
                         <Border Width="32" Height="32" CornerRadius="16" Margin="0,0,10,0">
-                            <Image Source="/Images/rewind_logo.png" Stretch="UniformToFill"/>
+                            <Image Source="{help:Icon rewind_logo.png}" Stretch="UniformToFill"/>
                         </Border>
                         <TextBlock Text="Rewind" VerticalAlignment="Center"
                                    FontWeight="Black" FontSize="16" Foreground="#1A1A18"
@@ -44,9 +45,7 @@
                     <Button Style="{StaticResource NavButtonStyle}" Click="ShowHome_Click" x:Name="BtnHome">
                         <StackPanel Orientation="Horizontal">
                             <Border Width="30" Height="30" CornerRadius="7" Background="#F0EFEB" Margin="0,0,10,0">
-                                <Path Data="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"
-                                      Fill="#888880" Stretch="Uniform" Width="14" Height="14"
-                                      HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                <Image x:Name="NavHomeIcon" Source="{help:Icon nav_home.png}" Width="14" Height="14"/>
                             </Border>
                             <TextBlock Text="Главная" FontSize="13" Foreground="#888880" VerticalAlignment="Center"/>
                         </StackPanel>
@@ -55,9 +54,7 @@
                     <Button Style="{StaticResource NavButtonStyle}" x:Name="BtnSearch" Click="ShowSearch_Click">
                         <StackPanel Orientation="Horizontal">
                             <Border Width="30" Height="30" CornerRadius="7" Background="#F0EFEB" Margin="0,0,10,0">
-                                <Path Data="M10 2a8 8 0 1 0 4.5 14.71l4.9 4.9 1.41-1.42-4.9-4.9A8 8 0 0 0 10 2zm0 2a6 6 0 1 1 0 12 6 6 0 0 1 0-12z"
-                                      Fill="#888880" Stretch="Uniform" Width="14" Height="14"
-                                      HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                <Image x:Name="NavSearchIcon" Source="{help:Icon nav_search.png}" Width="14" Height="14"/>
                             </Border>
                             <TextBlock Text="Поиск" FontSize="13" Foreground="#888880" VerticalAlignment="Center"/>
                         </StackPanel>
@@ -66,10 +63,7 @@
                     <Button Style="{StaticResource NavButtonStyle}" x:Name="BtnFavorites" Click="ShowLiked_Click">
                         <StackPanel Orientation="Horizontal">
                             <Border Width="30" Height="30" CornerRadius="7" Background="#F0EFEB" Margin="0,0,10,0">
-                                <Path Data="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
-                                      Stroke="#888880" StrokeThickness="1.5" Fill="Transparent"
-                                      Stretch="Uniform" Width="14" Height="14"
-                                      HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                <Image x:Name="NavFavoritesIcon" Source="{help:Icon nav_favorites.png}" Width="14" Height="14"/>
                             </Border>
                             <TextBlock Text="Любимые" FontSize="13" Foreground="#888880" VerticalAlignment="Center"/>
                         </StackPanel>
@@ -78,22 +72,17 @@
                     <Button x:Name="BtnPlaylists" Style="{StaticResource NavButtonStyle}" Click="ShowPlaylists_Click">
                         <StackPanel Orientation="Horizontal">
                             <Border Width="30" Height="30" CornerRadius="7" Background="#F0EFEB" Margin="0,0,10,0">
-                                <Path Data="M3 18h18 M3 12h18 M3 6h18"
-                                      Stroke="#888880" StrokeThickness="1.5" Fill="Transparent"
-                                      Stretch="Uniform" Width="14" Height="14"
-                                      HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                <Image x:Name="NavPlaylistsIcon" Source="{help:Icon nav_playlists.png}" Width="14" Height="14"/>
                             </Border>
                             <TextBlock Text="Плейлисты" FontSize="13" Foreground="#888880" VerticalAlignment="Center"/>
                         </StackPanel>
                     </Button>
 
                     <!-- ПРОФИЛЬ — активный -->
-                    <Button x:Name="BtnProfile" Style="{StaticResource ActiveNavButtonStyle}" Click="ShowProfile_Click">
+                    <Button x:Name="BtnProfile" Style="{DynamicResource ActiveNavButtonStyle}" Click="ShowProfile_Click">
                         <StackPanel Orientation="Horizontal">
                             <Border Width="30" Height="30" CornerRadius="7" Background="{DynamicResource AccentColor}" Margin="0,0,10,0">
-                                <Path Data="M12 2a4 4 0 1 1 0 8 4 4 0 0 1 0-8zm0 10c5 0 8 2.24 8 4v1H4v-1c0-1.76 3-4 8-4z"
-                                      Fill="White" Stretch="Uniform" Width="14" Height="14"
-                                      HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                <Image x:Name="NavProfileIcon" Source="{help:Icon nav_profile.png}" Width="14" Height="14"/>
                             </Border>
                             <TextBlock Text="Профиль" FontSize="13" FontWeight="Bold"
                                        Foreground="{DynamicResource AccentColor}" VerticalAlignment="Center"/>

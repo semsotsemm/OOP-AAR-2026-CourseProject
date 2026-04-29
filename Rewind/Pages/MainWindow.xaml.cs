@@ -75,7 +75,7 @@ namespace Rewind
             GlobalPlayerBar.CurrentArtist = selectedTrack.ArtistName;
             GlobalPlayerBar.TotalSeconds = selectedTrack.DurationSeconds > 0 ? selectedTrack.DurationSeconds : 0;
             GlobalPlayerBar.CurrentSeconds = 0;
-            GlobalPlayerBar.PlayPauseIcon = "⏸";
+            GlobalPlayerBar.PlayPauseIcon = IconAssets.GetAbsolutePath("player_pause.png");
             GlobalPlayerBar.Visibility = Visibility.Visible;
 
             if (_island != null)
@@ -95,14 +95,14 @@ namespace Rewind
             {
                 _mediaPlayer.Pause();
                 _isPlaying = false;
-                GlobalPlayerBar.PlayPauseIcon = "▶";
+                GlobalPlayerBar.PlayPauseIcon = IconAssets.GetAbsolutePath("player_play.png");
                 _island?.SetPlayPauseIcon(false);
             }
             else
             {
                 _mediaPlayer.Play();
                 _isPlaying = true;
-                GlobalPlayerBar.PlayPauseIcon = "⏸";
+                GlobalPlayerBar.PlayPauseIcon = IconAssets.GetAbsolutePath("player_pause.png");
                 _island?.SetPlayPauseIcon(true);
             }
             UpdateIslandVisibility();
@@ -144,7 +144,7 @@ namespace Rewind
         private void MediaPlayer_MediaEnded(object? sender, EventArgs e)
         {
             _isPlaying = false;
-            GlobalPlayerBar.PlayPauseIcon = "▶";
+            GlobalPlayerBar.PlayPauseIcon = IconAssets.GetAbsolutePath("player_play.png");
             NextTrack();
             UpdateIslandVisibility();
             PlaybackStateChanged?.Invoke();
@@ -302,13 +302,9 @@ namespace Rewind
                     {
                         iconBorder.Background = isActive ? activeAccent : inactiveBg;
 
-                        if (iconBorder.Child is Path iconPath)
+                        if (iconBorder.Child is Image iconImage)
                         {
-                            if (iconPath.Fill != null && iconPath.Fill != Brushes.Transparent)
-                                iconPath.Fill = isActive ? activeIconFill : inactiveText;
-
-                            if (iconPath.Stroke != null && iconPath.Stroke != Brushes.Transparent)
-                                iconPath.Stroke = isActive ? activeIconFill : inactiveText;
+                            iconImage.Opacity = isActive ? 1.0 : 0.75;
                         }
                     }
 

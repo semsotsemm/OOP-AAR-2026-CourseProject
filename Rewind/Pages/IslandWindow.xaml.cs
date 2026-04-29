@@ -2,6 +2,7 @@
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using Rewind.Helpers;
 
 namespace Rewind
 {
@@ -21,7 +22,7 @@ namespace Rewind
 
         public void SetPlayPauseIcon(bool isPlaying)
         {
-            PlayPauseBtn.Content = isPlaying ? "⏸" : "▶";
+            IslandPlayPauseIcon.Source = IconAssets.LoadBitmap(isPlaying ? "player_pause.png" : "player_play.png");
         }
 
         public void UpdateTrackInfo(string trackTitle, string artistName, string? coverPath)

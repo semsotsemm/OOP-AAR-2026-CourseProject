@@ -1,4 +1,5 @@
 ﻿using System.Windows;
+using Rewind.Helpers;
 using System.ComponentModel;
 using System.Windows.Controls;
 
@@ -41,7 +42,7 @@ namespace Rewind.Contols
 
         public static readonly DependencyProperty PlayPauseIconProperty =
             DependencyProperty.Register("PlayPauseIcon", typeof(string), typeof(PlayerBar),
-                new PropertyMetadata("⏸"));
+                new PropertyMetadata(IconAssets.GetAbsolutePath("player_pause.png")));
 
         // --- WRAPPERS ---
 

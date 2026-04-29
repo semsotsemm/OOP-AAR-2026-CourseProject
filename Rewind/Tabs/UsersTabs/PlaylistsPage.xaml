@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:help="clr-namespace:Rewind.Helpers"
              xmlns:local="clr-namespace:Rewind"
              mc:Ignorable="d"
              Height="auto" Width="auto">
@@ -56,9 +57,7 @@
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Text="🔍" FontSize="15"
-                                   VerticalAlignment="Center" Margin="0,0,10,0"
-                                   Foreground="{StaticResource TextMuted}"/>
+                        <Image Grid.Column="0" Source="{help:Icon nav_search.png}" Width="15" Height="15" Margin="0,0,10,0"/>
                         <TextBox Grid.Column="1" x:Name="SearchBox"
                                  Height="46" FontSize="14"
                                  FontFamily="{StaticResource BodyFont}"
@@ -99,16 +98,18 @@
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
                                 <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                                    <TextBlock Text="♥ Любимые треки" FontSize="16" FontWeight="Bold"
-                                               FontFamily="{StaticResource HeaderFont}" Foreground="White"/>
+                                    <StackPanel Orientation="Horizontal">
+                                        <Image Source="{help:Icon like_filled.png}" Width="16" Height="16" Margin="0,0,6,0"/>
+                                        <TextBlock Text="Любимые треки" FontSize="16" FontWeight="Bold"
+                                                   FontFamily="{StaticResource HeaderFont}" Foreground="White"/>
+                                    </StackPanel>
                                     <TextBlock x:Name="FavoritesCountText" Text="0 треков" FontSize="12"
                                                FontFamily="{StaticResource HeaderFont}"
                                                Foreground="#FFFFFF99" Margin="0,5,0,0"/>
                                 </StackPanel>
                                 <Border Grid.Column="1" Width="54" Height="54" CornerRadius="27"
                                         Background="#FFFFFF22" VerticalAlignment="Center">
-                                    <TextBlock Text="▶" FontSize="18" Foreground="White"
-                                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    <Image Source="{help:Icon player_play.png}" Width="18" Height="18"/>
                                 </Border>
                             </Grid>
                         </Border>
@@ -127,16 +128,18 @@
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
                                 <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                                    <TextBlock Text="🕐 Недавно слушали" FontSize="16" FontWeight="Bold"
-                                               FontFamily="{StaticResource HeaderFont}" Foreground="White"/>
+                                    <StackPanel Orientation="Horizontal">
+                                        <Image Source="{help:Icon clock.png}" Width="16" Height="16" Margin="0,0,6,0"/>
+                                        <TextBlock Text="Недавно слушали" FontSize="16" FontWeight="Bold"
+                                                   FontFamily="{StaticResource HeaderFont}" Foreground="White"/>
+                                    </StackPanel>
                                     <TextBlock Text="История воспроизведения" FontSize="12"
                                                FontFamily="{StaticResource HeaderFont}"
                                                Foreground="#FFFFFF99" Margin="0,5,0,0"/>
                                 </StackPanel>
                                 <Border Grid.Column="1" Width="54" Height="54" CornerRadius="27"
                                         Background="#FFFFFF22" VerticalAlignment="Center">
-                                    <TextBlock Text="▶" FontSize="18" Foreground="White"
-                                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    <Image Source="{help:Icon player_play.png}" Width="18" Height="18"/>
                                 </Border>
                             </Grid>
                         </Border>
@@ -158,8 +161,7 @@
                                 <Border.Background>
                                     <SolidColorBrush x:Name="GridViewBg" Color="#2AE876"/>
                                 </Border.Background>
-                                <TextBlock Text="⊞" FontSize="16" Foreground="White"
-                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                <Image Source="{help:Icon view_grid.png}" Width="16" Height="16"/>
                             </Border>
                             <Border x:Name="ViewList" Width="34" Height="34" CornerRadius="10"
                                     Cursor="Hand"
@@ -167,8 +169,7 @@
                                 <Border.Background>
                                     <SolidColorBrush x:Name="ListViewBg" Color="#F0EFEB"/>
                                 </Border.Background>
-                                <TextBlock Text="☰" FontSize="16" Foreground="{StaticResource TextSecondary}"
-                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                <Image Source="{help:Icon view_list.png}" Width="16" Height="16"/>
                             </Border>
                         </StackPanel>
                     </Grid>
@@ -215,8 +216,7 @@
                             BorderBrush="{StaticResource BorderColor}" BorderThickness="1.5"
                             Padding="40" Margin="0,10,0,0">
                         <StackPanel HorizontalAlignment="Center">
-                            <TextBlock Text="🎵" FontSize="48"
-                                       HorizontalAlignment="Center" Margin="0,0,0,16"/>
+                            <Image Source="{help:Icon music_note.png}" Width="48" Height="48" Margin="0,0,0,16"/>
                             <TextBlock Text="Нет плейлистов" FontSize="18" FontWeight="Bold"
                                        FontFamily="{StaticResource HeaderFont}"
                                        Foreground="{StaticResource TextPrimary}"
@@ -271,8 +271,7 @@
                             </LinearGradientBrush>
                         </Border.Background>
                         <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                            <TextBlock Text="🎵" FontSize="32"
-                                       HorizontalAlignment="Center"/>
+                            <Image Source="{help:Icon music_note.png}" Width="32" Height="32"/>
                             <TextBlock Text="Изменить" FontSize="11"
                                        FontFamily="{StaticResource HeaderFont}"
                                        Foreground="#FFFFFF99"

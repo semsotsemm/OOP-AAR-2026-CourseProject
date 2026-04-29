@@ -145,10 +145,7 @@ namespace Rewind.Contols
 
         private void RefreshLikeIcon(bool liked)
         {
-            LikeBtn.Text = liked ? "♥" : "♡";
-            LikeBtn.Foreground = liked
-                ? new SolidColorBrush((Color)ColorConverter.ConvertFromString("#2AE876"))
-                : new SolidColorBrush((Color)ColorConverter.ConvertFromString("#DEDEDA"));
+            LikeBtn.Source = IconAssets.LoadBitmap(liked ? "like_filled.png" : "like_outline.png");
         }
 
         private void AnimateLikeButton()
