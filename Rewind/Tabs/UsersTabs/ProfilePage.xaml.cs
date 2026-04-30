@@ -420,7 +420,6 @@ namespace Rewind.Controls
             if (Window.GetWindow(this) is not MainWindow mainWindow) return;
             mainWindow.UpdateIslandSettings(
                 IslandEnabledProfileToggle.IsChecked == true,
-                IslandSizeProfileSlider.Value,
                 IslandOpacityProfileSlider.Value);
         }
 

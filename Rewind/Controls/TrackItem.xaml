@@ -10,7 +10,7 @@
 
     <Border Style="{StaticResource TrackCardStyle}" MouseLeftButtonDown="TrackCard_MouseLeftButtonDown">
         <Border.Effect>
-            <DropShadowEffect Color="#000000" Opacity="0.04" BlurRadius="12" ShadowDepth="2"/>
+            <DropShadowEffect Color="#000000" Opacity="0.2" BlurRadius="12" ShadowDepth="2"/>
         </Border.Effect>
         <Grid>
             <Grid.ColumnDefinitions>
@@ -20,7 +20,7 @@
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
-            <Border Grid.Column="0" Width="52" Height="52" CornerRadius="10" Margin="0,0,14,0" Background="#F5F4F0">
+            <Border Grid.Column="0" Width="52" Height="52" CornerRadius="10" Margin="0,0,14,0" Background="{StaticResource BgCard}">
                 <Grid>
                     <Border CornerRadius="10">
                         <Border.Background>
@@ -34,24 +34,21 @@
             <!-- Название и артист -->
             <StackPanel Grid.Column="1" VerticalAlignment="Center">
                 <TextBlock x:Name="TrackTitleText" FontSize="14" FontWeight="SemiBold"
-                           Foreground="#1A1A18" TextTrimming="CharacterEllipsis"/>
-                <TextBlock x:Name="ArtistNameText" FontSize="12" Foreground="#888880"
+                           Foreground="{DynamicResource TextPrimary}" TextTrimming="CharacterEllipsis"/>
+                <TextBlock x:Name="ArtistNameText" FontSize="12" Foreground="{DynamicResource TextSecondary}"
                            Margin="0,3,0,0"/>
             </StackPanel>
-
            
 
             <!-- Длительность и плей -->
             <StackPanel Grid.Column="4" Orientation="Horizontal" VerticalAlignment="Center">
                 
-
                 <!-- Кнопка лайк -->
-                
                 <Border Grid.Column="3" Width="36" Height="36" CornerRadius="18"
-                        Background="#F0EFEB" Cursor="Hand" Margin="0,0,16,0"
+                        Background="{DynamicResource BgCardHover}" Cursor="Hand" Margin="0,0,16,0"
                         MouseLeftButtonDown="AddToPlaylist_Click">      
                     <TextBlock Text="+" FontSize="16" FontWeight="Bold"
-                               Foreground="#1A1A18"
+                               Foreground="{DynamicResource TextPrimary}"
                                HorizontalAlignment="Center" VerticalAlignment="Center"/>
                 </Border>
                 <Button x:Name="PlayBtn" Style="{StaticResource PlayButtonStyle}" Click="Play_Click"
@@ -86,7 +83,7 @@
                     </Rectangle.OpacityMask>
                 </Rectangle>
 
-                <TextBlock x:Name="DurationText" Text="0:00" FontSize="12" Foreground="#BBBBB5"
+                <TextBlock x:Name="DurationText" Text="0:00" FontSize="12" Foreground="{DynamicResource TextMuted}"
            VerticalAlignment="Center" Margin="0,0,0,0"/>
             </StackPanel>
         </Grid>

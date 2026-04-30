@@ -3,7 +3,6 @@ using Rewind.Contols;
 using System.Windows.Input;
 using System.Windows.Controls;
 using Rewind.Helpers;
-using Rewind.Contols;
 using System.Windows.Media;
 
 namespace Rewind.Tabs.UsersTabs
@@ -29,6 +28,9 @@ namespace Rewind.Tabs.UsersTabs
                 LoadPopularPlaylists();
                 LoadFeaturedTrack();
             };
+
+            OpacityLabel.Text = $"{IslandOpacitySlider.Value * 100:F0}%";
+
             Unloaded += (_, _) => TrackService.OnPlayCountUpdated -= Global_OnPlayCountUpdated;
         }
 
@@ -70,8 +72,8 @@ namespace Rewind.Tabs.UsersTabs
                     if (cover != null)
                     {
                         FeaturedTrackCover.Source = cover;
-                        FeaturedTrackCover.Width = 100;
-                        FeaturedTrackCover.Height = 100;
+                        FeaturedTrackCover.Width = 120;
+                        FeaturedTrackCover.Height = 120;
                     }
                 }
             }
@@ -134,10 +136,13 @@ namespace Rewind.Tabs.UsersTabs
         {
             PopularPlaylistsContainer.Children.Clear();
             var top = PlaylistAnalyticsService.GetTopPlaylists(8);
+
             foreach (var playlist in top)
             {
                 var likes = PlaylistAnalyticsService.GetLikesCount(playlist.PlaylistID);
                 var listens = PlaylistAnalyticsService.GetListenersCount(playlist.PlaylistID);
+
+                // Создаем карточку
                 var card = new AlbumCard
                 {
                     AlbumTitle = playlist.Title,
@@ -146,11 +151,25 @@ namespace Rewind.Tabs.UsersTabs
                     EndColor = (Color)ColorConverter.ConvertFromString("#38ef7d"),
                     Cursor = Cursors.Hand
                 };
+
+                if (!string.IsNullOrEmpty(playlist.CoverPath))
+                {
+                    try
+                    {
+                        card.CoverImageSource = new System.Windows.Media.Imaging.BitmapImage(new Uri(playlist.CoverPath, UriKind.RelativeOrAbsolute));
+                    }
+                    catch (Exception)
+                    {
+                        card.CoverImageSource = null;
+                    }
+                }
+
                 card.MouseLeftButtonDown += (_, _) =>
                 {
                     if (Window.GetWindow(this) is MainWindow mainWindow)
                         mainWindow.OpenPlaylistDetails(playlist);
                 };
+
                 PopularPlaylistsContainer.Children.Add(card);
             }
         }
@@ -213,7 +232,6 @@ namespace Rewind.Tabs.UsersTabs
                 if (Window.GetWindow(this) is MainWindow mainWindow)
                 {
                     IslandEnabledToggle.IsChecked = mainWindow.IslandEnabled;
-                    IslandSizeSlider.Value = mainWindow.IslandScale;
                     IslandOpacitySlider.Value = mainWindow.IslandOpacity;
                 }
                 _settingsInitialized = true;
@@ -222,7 +240,14 @@ namespace Rewind.Tabs.UsersTabs
         }
 
         private void IslandSettings_Changed(object sender, RoutedEventArgs e)
-            => ApplyIslandSettings();
+        {
+            if (OpacityLabel == null || IslandOpacitySlider == null)
+            {
+                return;
+            }
+            OpacityLabel.Text = $"{IslandOpacitySlider.Value * 100:F0}%";
+            ApplyIslandSettings();
+        }
 
         private void ApplyIslandSettings()
         {
@@ -230,7 +255,6 @@ namespace Rewind.Tabs.UsersTabs
             {
                 mainWindow.UpdateIslandSettings(
                     IslandEnabledToggle.IsChecked == true,
-                    IslandSizeSlider.Value,
                     IslandOpacitySlider.Value);
             }
         }

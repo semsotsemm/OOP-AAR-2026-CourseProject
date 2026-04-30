@@ -266,10 +266,9 @@ namespace Rewind
             HighlightActiveButton(BtnSearch);
         }
 
-        public void UpdateIslandSettings(bool enabled, double scale, double opacity)
+        public void UpdateIslandSettings(bool enabled, double opacity)
         {
             _islandEnabled = enabled;
-            _islandScale = Math.Clamp(scale, 0.8, 1.5);
             _islandOpacity = Math.Clamp(opacity, 0.25, 1.0);
 
             if (!_islandEnabled)

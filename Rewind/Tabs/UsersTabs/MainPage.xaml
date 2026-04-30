@@ -13,7 +13,7 @@
             <!-- ===== СТРАНИЦА: ГЛАВНАЯ ===== -->
             <ScrollViewer x:Name="PageHome" VerticalScrollBarVisibility="Auto"
                           HorizontalScrollBarVisibility="Disabled"
-                          Background="#F5F4F0" Visibility="Visible">
+                          Background="{StaticResource BgMain}" Visibility="Visible">
                 <StackPanel Margin="32,28,32,120">
 
                     <!-- Заголовок -->
@@ -25,13 +25,13 @@
                         <StackPanel Grid.Column="0">
                             <TextBlock x:Name="GreetingText" FontSize="13"
                                        FontFamily="{StaticResource HeaderFont}"
-                                       Foreground="#888880" Margin="0,0,0,6"/>
+                                       Foreground="{DynamicResource TextMuted}" Margin="0,0,0,6"/>
                             <TextBlock Text="Главная" FontSize="28" FontWeight="Bold"
-                                       FontFamily="{StaticResource HeaderFont}" Foreground="#1A1A18"/>
+                                       FontFamily="{StaticResource HeaderFont}" Foreground="{DynamicResource TextPrimary}"/>
                         </StackPanel>
 
                         <!-- Колокольчик — открывает уведомления -->
-                        <Border Grid.Column="1" Width="42" Height="42" Background="#FFFFFF"
+                        <Border Grid.Column="1" Width="42" Height="42" Background="{DynamicResource BgCardHover}"
                                 CornerRadius="21" Cursor="Hand" VerticalAlignment="Center" MouseLeftButtonDown="Bell_Click">
 
                             <Rectangle Grid.Column="2"
@@ -64,7 +64,7 @@
 
                                         <Rectangle Width="20" 
                                                    Height="20"
-                                                   Fill="White" 
+                                                   Fill="{DynamicResource BgCard}" 
                                                    VerticalAlignment="Center" 
                                                    Cursor="Hand"
                                                    Margin="0,0,6,0">
@@ -79,7 +79,7 @@
                                                    FontSize="14" 
                                                    FontWeight="Bold"
                                                    FontFamily="{StaticResource HeaderFont}" 
-                                                   Foreground="White"
+                                                   Foreground="{DynamicResource BgCard}"
                                                    VerticalAlignment="Center"/>
 
                                     </StackPanel>
@@ -93,7 +93,7 @@
                                            FontFamily="{StaticResource HeaderFont}"
                                            Foreground="White" Margin="0,6,0,16"/>
                                 <StackPanel Orientation="Horizontal">
-                                    <Border Background="White" CornerRadius="20" Padding="18,8" Cursor="Hand"
+                                    <Border Background="{DynamicResource BgCard}" CornerRadius="20" Padding="18,8" Cursor="Hand"
                                             MouseLeftButtonDown="FeaturedPlay_Click">
                                         <StackPanel Orientation="Horizontal">
 
@@ -114,19 +114,16 @@
                                                        Foreground="{StaticResource AccentColor}" VerticalAlignment="Center"/>
                                         </StackPanel>
                                     </Border>
-                                    <Border Background="{StaticResource PrimaryColor}" CornerRadius="20"
-                        Padding="14,8" Margin="10,0,0,0" Cursor="Hand">
-                                        <StackPanel Orientation="Horizontal">
-                                            <Image Source="{help:Icon like_outline.png}" Width="13" Height="13" Margin="0,0,4,0"/>
-                                            <TextBlock Text="В любимые" FontSize="13" Foreground="White"
-                                   FontFamily="{StaticResource HeaderFont}"/>
-                                        </StackPanel>
-                                    </Border>
                                 </StackPanel>
                             </StackPanel>
-                            <Border Grid.Column="1" Width="120" Height="120" CornerRadius="16" VerticalAlignment="Center">
-                                <Image x:Name="FeaturedTrackCover" Source="{help:Icon music_note.png}" Width="48" Height="48"/>
-                            </Border>
+                            <Grid Grid.Column="1">
+                                <Border Width="120" Height="120" CornerRadius="16" VerticalAlignment="Center" ClipToBounds="True">
+                                    <Image x:Name="FeaturedTrackCover" 
+                                           Source="{help:Icon music_note.png}" 
+                                           Width="120" Height="120" 
+                                           Stretch="UniformToFill"/>
+                                </Border>
+                            </Grid>
                         </Grid>
                     </Border>
                     
@@ -134,8 +131,8 @@
                     <StackPanel Margin="0,0,0,28">
                         <Grid Margin="0,0,0,16">
                             <TextBlock Text="Рекомендации для вас" FontSize="20" FontWeight="Bold"
-                                       Foreground="#1A1A18" FontFamily="{StaticResource HeaderFont}"/>
-                            <TextBlock x:Name="ShowAllTracksBtn" Text="Все →" FontSize="13" Foreground="{StaticResource AccentDark}"
+                                       Foreground="{DynamicResource TextPrimary}" FontFamily="{StaticResource HeaderFont}"/>
+                            <TextBlock x:Name="ShowAllTracksBtn" Text="Все →" FontSize="13" Foreground="{DynamicResource AccentDark}"
                                        FontFamily="{StaticResource HeaderFont}"
                                        HorizontalAlignment="Right" VerticalAlignment="Center" Cursor="Hand"
                                        MouseLeftButtonDown="ShowAllTracksBtn_Click"/>
@@ -147,7 +144,7 @@
                     <StackPanel>
                         <Grid Margin="0,0,0,16">
                             <TextBlock Text="Популярные плейлисты" FontSize="20" FontWeight="Bold"
-                                       Foreground="#1A1A18" FontFamily="{StaticResource HeaderFont}"/>
+                                       Foreground="{DynamicResource TextPrimary}" FontFamily="{StaticResource HeaderFont}"/>
                         </Grid>
                         <ScrollViewer HorizontalScrollBarVisibility="Auto"
                                       VerticalScrollBarVisibility="Hidden" Height="210">
@@ -160,7 +157,7 @@
             
             
             <Border x:Name="NotificationsPanel" Visibility="Collapsed"
-                            Background="#FFFFFF"
+                            Background="{DynamicResource BgCard}"
                             CornerRadius="20"
                             BorderBrush="#E8E7E1"
                             BorderThickness="1"
@@ -175,13 +172,13 @@
                 <StackPanel>
 
                     <!-- Шапка -->
-                    <Border Background="#1A1A18" CornerRadius="20,20,0,0">
+                    <Border Background="{DynamicResource BgMain}" CornerRadius="20,20,0,0">
                         <Grid Margin="20,16,20,16">
                             <StackPanel>
                                 <StackPanel Orientation="Horizontal">
                                     <Image Source="{help:Icon bell.png}" Width="14" Height="14" Margin="0,0,6,0"/>
                                     <TextBlock Text="Центр уведомлений" FontSize="14" FontWeight="Bold"
-                                                       FontFamily="{StaticResource HeaderFont}" Foreground="White"/>
+                                                       FontFamily="{StaticResource HeaderFont}" Foreground="{DynamicResource TextPrimary}"/>
                                 </StackPanel>
                                 <TextBlock Text="Настройки и интерфейс" FontSize="11"
                                                    FontFamily="{StaticResource HeaderFont}"
@@ -196,7 +193,7 @@
                         <!-- РАЗДЕЛ: Уведомления -->
                         <TextBlock Text="УВЕДОМЛЕНИЯ" FontSize="10" FontWeight="Bold"
                                            FontFamily="{StaticResource HeaderFont}"
-                                           Foreground="#B0AFA8" Margin="0,0,0,12"/>
+                                           Foreground="{DynamicResource TextMuted}" Margin="0,0,0,12"/>
 
                         <!-- Новые треки -->
                         <Grid Margin="0,0,0,14">
@@ -206,9 +203,9 @@
                             </Grid.ColumnDefinitions>
                             <StackPanel Grid.Column="0" VerticalAlignment="Center">
                                 <TextBlock Text="Новые треки от авторов" FontSize="13" FontWeight="SemiBold"
-                               FontFamily="{StaticResource HeaderFont}" Foreground="#1A1A18"/>
+                               FontFamily="{StaticResource HeaderFont}" Foreground="{DynamicResource TextPrimary}"/>
                                 <TextBlock Text="Получать оповещения о релизах" FontSize="11"
-                               FontFamily="{StaticResource HeaderFont}" Foreground="#AAAAAA"/>
+                               FontFamily="{StaticResource HeaderFont}" Foreground="{DynamicResource TextMuted}"/>
                             </StackPanel>
                             <CheckBox x:Name="NotifNewTracks" Grid.Column="1"
                           IsChecked="True" VerticalAlignment="Center"
@@ -223,39 +220,22 @@
                             </Grid.ColumnDefinitions>
                             <StackPanel Grid.Column="0" VerticalAlignment="Center">
                                 <TextBlock Text="Push-уведомления" FontSize="13" FontWeight="SemiBold"
-                               FontFamily="{StaticResource HeaderFont}" Foreground="#1A1A18"/>
+                               FontFamily="{StaticResource HeaderFont}" Foreground="{DynamicResource TextPrimary}"/>
                                 <TextBlock Text="На устройство в реальном времени" FontSize="11"
-                               FontFamily="{StaticResource HeaderFont}" Foreground="#AAAAAA"/>
+                               FontFamily="{StaticResource HeaderFont}" Foreground="{DynamicResource TextMuted}"/>
                             </StackPanel>
                             <CheckBox x:Name="NotifPush" Grid.Column="1"
                           IsChecked="True" VerticalAlignment="Center"
                           Style="{StaticResource ToggleSwitchStyle}"/>
                         </Grid>
 
-                        <!-- Email -->
-                        <Grid Margin="0,0,0,4">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                            <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                                <TextBlock Text="Email-рассылка" FontSize="13" FontWeight="SemiBold"
-                               FontFamily="{StaticResource HeaderFont}" Foreground="#1A1A18"/>
-                                <TextBlock Text="Дайджест и новинки на почту" FontSize="11"
-                               FontFamily="{StaticResource HeaderFont}" Foreground="#AAAAAA"/>
-                            </StackPanel>
-                            <CheckBox x:Name="NotifEmail" Grid.Column="1"
-                          IsChecked="True" VerticalAlignment="Center"
-                          Style="{StaticResource ToggleSwitchStyle}"/>
-                        </Grid>
-
                         <!-- Разделитель -->
-                        <Border Height="1" Background="#EEEDE8" Margin="0,16,0,16"/>
+                        <Border Height="1" Background="{DynamicResource TextMuted}" Margin="0,16,0,16"/>
 
                         <!-- РАЗДЕЛ: Динамический остров -->
                         <TextBlock Text="ДИНАМИЧЕСКИЙ ОСТРОВ" FontSize="10" FontWeight="Bold"
                        FontFamily="{StaticResource HeaderFont}"
-                       Foreground="#B0AFA8" Margin="0,0,0,12"/>
+                       Foreground="{DynamicResource TextMuted}" Margin="0,0,0,12"/>
 
                         <!-- Включить/выключить -->
                         <Grid Margin="0,0,0,20">
@@ -265,42 +245,26 @@
                             </Grid.ColumnDefinitions>
                             <StackPanel Grid.Column="0" VerticalAlignment="Center">
                                 <TextBlock Text="Показывать остров" FontSize="13" FontWeight="SemiBold"
-                               FontFamily="{StaticResource HeaderFont}" Foreground="#1A1A18"/>
+                               FontFamily="{StaticResource HeaderFont}" Foreground="{DynamicResource TextPrimary}"/>
                                 <TextBlock Text="Мини-плеер поверх экрана" FontSize="11"
-                               FontFamily="{StaticResource HeaderFont}" Foreground="#AAAAAA"/>
+                               FontFamily="{StaticResource HeaderFont}" Foreground="{DynamicResource TextMuted}"/>
                             </StackPanel>
                             <CheckBox x:Name="IslandEnabledToggle" Grid.Column="1"
-                          IsChecked="True" VerticalAlignment="Center"
-                          Style="{StaticResource ToggleSwitchStyle}"
-                          Checked="IslandSettings_Changed"
-                          Unchecked="IslandSettings_Changed"/>
+                                      IsChecked="True" VerticalAlignment="Center"
+                                      Style="{StaticResource ToggleSwitchStyle}"
+                                      Checked="IslandSettings_Changed"
+                                      Unchecked="IslandSettings_Changed"/>
                         </Grid>
-
-                        <!-- Размер -->
-                        <StackPanel Margin="0,0,0,16">
-                            <Grid Margin="0,0,0,8">
-                                <TextBlock Text="Размер" FontSize="13" FontWeight="SemiBold"
-                               FontFamily="{StaticResource HeaderFont}" Foreground="#1A1A18"/>
-                                <TextBlock x:Name="SizeLabel" Text="100%" FontSize="11"
-                               FontFamily="{StaticResource HeaderFont}"
-                               Foreground="{StaticResource AccentDark}"
-                               HorizontalAlignment="Right" VerticalAlignment="Center"/>
-                            </Grid>
-                            <Slider x:Name="IslandSizeSlider"
-                        Minimum="0.8" Maximum="1.5" Value="1.0"
-                        Style="{StaticResource GreenSliderStyle}"
-                        ValueChanged="IslandSettings_Changed"/>
-                        </StackPanel>
 
                         <!-- Прозрачность -->
                         <StackPanel>
                             <Grid Margin="0,0,0,8">
                                 <TextBlock Text="Прозрачность" FontSize="13" FontWeight="SemiBold"
-                               FontFamily="{StaticResource HeaderFont}" Foreground="#1A1A18"/>
+                               FontFamily="{StaticResource HeaderFont}" Foreground="{DynamicResource TextPrimary}"/>
                                 <TextBlock x:Name="OpacityLabel" Text="100%" FontSize="11"
-                               FontFamily="{StaticResource HeaderFont}"
-                               Foreground="{StaticResource AccentDark}"
-                               HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                       FontFamily="{StaticResource HeaderFont}"
+                                       Foreground="{DynamicResource AccentDark}"
+                                       HorizontalAlignment="Right" VerticalAlignment="Center"/>
                             </Grid>
                             <Slider x:Name="IslandOpacitySlider"
                         Minimum="0.25" Maximum="1.0" Value="1.0"

@@ -312,8 +312,8 @@ namespace Rewind.Contols
         public void SetPlaying(bool isPlaying)
         {
             TrackTitleText.Foreground = isPlaying
-                ? new SolidColorBrush((Color)ColorConverter.ConvertFromString("#2AE876"))
-                : new SolidColorBrush((Color)ColorConverter.ConvertFromString("#1A1A18"));
+                ? (SolidColorBrush)Application.Current.Resources["AccentColor"]
+                : (SolidColorBrush)Application.Current.Resources["TextPrimary"];
         }
     }
 }

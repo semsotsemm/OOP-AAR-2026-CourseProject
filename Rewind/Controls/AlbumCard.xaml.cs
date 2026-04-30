@@ -46,5 +46,19 @@ namespace Rewind.Contols
         }
         public static readonly DependencyProperty EndColorProperty =
             DependencyProperty.Register("EndColor", typeof(Color), typeof(AlbumCard), new PropertyMetadata(Color.FromRgb(118, 75, 162)));
+
+        // Обложка
+        public ImageSource CoverImageSource
+        {
+            get { return (ImageSource)GetValue(CoverImageSourceProperty); }
+            set { SetValue(CoverImageSourceProperty, value); }
+        }
+
+        public static readonly DependencyProperty CoverImageSourceProperty =
+          DependencyProperty.Register(
+              nameof(CoverImageSource),
+              typeof(ImageSource),
+              typeof(AlbumCard),
+              new PropertyMetadata(null));
     }
 }

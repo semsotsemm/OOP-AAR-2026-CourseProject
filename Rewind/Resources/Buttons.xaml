@@ -76,7 +76,7 @@
                                 <RepeatButton Command="Slider.DecreaseLarge">
                                     <RepeatButton.Template>
                                         <ControlTemplate TargetType="RepeatButton">
-                                            <Border Height="4" CornerRadius="2" Background="#38C96A"/>
+                                            <Border Height="4" CornerRadius="2" Background="{DynamicResource AccentColor}"/>
                                         </ControlTemplate>
                                     </RepeatButton.Template>
                                 </RepeatButton>
@@ -85,7 +85,7 @@
                                 <RepeatButton Command="Slider.IncreaseLarge">
                                     <RepeatButton.Template>
                                         <ControlTemplate TargetType="RepeatButton">
-                                            <Border Height="4" CornerRadius="2" Background="#E0DFD9"/>
+                                            <Border Height="4" CornerRadius="2" Background="{DynamicResource BgMain}"/>
                                         </ControlTemplate>
                                     </RepeatButton.Template>
                                 </RepeatButton>
@@ -95,13 +95,13 @@
                                     <Thumb.Template>
                                         <ControlTemplate TargetType="Thumb">
                                             <Grid>
-                                                <Ellipse Width="18" Height="18" Fill="White">
+                                                <Ellipse Width="18" Height="18" Fill="{DynamicResource BgMain}">
                                                     <Ellipse.Effect>
                                                         <DropShadowEffect BlurRadius="6" ShadowDepth="2"
                                                                       Opacity="0.2" Direction="270"/>
                                                     </Ellipse.Effect>
                                                 </Ellipse>
-                                                <Ellipse Width="8" Height="8" Fill="#38C96A"/>
+                                                <Ellipse Width="8" Height="8" Fill="{DynamicResource AccentColor}"/>
                                             </Grid>
                                         </ControlTemplate>
                                     </Thumb.Template>
