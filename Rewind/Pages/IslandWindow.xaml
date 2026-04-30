@@ -32,7 +32,7 @@
                         VerticalAlignment="Center" Background="#FF333333">
                     <Grid>
                         <Image Source="{help:Icon music_note.png}" Width="18" Height="18" Opacity="0.4"/>
-                        <Image x:Name="AlbumArt" Stretch="UniformToFill" RenderOptions.BitmapScalingMode="NearestNeighbor">
+                        <Image x:Name="AlbumArt" Stretch="UniformToFill" RenderOptions.BitmapScalingMode="Fant">
                             <Image.Clip>
                                 <RectangleGeometry Rect="0,0,45,45" RadiusX="8" RadiusY="8"/>
                             </Image.Clip>

@@ -106,6 +106,7 @@ namespace Rewind.Contols
 
         private void PlayButton_Click(object sender, RoutedEventArgs e)
         {
+            Session._isPlaing = !Session._isPlaing;
             PlayPauseClicked?.Invoke(this, e);
         }
 

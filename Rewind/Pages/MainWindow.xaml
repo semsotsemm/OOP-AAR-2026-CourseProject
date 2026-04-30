@@ -45,7 +45,17 @@
                     <Button Style="{StaticResource NavButtonStyle}" Click="ShowHome_Click" x:Name="BtnHome">
                         <StackPanel Orientation="Horizontal">
                             <Border Width="30" Height="30" CornerRadius="7" Background="#F0EFEB" Margin="0,0,10,0">
-                                <Image x:Name="NavHomeIcon" Source="{help:Icon nav_home.png}" Width="14" Height="14"/>
+                                <Rectangle x:Name="NavHomeIcon" 
+                                           Width="20" 
+                                           Height="20"
+                                           Fill="{StaticResource AccentColor}" 
+                                           VerticalAlignment="Center" 
+                                           Cursor="Hand">
+                                    <Rectangle.OpacityMask>
+                                        <ImageBrush ImageSource="{help:Icon nav_home.png}" 
+                                                    Stretch="Uniform"/>
+                                    </Rectangle.OpacityMask>
+                                </Rectangle>
                             </Border>
                             <TextBlock Text="Главная" FontSize="13" Foreground="#888880" VerticalAlignment="Center"/>
                         </StackPanel>
@@ -54,7 +64,17 @@
                     <Button Style="{StaticResource NavButtonStyle}" x:Name="BtnSearch" Click="ShowSearch_Click">
                         <StackPanel Orientation="Horizontal">
                             <Border Width="30" Height="30" CornerRadius="7" Background="#F0EFEB" Margin="0,0,10,0">
-                                <Image x:Name="NavSearchIcon" Source="{help:Icon nav_search.png}" Width="14" Height="14"/>
+                                <Rectangle x:Name="NavSearchIcon" 
+                                           Width="16" 
+                                           Height="16"
+                                           Fill="{StaticResource AccentColor}" 
+                                           VerticalAlignment="Center" 
+                                           Cursor="Hand">
+                                    <Rectangle.OpacityMask>
+                                        <ImageBrush ImageSource="{help:Icon nav_search.png}" 
+                                                    Stretch="Uniform"/>
+                                    </Rectangle.OpacityMask>
+                                </Rectangle>
                             </Border>
                             <TextBlock Text="Поиск" FontSize="13" Foreground="#888880" VerticalAlignment="Center"/>
                         </StackPanel>
@@ -63,7 +83,17 @@
                     <Button Style="{StaticResource NavButtonStyle}" x:Name="BtnFavorites" Click="ShowLiked_Click">
                         <StackPanel Orientation="Horizontal">
                             <Border Width="30" Height="30" CornerRadius="7" Background="#F0EFEB" Margin="0,0,10,0">
-                                <Image x:Name="NavFavoritesIcon" Source="{help:Icon nav_favorites.png}" Width="14" Height="14"/>
+                                <Rectangle x:Name="NavFavoritesIcon" 
+                                           Width="20" 
+                                           Height="20"
+                                           Fill="{StaticResource AccentColor}" 
+                                           VerticalAlignment="Center" 
+                                           Cursor="Hand">
+                                    <Rectangle.OpacityMask>
+                                        <ImageBrush ImageSource="{help:Icon nav_favorites.png}" 
+                                                    Stretch="Uniform"/>
+                                    </Rectangle.OpacityMask>
+                                </Rectangle>
                             </Border>
                             <TextBlock Text="Любимые" FontSize="13" Foreground="#888880" VerticalAlignment="Center"/>
                         </StackPanel>
@@ -72,7 +102,17 @@
                     <Button x:Name="BtnPlaylists" Style="{StaticResource NavButtonStyle}" Click="ShowPlaylists_Click">
                         <StackPanel Orientation="Horizontal">
                             <Border Width="30" Height="30" CornerRadius="7" Background="#F0EFEB" Margin="0,0,10,0">
-                                <Image x:Name="NavPlaylistsIcon" Source="{help:Icon nav_playlists.png}" Width="14" Height="14"/>
+                                <Rectangle x:Name="NavPlaylistsIcon" 
+                                           Width="20" 
+                                           Height="20"
+                                           Fill="{StaticResource AccentColor}" 
+                                           VerticalAlignment="Center" 
+                                           Cursor="Hand">
+                                    <Rectangle.OpacityMask>
+                                        <ImageBrush ImageSource="{help:Icon nav_playlists.png}" 
+                                                    Stretch="Uniform"/>
+                                    </Rectangle.OpacityMask>
+                                </Rectangle>
                             </Border>
                             <TextBlock Text="Плейлисты" FontSize="13" Foreground="#888880" VerticalAlignment="Center"/>
                         </StackPanel>
@@ -82,7 +122,17 @@
                     <Button x:Name="BtnProfile" Style="{DynamicResource ActiveNavButtonStyle}" Click="ShowProfile_Click">
                         <StackPanel Orientation="Horizontal">
                             <Border Width="30" Height="30" CornerRadius="7" Background="{DynamicResource AccentColor}" Margin="0,0,10,0">
-                                <Image x:Name="NavProfileIcon" Source="{help:Icon nav_profile.png}" Width="14" Height="14"/>
+                                    <Rectangle x:Name="NavProfileIcon" 
+                                               Width="20" 
+                                               Height="20"
+                                               Fill="{StaticResource AccentColor}" 
+                                               VerticalAlignment="Center" 
+                                               Cursor="Hand">
+                                    <Rectangle.OpacityMask>
+                                        <ImageBrush ImageSource="{help:Icon nav_profile.png}" 
+                                                    Stretch="Uniform"/>
+                                    </Rectangle.OpacityMask>
+                                </Rectangle>
                             </Border>
                             <TextBlock Text="Профиль" FontSize="13" FontWeight="Bold"
                                        Foreground="{DynamicResource AccentColor}" VerticalAlignment="Center"/>

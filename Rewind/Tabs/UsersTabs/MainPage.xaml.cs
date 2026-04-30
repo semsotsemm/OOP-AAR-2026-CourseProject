@@ -3,6 +3,7 @@ using Rewind.Contols;
 using System.Windows.Input;
 using System.Windows.Controls;
 using Rewind.Helpers;
+using Rewind.Contols;
 using System.Windows.Media;
 
 namespace Rewind.Tabs.UsersTabs
@@ -19,25 +20,49 @@ namespace Rewind.Tabs.UsersTabs
             InitializeComponent();
 
             UpdateGreeting();
+            
+            TrackService.OnPlayCountUpdated += Global_OnPlayCountUpdated;
+
             Loaded += (_, _) =>
             {
                 LoadMusicFromFolder();
                 LoadPopularPlaylists();
                 LoadFeaturedTrack();
             };
+            Unloaded += (_, _) => TrackService.OnPlayCountUpdated -= Global_OnPlayCountUpdated;
+        }
+
+        private void Global_OnPlayCountUpdated(int trackId, int newCount)
+        {
+            // Если обновился именно тот трек, который сейчас "в топе" на экране
+            if (_featuredTrack != null && _featuredTrack.TrackID == trackId)
+            {
+                Dispatcher.Invoke(() =>
+                {
+                    // Обновляем данные в объекте и UI
+                    if (_featuredTrack.Statistics != null)
+                        _featuredTrack.Statistics.PlayCount = newCount;
+
+                    UpdateFeaturedTrackUI();
+                });
+            }
         }
 
         private void LoadFeaturedTrack()
         {
             try
             {
+
                 _featuredTrack = TrackService.GetMostPopularTrack();
                 if (_featuredTrack == null) return;
+
 
                 var artistName = UserService.GetUserById(_featuredTrack.ArtistID)?.Nickname ?? "Неизвестен";
 
                 FeaturedTrackTitle.Text = _featuredTrack.Title;
-                FeaturedTrackArtist.Text = $"{artistName} · {_featuredTrack.Statistics?.PlayCount ?? 0} прослушиваний";
+
+                UpdateFeaturedTrackUI();
+
 
                 if (!string.IsNullOrWhiteSpace(_featuredTrack.CoverPath))
                 {
@@ -52,6 +77,19 @@ namespace Rewind.Tabs.UsersTabs
             }
             catch { }
         }
+
+        private void UpdateFeaturedTrackUI()
+        {
+            Dispatcher.Invoke(() =>
+            {
+                if (_featuredTrack == null) return;
+
+                var artistName = UserService.GetUserById(_featuredTrack.ArtistID)?.Nickname ?? "Неизвестен";
+
+                FeaturedTrackArtist.Text = $"{artistName} · {_featuredTrack.Statistics?.PlayCount ?? 0} прослушиваний";
+            });
+        }
+
 
         private void UpdateGreeting()
         {
@@ -77,11 +115,19 @@ namespace Rewind.Tabs.UsersTabs
                     string durStr = FormatDuration(track.Duration);
                     string fullPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "MusicLibrary", track.FilePath);
                     var item = new TrackItem(track.TrackID, track.Title, UserService.GetUserById(track.ArtistID).Nickname, durStr, fullPath,  track.CoverPath , track.Duration);
+                    item.PlayClicked += TrackItem_PlayClicked;
                     _trackItems.Add(item);
                     MusicContainer.Children.Add(item);
                 }
             }
             catch { }
+        }
+
+        private void TrackItem_PlayClicked(object sender, RoutedEventArgs e)
+        {
+            var artistName = UserService.GetUserById(_featuredTrack.ArtistID)?.Nickname ?? "Неизвестен";
+
+            FeaturedTrackArtist.Text = $"{artistName} · {_featuredTrack.Statistics?.PlayCount ?? 0} прослушиваний";
         }
 
         private void LoadPopularPlaylists()
@@ -128,6 +174,7 @@ namespace Rewind.Tabs.UsersTabs
                 AppDomain.CurrentDomain.BaseDirectory, "MusicLibrary", _featuredTrack.FilePath);
             string durStr = FormatDuration(_featuredTrack.Duration);
             var artistName = UserService.GetUserById(_featuredTrack.ArtistID)?.Nickname ?? "";
+            FeaturedTrackArtist.Text = $"{artistName} · {_featuredTrack.Statistics?.PlayCount ?? 0} прослушиваний";
 
             var featuredItem = new TrackItem(
                 _featuredTrack.TrackID,

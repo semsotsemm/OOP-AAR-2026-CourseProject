@@ -329,7 +329,7 @@
         <Setter Property="Foreground" Value="#1A1A18"/>
         <Setter Property="FontSize" Value="14"/>
         <Setter Property="Padding" Value="12,10"/>
-        <Setter Property="CaretBrush" Value="{StaticResource AccentColor}"/>
+        <Setter Property="CaretBrush" Value="{DynamicResource AccentColor}"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="TextBox">
@@ -436,7 +436,7 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter Property="Background" Value="#C23520"/>
+                            <Setter Property="Background" Value="#68fc7d"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -488,7 +488,8 @@
                                        VerticalAlignment="Center">
                                     <Rectangle.OpacityMask>
                                         <ImageBrush ImageSource="{Binding Tag, RelativeSource={RelativeSource AncestorType=ListBoxItem}, Converter={StaticResource FileNameToIconConverter}}"
-                                                Stretch="Uniform"/>
+                                                    RenderOptions.BitmapScalingMode="Fant"
+                                                    Stretch="Uniform"/>
                                     </Rectangle.OpacityMask>
                                 </Rectangle>
                             </Border>

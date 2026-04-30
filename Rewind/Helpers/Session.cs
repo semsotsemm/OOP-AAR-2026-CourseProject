@@ -96,6 +96,7 @@ namespace Rewind.Helpers
             set { _subscriptions = value; OnStaticPropertyChanged(); }
         }
 
+        public static bool _isPlaing;
         // ─────────────────────────────────────────────
         //  КЕШ ЛАЙКОВ
         //  Треки, которые пользователь лайкнул/снял в текущей сессии.
@@ -120,6 +121,7 @@ namespace Rewind.Helpers
         public static bool IsLiked(int trackId) => _likedTrackIds.Contains(trackId);
 
         /// <summary>Переключает лайк и возвращает новое состояние.</summary>
+        /// 
         public static bool ToggleLike(int trackId)
         {
             if (_likedTrackIds.Contains(trackId))

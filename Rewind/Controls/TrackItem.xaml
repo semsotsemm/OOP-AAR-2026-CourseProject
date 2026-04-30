@@ -43,15 +43,12 @@
 
             <!-- Длительность и плей -->
             <StackPanel Grid.Column="4" Orientation="Horizontal" VerticalAlignment="Center">
-                <TextBlock x:Name="DurationText" Text="0:00" FontSize="12" Foreground="#BBBBB5"
-                           VerticalAlignment="Center" Margin="0,0,12,0"/>
-                <!-- Кнопка лайк -->
-                <Image x:Name="LikeBtn" Grid.Column="2" Source="{help:Icon like_outline.png}" Width="36" Height="36"
-                       VerticalAlignment="Center" Margin="0,0,16,0" Cursor="Hand"
-                       MouseLeftButtonDown="LikeBtn_Click"/>
+                
 
+                <!-- Кнопка лайк -->
+                
                 <Border Grid.Column="3" Width="36" Height="36" CornerRadius="18"
-                        Background="#F0EFEB" Cursor="Hand" Margin="0,0,12,0"
+                        Background="#F0EFEB" Cursor="Hand" Margin="0,0,16,0"
                         MouseLeftButtonDown="AddToPlaylist_Click">      
                     <TextBlock Text="+" FontSize="16" FontWeight="Bold"
                                Foreground="#1A1A18"
@@ -73,6 +70,24 @@
                         </ControlTemplate>
                     </Button.Template>
                 </Button>
+                <Rectangle x:Name="LikeBtn" 
+                           Grid.Column="2"
+                           Width="20" 
+                           Height="20"
+                           Fill="{StaticResource AccentColor}" 
+                           VerticalAlignment="Center" 
+                           Margin="16,0,16,0" 
+                           Cursor="Hand"
+                           MouseLeftButtonDown="LikeBtn_Click"> 
+                    <Rectangle.OpacityMask>
+                        <ImageBrush ImageSource="{help:Icon like_outline.png}" 
+                                    x:Name="LikeIcon" 
+                                    Stretch="Uniform"/>
+                    </Rectangle.OpacityMask>
+                </Rectangle>
+
+                <TextBlock x:Name="DurationText" Text="0:00" FontSize="12" Foreground="#BBBBB5"
+           VerticalAlignment="Center" Margin="0,0,0,0"/>
             </StackPanel>
         </Grid>
     </Border>

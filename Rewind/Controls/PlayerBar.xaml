@@ -36,7 +36,18 @@
                     </Button>
                     <Button Click="PlayButton_Click" Background="Transparent" BorderThickness="0" Margin="10,0">
                         <Border Width="40" Height="40" Background="White" CornerRadius="20">
-                            <Image x:Name="PlayPauseImage" Source="{Binding PlayPauseIcon, ElementName=thisPlayer}" Width="16" Height="16"/>
+                            <Rectangle x:Name="PlayPauseBtn"
+                                       Width="16" 
+                                       Height="16"
+                                       Fill="{DynamicResource AccentColor}" 
+                                       VerticalAlignment="Center"
+                                       HorizontalAlignment="Center"
+                                       Cursor="Hand">
+                                <Rectangle.OpacityMask>
+                                    <ImageBrush ImageSource="{Binding PlayPauseIcon, ElementName=thisPlayer}" 
+                                                Stretch="Uniform"/>
+                                </Rectangle.OpacityMask>
+                            </Rectangle>
                         </Border>
                     </Button>
                     <Button Style="{StaticResource PlayerControlBtnStyle}" Click="NextButton_Click">

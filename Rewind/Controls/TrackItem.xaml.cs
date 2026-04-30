@@ -17,6 +17,7 @@ namespace Rewind.Contols
         //  Свойства
         // ─────────────────────────────────────────────
         public int TrackId { get; private set; }
+
         public event MouseButtonEventHandler TrackSelected;
         public string FilePath { get; private set; }
         public string? CoverPath { get; private set; }
@@ -24,6 +25,9 @@ namespace Rewind.Contols
         public string ArtistName { get; private set; }
         public double DurationSeconds { get; private set; }
 
+        public event RoutedEventHandler PlayClicked;
+
+        private MainWindow? _playerHost;
         private void OnItemClick(object sender, MouseButtonEventArgs e)
         {
             TrackSelected?.Invoke(this, e);
@@ -43,6 +47,7 @@ namespace Rewind.Contols
             FilePath = path;
             CoverPath = coverPath;
             DurationSeconds = durationSeconds;
+            Session._isPlaing = false;
 
             TrackTitleText.Text = title;
             ArtistNameText.Text = artist;
@@ -53,8 +58,37 @@ namespace Rewind.Contols
 
             UpdateCover(coverPath);
             BuildPlaylistContextMenu();
+
+            Loaded += (_, _) =>
+            {
+                if (Window.GetWindow(this) is MainWindow mw)
+                {
+                    _playerHost = mw;
+                    mw.PlaybackStateChanged += OnPlaybackStateChanged;
+                }
+            };
+
+            Unloaded += (_, _) =>
+            {
+                if (_playerHost != null)
+                    _playerHost.PlaybackStateChanged -= OnPlaybackStateChanged;
+            };
         }
 
+        private void OnPlaybackStateChanged()
+        {
+            if (_playerHost == null) return;
+
+            bool isThisTrackPlaying =
+                _playerHost.CurrentTrack?.TrackId == TrackId &&
+                _playerHost.IsPlaying;
+
+            // Обновляем иконку play/pause на кнопке
+            SetPlayPauseIcon(isThisTrackPlaying);
+
+            // Подсветка названия
+            SetPlaying(_playerHost.CurrentTrack?.TrackId == TrackId);
+        }
         // ─────────────────────────────────────────────
         //  Обложка
         // ─────────────────────────────────────────────
@@ -94,11 +128,25 @@ namespace Rewind.Contols
             }
         }
 
+
         // ─────────────────────────────────────────────
         //  Воспроизведение
         // ─────────────────────────────────────────────
+
+        public void SetPlayPauseIcon(bool isPlaying)
+        {
+            if (PlayBtn.Template.FindName("PlayIcon", PlayBtn) is Image playIconInside)
+            {
+                string iconName = isPlaying ? "player_pause.png" : "player_play.png";
+                playIconInside.Source = IconAssets.LoadBitmap(iconName);
+            }
+        }
+
+
         private void Play_Click(object sender, RoutedEventArgs e)
         {
+            PlayClicked?.Invoke(this, new RoutedEventArgs());
+
             Session.AddListenedTrack(TrackId, DurationSeconds);
             DependencyObject parent = VisualTreeHelper.GetParent(this);
 
@@ -108,6 +156,11 @@ namespace Rewind.Contols
             }
 
             if (Window.GetWindow(this) is not MainWindow mainWindow) return;
+            if (mainWindow.CurrentTrack?.TrackId == TrackId)
+            {
+                mainWindow.TogglePlayPause();
+                return;
+            }
 
             if (parent is MainPage mainPage)
             {
@@ -146,7 +199,7 @@ namespace Rewind.Contols
 
         private void RefreshLikeIcon(bool liked)
         {
-            LikeBtn.Source = IconAssets.LoadBitmap(liked ? "like_filled.png" : "like_outline.png");
+            LikeIcon.ImageSource = IconAssets.LoadBitmap(liked ? "like_filled.png" : "like_outline.png");
         }
 
         private void AnimateLikeButton()

@@ -283,6 +283,7 @@ namespace Rewind.Helpers
 
     public static class TrackService
     {
+        public static event Action<int, int>? OnPlayCountUpdated;
         public static List<Track> GetAllTracks()
         {
             using var db = new AppDbContext();
@@ -312,13 +313,14 @@ namespace Rewind.Helpers
         public static void IncrementPlayCount(int trackId)
         {
             using var db = new AppDbContext();
-
             var stats = db.Statistics.FirstOrDefault(s => s.TrackID == trackId);
 
             if (stats != null)
             {
                 stats.PlayCount++;
                 db.SaveChanges();
+
+                OnPlayCountUpdated?.Invoke(trackId, stats.PlayCount);
             }
         }
 

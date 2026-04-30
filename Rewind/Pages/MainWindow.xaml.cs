@@ -96,6 +96,7 @@ namespace Rewind
                 _mediaPlayer.Pause();
                 _isPlaying = false;
                 GlobalPlayerBar.PlayPauseIcon = IconAssets.GetAbsolutePath("player_play.png");
+                _currentTrackItem?.SetPlayPauseIcon(false);
                 _island?.SetPlayPauseIcon(false);
             }
             else
@@ -103,6 +104,7 @@ namespace Rewind
                 _mediaPlayer.Play();
                 _isPlaying = true;
                 GlobalPlayerBar.PlayPauseIcon = IconAssets.GetAbsolutePath("player_pause.png");
+                _currentTrackItem?.SetPlayPauseIcon(true);
                 _island?.SetPlayPauseIcon(true);
             }
             UpdateIslandVisibility();
@@ -279,16 +281,16 @@ namespace Rewind
             _island?.ApplyVisualSettings(_islandScale, _islandOpacity);
             UpdateIslandVisibility();
         }
-
         private void HighlightActiveButton(Button activeBtn)
         {
             Button[] menuButtons = { BtnHome, BtnSearch, BtnFavorites, BtnPlaylists, BtnProfile };
 
             var activeAccent = (Brush)FindResource("AccentColor");
-            var activeIconFill = Brushes.White;
+            var activeIconFill = Brushes.White; 
 
             var inactiveBg = (Brush)new BrushConverter().ConvertFrom("#F0EFEB");
             var inactiveText = (Brush)new BrushConverter().ConvertFrom("#888880");
+            var inactiveIconFill = activeAccent;
 
             foreach (var btn in menuButtons)
             {
@@ -302,9 +304,9 @@ namespace Rewind
                     {
                         iconBorder.Background = isActive ? activeAccent : inactiveBg;
 
-                        if (iconBorder.Child is Image iconImage)
+                        if (iconBorder.Child is Rectangle iconRect)
                         {
-                            iconImage.Opacity = isActive ? 1.0 : 0.75;
+                            iconRect.Fill = isActive ? activeIconFill : inactiveIconFill;
                         }
                     }
 
