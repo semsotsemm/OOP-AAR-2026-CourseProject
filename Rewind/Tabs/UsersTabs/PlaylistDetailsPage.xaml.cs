@@ -29,7 +29,7 @@ namespace Rewind.Tabs.UsersTabs
 
             bool canSave = _playlist.OwnerID != Session.UserId;
             SaveBtn.Visibility = canSave ? Visibility.Visible : Visibility.Collapsed;
-            SaveBtnText.Text = IsAlreadySaved() ? "Уже добавлен" : "+ Добавить себе";
+            RefreshSaveButton();
 
             TracksContainer.Children.Clear();
             _trackItems.Clear();
@@ -57,11 +57,15 @@ namespace Rewind.Tabs.UsersTabs
         {
             if (sender is not TrackItem clicked) return;
 
-            if (!_listenRegistered)
+            if (!_listenRegistered && _playlist.PlaylistID > 0)
             {
-                PlaylistAnalyticsService.RegisterListen(Session.UserId, _playlist.PlaylistID);
                 _listenRegistered = true;
-                UpdateStatsText();
+                int pid = _playlist.PlaylistID;
+                // Регистрируем прослушивание в фоне, обновляем UI после записи в БД
+                System.Threading.Tasks.Task.Run(() =>
+                    PlaylistListenService.RegisterListen(Session.UserId, pid))
+                    .ContinueWith(_ =>
+                        Dispatcher.BeginInvoke(UpdateStatsText));
             }
 
             if (Window.GetWindow(this) is MainWindow mainWindow)
@@ -70,32 +74,33 @@ namespace Rewind.Tabs.UsersTabs
 
         private void UpdateStatsText()
         {
-            var likes = PlaylistAnalyticsService.GetLikesCount(_playlist.PlaylistID);
-            var listens = PlaylistAnalyticsService.GetListenersCount(_playlist.PlaylistID);
-            PlaylistStatsText.Text = $"Лайки: {likes}  •  Прослушали: {listens}";
+            // Используем БД-счётчики (не кеш в памяти)
+            var saved = SavedPlaylistService.GetSavedCount(_playlist.PlaylistID);
+            var listens = PlaylistListenService.GetListenerCount(_playlist.PlaylistID);
+            PlaylistStatsText.Text = $"♥ {saved} сохранили  •  ► {listens} прослушали";
         }
 
-        private bool IsAlreadySaved()
-            => Session.CachedPlaylists.Any(p => p.OwnerID == Session.UserId && p.Title == _playlist.Title);
+        private void RefreshSaveButton()
+        {
+            if (_playlist.OwnerID == Session.UserId) return;
+            bool saved = SavedPlaylistService.IsSaved(Session.UserId, _playlist.PlaylistID);
+            SaveBtnText.Text = saved ? "♥ Сохранён" : "♥ Сохранить";
+        }
 
         private static string FormatDuration(int sec) => $"{sec / 60}:{sec % 60:D2}";
 
         private void SaveToMe_Click(object sender, MouseButtonEventArgs e)
         {
-            if (IsAlreadySaved())
+            if (_playlist.PlaylistID <= 0)
             {
-                MessageBox.Show("Этот плейлист уже есть у вас.");
+                MessageBox.Show("Нельзя сохранить неопубликованный плейлист.");
                 return;
             }
 
-            var newPlaylist = Session.CreatePlaylist($"{_playlist.Title} (копия)", _playlist.CoverPath, false);
-            foreach (var track in _playlist.PlaylistTracks ?? new List<PlaylistTrack>())
-                Session.AddTrackToPlaylist(newPlaylist, track.TrackID);
-
-            PlaylistAnalyticsService.ToggleLike(Session.UserId, _playlist.PlaylistID);
-            SaveBtnText.Text = "Уже добавлен";
+            bool isSaved = SavedPlaylistService.Toggle(Session.UserId, _playlist.PlaylistID);
+            RefreshSaveButton();
             UpdateStatsText();
-            MessageBox.Show("Плейлист добавлен в ваши.");
+            MessageBox.Show(isSaved ? "Плейлист сохранён — он появится в вашем профиле." : "Плейлист удалён из сохранённых.");
         }
 
         private void Back_Click(object sender, MouseButtonEventArgs e)

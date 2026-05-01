@@ -13,20 +13,31 @@ namespace Rewind.Controls
     public partial class ProfilePage : UserControl
     {
         private string? _selectedCoverPath;
-        private string? _selectedAudioPath; 
+        private string? _selectedAudioPath;
         private string tempAvatarPath = Session.AvatarPath;
+
+        public event EventHandler ThemeChanged;
 
         public ProfilePage()
         {
             InitializeComponent();
-            if (Session.UserRole?.ToLower() == "исполнитель")
+            // Studio is now a separate sidebar nav item — always hide it in profile
+            TabArtistStudio.Visibility = Visibility.Collapsed;
+
+            Loaded += (_, _) =>
             {
-                TabArtistStudio.Visibility = Visibility.Visible;
-            }
+                SyncIslandSettingsFromMainWindow();
+                RestoreThemeCard();  // восстанавливаем активную тему из Session
 
-            Loaded += (_, _) => SyncIslandSettingsFromMainWindow();
+                // Синхронизация тогглов уведомлений с Session
+                Tog1.IsChecked = Session.NotifNewTracksEnabled;
+                Tog2.IsChecked = Session.NotifPushEnabled;
+                Tog1.Checked   += (_, _) => Session.NotifNewTracksEnabled = true;
+                Tog1.Unchecked += (_, _) => Session.NotifNewTracksEnabled = false;
+                Tog2.Checked   += (_, _) => Session.NotifPushEnabled = true;
+                Tog2.Unchecked += (_, _) => Session.NotifPushEnabled = false;
+            };
             LoadOverviewSection();
-
         }
 
         private void TabOverview_Click(object sender, RoutedEventArgs e)
@@ -95,6 +106,10 @@ namespace Rewind.Controls
             Registration registration_page = new Registration();
             registration_page.Show();
 
+           Session.FlushToDatabase();
+
+            Application.Current.MainWindow = registration_page;
+
             Window.GetWindow(this)?.Close();
         }
 
@@ -113,8 +128,25 @@ namespace Rewind.Controls
                     _ => "ThemeClassic.xaml"
                 };
 
+                // Сохраняем выбранную тему в Session
+                Session.ActiveTheme = clickedBorder.Name;
+
                 ApplyTheme(themeFile);
             }
+            ThemeChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        /// <summary>Восстанавливает активную карточку темы согласно Session.ActiveTheme.</summary>
+        private void RestoreThemeCard()
+        {
+            Border activeCard = Session.ActiveTheme switch
+            {
+                "ThemePink" => ThemePink,
+                "ThemeMidnight" => ThemeMidnight,
+                "ThemeLavender" => ThemeLavender,
+                _ => ThemeClassic
+            };
+            UpdateActiveCard(activeCard);
         }
         private void TabArtistStudio_Click(object sender, RoutedEventArgs e)
         {
@@ -219,6 +251,8 @@ namespace Rewind.Controls
                     finalCoverPath = CopyImageToProjectFolder(_selectedCoverPath, "CoversLibrary", keepOriginalName: true, returnAbsolutePath: true);
                 }
 
+                string genre = (GenreSelector.SelectedItem as System.Windows.Controls.ComboBoxItem)?.Content?.ToString() ?? "";
+
                 Track newTrack = new Track
                 {
                     Title = trackName,
@@ -227,10 +261,12 @@ namespace Rewind.Controls
                     Duration = duration,
                     UploadDate = DateTime.UtcNow,
                     ArtistID = Session.UserId,
+                    Genre = genre,
+                    PublishStatus = "Pending"
                 };
 
                 TrackService.AddTrack(newTrack);
-                MessageBox.Show("Трек успешно добавлен!");
+                MessageBox.Show("Трек отправлен на проверку администратору. После одобрения он появится на платформе.", "Заявка отправлена");
 
                 // Очистка полей после успеха
                 NewTrackName.Clear();
@@ -330,25 +366,55 @@ namespace Rewind.Controls
             OverviewPlaylistsContainer.Children.Clear();
             OverviewLikedContainer.Children.Clear();
 
+            // Собственные + сохранённые плейлисты
             var ownPlaylists = Session.CachedPlaylists.Where(p => p.OwnerID == Session.UserId).Take(6).ToList();
-            if (ownPlaylists.Count == 0)
+            List<Playlist> savedPlaylists = new();
+            try { savedPlaylists = SavedPlaylistService.GetSavedByUser(Session.UserId).Take(6).ToList(); } catch { }
+
+            var allDisplayPlaylists = ownPlaylists
+                .Concat(savedPlaylists.Where(sp => !ownPlaylists.Any(op => op.PlaylistID == sp.PlaylistID)))
+                .Take(6).ToList();
+
+            if (allDisplayPlaylists.Count == 0)
             {
                 OverviewPlaylistsContainer.Children.Add(MakeEmptyCard("Плейлистов пока нет"));
             }
             else
             {
-                foreach (var playlist in ownPlaylists)
+                foreach (var playlist in allDisplayPlaylists)
                 {
                     var trackCount = playlist.PlaylistTracks?.Count ?? 0;
-                    OverviewPlaylistsContainer.Children.Add(MakeOverviewCard(playlist.Title, $"{trackCount} треков"));
+                    var isSaved = playlist.OwnerID != Session.UserId;
+                    int saves = 0, listens = 0;
+                    try { saves = SavedPlaylistService.GetSavedCount(playlist.PlaylistID); } catch { }
+                    try { listens = PlaylistListenService.GetListenerCount(playlist.PlaylistID); } catch { }
+                    var label = isSaved
+                        ? $"{trackCount} тр.  •  ♥ {saves}  •  ► {listens}"
+                        : $"{trackCount} тр.  •  ► {listens}";
+                    OverviewPlaylistsContainer.Children.Add(MakePlaylistCard(playlist, label));
                 }
             }
 
+            // Лайкнутые треки — богатые карточки с обложкой и кнопкой воспроизведения
             var likedTracks = Session.LikedTrackIds
                 .Take(6)
                 .Select(id => TrackService.GetTrackById(id))
                 .Where(t => t != null)
                 .Cast<Track>()
+                .ToList();
+
+            // Build a play context list from all liked tracks for overview playback
+            var allLikedForPlay = Session.LikedTrackIds
+                .Select(id => TrackService.GetTrackById(id))
+                .Where(t => t != null)
+                .Cast<Track>()
+                .Select(t =>
+                {
+                    var fp = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "MusicLibrary", t.FilePath);
+                    var artist = UserService.GetUserById(t.ArtistID)?.Nickname ?? "Неизвестный";
+                    return new Rewind.Contols.TrackItem(t.TrackID, t.Title, artist,
+                        FormatDuration(t.Duration), fp, t.CoverPath, t.Duration);
+                })
                 .ToList();
 
             if (likedTracks.Count == 0)
@@ -359,45 +425,212 @@ namespace Rewind.Controls
             {
                 foreach (var track in likedTracks)
                 {
-                    var artist = UserService.GetUserById(track.ArtistID)?.Nickname ?? "Неизвестный артист";
-                    OverviewLikedContainer.Children.Add(MakeOverviewCard(track.Title, artist));
+                    var artist = UserService.GetUserById(track.ArtistID)?.Nickname ?? "Неизвестный";
+                    OverviewLikedContainer.Children.Add(
+                        MakeLikedTrackCard(track, artist, allLikedForPlay));
                 }
             }
+        }
+
+        private static string FormatDuration(int sec)
+            => $"{sec / 60}:{sec % 60:D2}";
+
+        /// <summary>Rich card for a liked track with cover, duration and play button.</summary>
+        private static UIElement MakeLikedTrackCard(
+            Track track, string artist,
+            List<Rewind.Contols.TrackItem> playContext)
+        {
+            var card = new Border
+            {
+                Background = new System.Windows.Media.SolidColorBrush(
+                    System.Windows.Media.Color.FromRgb(245, 244, 240)),
+                CornerRadius = new CornerRadius(12),
+                Padding = new Thickness(10),
+                Margin = new Thickness(0, 0, 0, 8),
+                Cursor = Cursors.Hand
+            };
+
+            var grid = new Grid();
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(44) });
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Auto) });
+
+            // Cover
+            var coverBorder = new Border
+            {
+                Width = 40, Height = 40, CornerRadius = new CornerRadius(8),
+                Background = new System.Windows.Media.SolidColorBrush(
+                    System.Windows.Media.Color.FromRgb(200, 200, 195)),
+                Margin = new Thickness(0, 0, 10, 0)
+            };
+            if (!string.IsNullOrEmpty(track.CoverPath))
+            {
+                try
+                {
+                    string fp = track.CoverPath.Contains(":")
+                        ? track.CoverPath
+                        : System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "CoversLibrary", track.CoverPath);
+                    if (System.IO.File.Exists(fp))
+                    {
+                        coverBorder.Background = new System.Windows.Media.ImageBrush(
+                            new System.Windows.Media.Imaging.BitmapImage(new Uri(fp)))
+                        { Stretch = System.Windows.Media.Stretch.UniformToFill };
+                    }
+                }
+                catch { }
+            }
+            else
+            {
+                coverBorder.Child = new TextBlock
+                {
+                    Text = "🎵", FontSize = 16,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Center
+                };
+            }
+            Grid.SetColumn(coverBorder, 0);
+
+            // Info
+            var infoStack = new StackPanel { VerticalAlignment = VerticalAlignment.Center };
+            infoStack.Children.Add(new TextBlock
+            {
+                Text = track.Title, FontSize = 12, FontWeight = FontWeights.SemiBold,
+                Foreground = (System.Windows.Media.Brush)Application.Current.Resources["TextPrimary"],
+                TextTrimming = TextTrimming.CharacterEllipsis
+            });
+            infoStack.Children.Add(new TextBlock
+            {
+                Text = $"{artist}  •  {FormatDuration(track.Duration)}",
+                FontSize = 11,
+                Foreground = (System.Windows.Media.Brush)Application.Current.Resources["TextSecondary"],
+                Margin = new Thickness(0, 2, 0, 0)
+            });
+            Grid.SetColumn(infoStack, 1);
+
+            // Play button
+            var playBtn = new Border
+            {
+                Width = 32, Height = 32, CornerRadius = new CornerRadius(16),
+                Background = (System.Windows.Media.Brush)Application.Current.Resources["AccentColor"],
+                Cursor = Cursors.Hand, VerticalAlignment = VerticalAlignment.Center,
+                Margin = new Thickness(6, 0, 0, 0)
+            };
+            playBtn.Child = new TextBlock
+            {
+                Text = "▶", FontSize = 12,
+                Foreground = System.Windows.Media.Brushes.White,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center
+            };
+
+            int capturedId = track.TrackID;
+            playBtn.MouseLeftButtonDown += (s, ev) =>
+            {
+                ev.Handled = true;
+                if (Application.Current.MainWindow is MainWindow mw)
+                {
+                    var selected = playContext.FirstOrDefault(ti => ti.TrackId == capturedId);
+                    if (selected != null) mw.PlayTrackFromContext(selected, playContext);
+                }
+            };
+            Grid.SetColumn(playBtn, 2);
+
+            // Card click also plays
+            card.MouseLeftButtonDown += (s, ev) =>
+            {
+                if (Application.Current.MainWindow is MainWindow mw)
+                {
+                    var selected = playContext.FirstOrDefault(ti => ti.TrackId == capturedId);
+                    if (selected != null) mw.PlayTrackFromContext(selected, playContext);
+                }
+            };
+
+            grid.Children.Add(coverBorder);
+            grid.Children.Add(infoStack);
+            grid.Children.Add(playBtn);
+            card.Child = grid;
+            return card;
         }
 
         private void LoadLikedSection()
         {
             LikedTracksContainer.Children.Clear();
-            var tracks = TrackService.GetAllTracks().Take(25).ToList();
+
+            var likedIds = Session.LikedTrackIds;
+            var tracks = likedIds
+                .Select(id => TrackService.GetTrackById(id))
+                .Where(t => t != null)
+                .Cast<Track>()
+                .Take(25)
+                .ToList();
+
             if (tracks.Count == 0)
             {
-                LikedTracksContainer.Children.Add(MakeEmptyCard("Треков пока нет"));
+                LikedTracksContainer.Children.Add(MakeEmptyCard("Лайков пока нет"));
                 return;
             }
 
+            // Build play context for all liked tracks
+            var playContext = tracks
+                .Select(t =>
+                {
+                    var fp = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "MusicLibrary", t.FilePath);
+                    var artist = UserService.GetUserById(t.ArtistID)?.Nickname ?? "Неизвестный";
+                    return new Rewind.Contols.TrackItem(t.TrackID, t.Title, artist,
+                        FormatDuration(t.Duration), fp, t.CoverPath, t.Duration);
+                })
+                .ToList();
+
             foreach (var track in tracks)
             {
-                var artist = UserService.GetUserById(track.ArtistID)?.Nickname ?? "Неизвестный артист";
-                LikedTracksContainer.Children.Add(MakeOverviewCard(track.Title, artist));
+                var artist = UserService.GetUserById(track.ArtistID)?.Nickname ?? "Неизвестный";
+                LikedTracksContainer.Children.Add(MakeLikedTrackCard(track, artist, playContext));
             }
         }
 
         private void LoadPlaylistsSection()
         {
             ProfilePlaylistsContainer.Children.Clear();
+
             var ownPlaylists = Session.CachedPlaylists.Where(p => p.OwnerID == Session.UserId).ToList();
-            if (ownPlaylists.Count == 0)
+            List<Playlist> savedPlaylists = new();
+            try { savedPlaylists = SavedPlaylistService.GetSavedByUser(Session.UserId); } catch { }
+
+            if (ownPlaylists.Count == 0 && savedPlaylists.Count == 0)
             {
                 ProfilePlaylistsContainer.Children.Add(MakeEmptyCard("Плейлистов пока нет"));
                 return;
             }
 
-            foreach (var playlist in ownPlaylists)
+            if (ownPlaylists.Count > 0)
             {
-                var trackCount = playlist.PlaylistTracks?.Count ?? 0;
-                var likes = PlaylistAnalyticsService.GetLikesCount(playlist.PlaylistID);
-                var listens = PlaylistAnalyticsService.GetListenersCount(playlist.PlaylistID);
-                ProfilePlaylistsContainer.Children.Add(MakeOverviewCard(playlist.Title, $"{trackCount} треков • ♥ {likes} • ▶ {listens}"));
+                ProfilePlaylistsContainer.Children.Add(MakeSectionHeader("Мои плейлисты"));
+                foreach (var playlist in ownPlaylists)
+                {
+                    var trackCount = playlist.PlaylistTracks?.Count ?? 0;
+                    int saves = 0, listens = 0;
+                    try { saves = SavedPlaylistService.GetSavedCount(playlist.PlaylistID); } catch { }
+                    try { listens = PlaylistListenService.GetListenerCount(playlist.PlaylistID); } catch { }
+                    ProfilePlaylistsContainer.Children.Add(
+                        MakePlaylistCard(playlist, $"{trackCount} тр.  •  ♥ {saves}  •  ► {listens}"));
+                }
+            }
+
+            var uniqueSaved = savedPlaylists
+                .Where(sp => !ownPlaylists.Any(op => op.PlaylistID == sp.PlaylistID))
+                .ToList();
+            if (uniqueSaved.Count > 0)
+            {
+                ProfilePlaylistsContainer.Children.Add(MakeSectionHeader("Сохранённые плейлисты"));
+                foreach (var playlist in uniqueSaved)
+                {
+                    var trackCount = playlist.PlaylistTracks?.Count ?? 0;
+                    int listens = 0;
+                    try { listens = PlaylistListenService.GetListenerCount(playlist.PlaylistID); } catch { }
+                    var owner = UserService.GetUserById(playlist.OwnerID)?.Nickname ?? "Неизвестный";
+                    ProfilePlaylistsContainer.Children.Add(
+                        MakePlaylistCard(playlist, $"От {owner}  •  {trackCount} тр.  •  ► {listens}"));
+                }
             }
         }
 
@@ -421,6 +654,99 @@ namespace Rewind.Controls
             mainWindow.UpdateIslandSettings(
                 IslandEnabledProfileToggle.IsChecked == true,
                 IslandOpacityProfileSlider.Value);
+        }
+
+        private UIElement MakePlaylistCard(Playlist playlist, string subtitle)
+        {
+            var card = new Border
+            {
+                Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(245, 244, 240)),
+                CornerRadius = new CornerRadius(12),
+                Padding = new Thickness(10),
+                Margin = new Thickness(0, 0, 0, 8),
+                Cursor = Cursors.Hand
+            };
+
+            var grid = new Grid();
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(56) });
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+
+            // Cover image
+            var coverBorder = new Border
+            {
+                Width = 48, Height = 48, CornerRadius = new CornerRadius(8),
+                Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(180, 200, 185)),
+                Margin = new Thickness(0, 0, 8, 0)
+            };
+            if (!string.IsNullOrEmpty(playlist.CoverPath))
+            {
+                try
+                {
+                    string fp = playlist.CoverPath.Contains(":")
+                        ? playlist.CoverPath
+                        : System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "CoversLibrary", playlist.CoverPath);
+                    if (System.IO.File.Exists(fp))
+                        coverBorder.Background = new System.Windows.Media.ImageBrush(
+                            new BitmapImage(new Uri(fp)))
+                        { Stretch = System.Windows.Media.Stretch.UniformToFill };
+                    else
+                        coverBorder.Child = new TextBlock { Text = "🎵", FontSize = 18, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
+                }
+                catch { coverBorder.Child = new TextBlock { Text = "🎵", FontSize = 18, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center }; }
+            }
+            else
+            {
+                coverBorder.Child = new TextBlock { Text = "🎵", FontSize = 18, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
+            }
+            Grid.SetColumn(coverBorder, 0);
+
+            var info = new StackPanel { VerticalAlignment = VerticalAlignment.Center };
+            info.Children.Add(new TextBlock
+            {
+                Text = playlist.Title,
+                FontSize = 13, FontWeight = FontWeights.SemiBold,
+                Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(26, 26, 24)),
+                TextTrimming = TextTrimming.CharacterEllipsis
+            });
+            info.Children.Add(new TextBlock
+            {
+                Text = subtitle, FontSize = 11,
+                Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(136, 136, 128)),
+                Margin = new Thickness(0, 3, 0, 0),
+                TextTrimming = TextTrimming.CharacterEllipsis
+            });
+            Grid.SetColumn(info, 1);
+
+            grid.Children.Add(coverBorder);
+            grid.Children.Add(info);
+            card.Child = grid;
+
+            // Navigate to playlist on click
+            card.MouseLeftButtonDown += (s, ev) =>
+            {
+                try
+                {
+                    var full = playlist.PlaylistID > 0
+                        ? PlaylistService.GetPlaylistById(playlist.PlaylistID) ?? playlist
+                        : playlist;
+                    if (Window.GetWindow(this) is MainWindow mw)
+                        mw.OpenPlaylistDetails(full);
+                }
+                catch { }
+            };
+
+            return card;
+        }
+
+        private UIElement MakeSectionHeader(string text)
+        {
+            return new TextBlock
+            {
+                Text = text,
+                FontSize = 14, FontWeight = FontWeights.Bold,
+                Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(26, 26, 24)),
+                Margin = new Thickness(0, 10, 0, 8)
+            };
         }
 
         private UIElement MakeOverviewCard(string title, string subtitle)

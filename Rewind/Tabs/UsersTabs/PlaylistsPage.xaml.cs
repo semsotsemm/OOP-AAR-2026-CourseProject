@@ -19,8 +19,15 @@ namespace Rewind.Tabs.UsersTabs
             public Playlist Source { get; set; }
             public string Title => Source.Title;
             public int TrackCount => Source.PlaylistTracks?.Count ?? 0;
-            public int LikesCount => PlaylistAnalyticsService.GetLikesCount(Source.PlaylistID);
-            public int ListensCount => PlaylistAnalyticsService.GetListenersCount(Source.PlaylistID);
+            // DB-backed counts (use try-catch to avoid failures during render)
+            public int LikesCount
+            {
+                get { try { return SavedPlaylistService.GetSavedCount(Source.PlaylistID); } catch { return 0; } }
+            }
+            public int ListensCount
+            {
+                get { try { return PlaylistListenService.GetListenerCount(Source.PlaylistID); } catch { return 0; } }
+            }
             public bool IsPrivate => Source.IsPrivate;
             public bool IsOwned { get; set; }
             public string GradStart { get; set; } = "#2AE876";

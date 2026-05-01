@@ -97,6 +97,12 @@ namespace Rewind.Helpers
         }
 
         public static bool _isPlaing;
+
+        // Настройки уведомлений (хранятся между переходампо страницам)
+        public static bool NotifNewTracksEnabled { get; set; } = true;
+        public static bool NotifPushEnabled { get; set; } = true;
+        public static int NotificationCount { get; set; } = 0;
+        public static DateTime? LastNotificationCheck { get; set; } = null;
         // ─────────────────────────────────────────────
         //  КЕШ ЛАЙКОВ
         //  Треки, которые пользователь лайкнул/снял в текущей сессии.
@@ -120,8 +126,8 @@ namespace Rewind.Helpers
 
         public static bool IsLiked(int trackId) => _likedTrackIds.Contains(trackId);
 
-        /// <summary>Переключает лайк и возвращает новое состояние.</summary>
-        /// 
+        /// <summary>Переключает лайк и возвращает новое состояние.
+        /// Лайк записывается в БД немедленно в фоновом потоке (fire-and-forget).</summary>
         public static bool ToggleLike(int trackId)
         {
             if (_likedTrackIds.Contains(trackId))
@@ -130,6 +136,8 @@ namespace Rewind.Helpers
                 _removedInSession.Add(trackId);
                 _addedInSession.Remove(trackId);
                 Liked = _likedTrackIds.Count;
+                // Записываем сразу, чтобы не терять при краше или выходе без логаута
+                if (UserId > 0) System.Threading.Tasks.Task.Run(() => { try { FavoriteService.RemoveFavorite(UserId, trackId); } catch { } });
                 return false;
             }
             else
@@ -138,6 +146,7 @@ namespace Rewind.Helpers
                 _addedInSession.Add(trackId);
                 _removedInSession.Remove(trackId);
                 Liked = _likedTrackIds.Count;
+                if (UserId > 0) System.Threading.Tasks.Task.Run(() => { try { FavoriteService.AddFavorite(UserId, trackId); } catch { } });
                 return true;
             }
         }
@@ -214,14 +223,11 @@ namespace Rewind.Helpers
         }
         public static void AddListenedTrack(int trackId, double durationSeconds)
         {
-            // 1. Обновляем счетчики текущего пользователя (для красоты в профиле)
             TracksListened++;
             Listened += (int)Math.Round(durationSeconds / 60.0);
-
-            // 2. Инкрементируем прослушивания в таблице Statistics для конкретного трека
-            // Мы вызываем метод сервиса напрямую, так как прослушивания обычно 
-            // записываются сразу, а не "пачкой" при выходе.
             TrackService.IncrementPlayCount(trackId);
+            // Записываем в историю для графиков аналитики
+            HistoryService.RecordListen(UserId, trackId);
         }
 
         // ─────────────────────────────────────────────

@@ -66,12 +66,23 @@ namespace Rewind.Contols
                     _playerHost = mw;
                     mw.PlaybackStateChanged += OnPlaybackStateChanged;
                 }
+
+                // Подписываемся на реальное время
+                TrackService.OnPlayCountUpdated += OnTrackPlayCountUpdated;
+                // Загружаем начальное значение из БД
+                try
+                {
+                    var stats = StatisticService.GetStatsByTrack(TrackId);
+                    PlayCountText.Text = FormatPlayCount(stats?.PlayCount ?? 0);
+                }
+                catch { PlayCountText.Text = ""; }
             };
 
             Unloaded += (_, _) =>
             {
                 if (_playerHost != null)
                     _playerHost.PlaybackStateChanged -= OnPlaybackStateChanged;
+                TrackService.OnPlayCountUpdated -= OnTrackPlayCountUpdated;
             };
         }
 
@@ -133,6 +144,21 @@ namespace Rewind.Contols
         //  Воспроизведение
         // ─────────────────────────────────────────────
 
+        // Реальное время: обновляем счётчик прослушиваний при любом воспроизведении
+        private void OnTrackPlayCountUpdated(int trackId, int newCount)
+        {
+            if (trackId != TrackId) return;
+            Dispatcher.Invoke(() => PlayCountText.Text = FormatPlayCount(newCount));
+        }
+
+        private static string FormatPlayCount(int count)
+        {
+            if (count <= 0)   return "";
+            if (count >= 1_000_000) return $"► {count / 1_000_000.0:F1}M";
+            if (count >= 1_000)     return $"► {count / 1000.0:F1}K";
+            return $"► {count}";
+        }
+
         public void SetPlayPauseIcon(bool isPlaying)
         {
             if (PlayBtn.Template.FindName("PlayIcon", PlayBtn) is Image playIconInside)
@@ -140,6 +166,15 @@ namespace Rewind.Contols
                 string iconName = isPlaying ? "player_pause.png" : "player_play.png";
                 playIconInside.Source = IconAssets.LoadBitmap(iconName);
             }
+        }
+
+        // Переход на страницу исполнителя по клику на никнейм
+        private void ArtistName_Click(object sender, MouseButtonEventArgs e)
+        {
+            e.Handled = true;   // не проваливаемся до TrackCard_MouseLeftButtonDown
+            if (string.IsNullOrWhiteSpace(ArtistName)) return;
+            if (Window.GetWindow(this) is MainWindow mw)
+                mw.OpenArtistProfileByName(ArtistName);
         }
 
 
@@ -230,26 +265,120 @@ namespace Rewind.Contols
             if (ContextMenu == null) return;
             ContextMenu.Items.Clear();
 
+            // ―― Очередь ――
+            var playNextItem = new MenuItem { Header = "⇥  Играть следующим" };
+            playNextItem.Click += (_, _) => PlayNext_Click(this, null!);
+            ContextMenu.Items.Add(playNextItem);
+
+            ContextMenu.Items.Add(new Separator());
+
             var ownPlaylists = Session.CachedPlaylists.Where(p => p.OwnerID == Session.UserId).ToList();
             if (ownPlaylists.Count == 0)
             {
-                ContextMenu.Items.Add(new MenuItem
+                ContextMenu.Items.Add(new MenuItem { Header = "Нет плейлистов", IsEnabled = false });
+            }
+            else
+            {
+                foreach (var playlist in ownPlaylists)
                 {
-                    Header = "Нет плейлистов",
-                    IsEnabled = false
-                });
-                return;
+                    var menuItem = new MenuItem
+                    {
+                        Header = $"Добавить в: {playlist.Title}",
+                        Tag = playlist
+                    };
+                    menuItem.Click += AddTrackToPlaylist_Click;
+                    ContextMenu.Items.Add(menuItem);
+                }
             }
 
-            foreach (var playlist in ownPlaylists)
+            ContextMenu.Items.Add(new Separator());
+
+            // Subscribe / Unsubscribe item — resolved at menu-open time
+            try
             {
-                var menuItem = new MenuItem
+                var track = TrackService.GetTrackById(TrackId);
+                if (track != null && track.ArtistID != Session.UserId)
                 {
-                    Header = $"Добавить в: {playlist.Title}",
-                    Tag = playlist
-                };
-                menuItem.Click += AddTrackToPlaylist_Click;
-                ContextMenu.Items.Add(menuItem);
+                    bool isFollowing = SubscriptionService.IsFollowing(Session.UserId, track.ArtistID);
+                    string artistName = UserService.GetUserById(track.ArtistID)?.Nickname ?? ArtistName;
+                    int capturedArtistId = track.ArtistID;
+                    string capturedName = artistName;
+                    bool capturedFollowing = isFollowing;
+
+                    var subItem = new MenuItem
+                    {
+                        Header = isFollowing
+                            ? $"✓ Отписаться от {artistName}"
+                            : $"⭐ Подписаться на {artistName}"
+                    };
+                    subItem.Click += (_, _) => ToggleSubscription(capturedArtistId, capturedName, capturedFollowing);
+                    ContextMenu.Items.Add(subItem);
+                    ContextMenu.Items.Add(new Separator());
+                }
+            }
+            catch { /* ignore DB errors during menu open */ }
+
+            var reportItem = new MenuItem { Header = "⚠  Пожаловаться на трек" };
+            reportItem.Click += ReportTrack_Click;
+            ContextMenu.Items.Add(reportItem);
+        }
+
+        private void PlayNext_Click(object sender, MouseButtonEventArgs e)
+        {
+            if (e != null) e.Handled = true;
+            if (Window.GetWindow(this) is MainWindow mainWindow)
+                mainWindow.PlayNext(this);
+        }
+
+        private void ReportTrack_Click(object sender, RoutedEventArgs e)
+        {
+            var dialog = new ReportTrackDialog(TrackId, TrackName);
+            dialog.ShowDialog();
+        }
+
+        private void ToggleSubscription(int artistId, string artistName, bool wasFollowing)
+        {
+            try
+            {
+                if (wasFollowing)
+                {
+                    SubscriptionService.Unsubscribe(Session.UserId, artistId);
+                    MessageBox.Show($"Вы отписались от {artistName}.", "Rewind",
+                        MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                else
+                {
+                    SubscriptionService.Subscribe(Session.UserId, artistId);
+
+                    // Notify if settings allow
+                    if (Session.NotifNewTracksEnabled)
+                    {
+                        var recent = TrackService.GetPublishedTracks()
+                            .Where(t => t.ArtistID == artistId)
+                            .OrderByDescending(t => t.UploadDate)
+                            .FirstOrDefault();
+
+                        if (Session.NotifPushEnabled && recent != null
+                            && Window.GetWindow(this) is MainWindow mw)
+                        {
+                            mw.ShowToastNotification(
+                                $"Подписка на {artistName}!",
+                                $"Последний трек: «{recent.Title}»");
+                        }
+                        else if (!Session.NotifPushEnabled)
+                        {
+                            Session.NotificationCount++;
+                        }
+                    }
+
+                    MessageBox.Show($"Вы подписались на {artistName}! Вы будете получать уведомления о новых треках.",
+                        "Rewind", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка подписки: {ex.Message}", "Rewind",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 

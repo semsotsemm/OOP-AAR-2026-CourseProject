@@ -1,7 +1,9 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Windows;
 using Rewind.Helpers;
 using System.Windows.Controls;
+using System.Text.RegularExpressions; // Добавлено для работы с регулярными выражениями
 
 namespace Rewind.Pages
 {
@@ -45,13 +47,13 @@ namespace Rewind.Pages
 
             switch (selectedRoleId)
             {
-                case 1: 
+                case 1:
                     email = UserRegEmail.Text;
                     nickname = UserRegNickname.Text;
                     password = UserRegPassword.Password;
                     confirmPassword = UserRegPasswordConfirm.Password;
                     break;
-                case 2: 
+                case 2:
                     email = ArtistRegEmail.Text;
                     nickname = ArtistRegNickname.Text;
                     password = ArtistRegPassword.Password;
@@ -65,21 +67,34 @@ namespace Rewind.Pages
                 return;
             }
 
-            if (!email.Contains('@'))
+            if (!Regex.IsMatch(email, @"^[^@\s]+@(gmail\.com|yandex\.ru|yandex\.com|ya\.ru|mail\.ru)$"))
             {
-                MessageBox.Show("Введите корректный Email", "Ошибка");
+                MessageBox.Show("Введите корректный Email. Допускаются только почтовые адреса сервисов Google, Яндекс и Mail.ru (например, name@gmail.com, name@yandex.ru, name@mail.ru)", "Ошибка");
                 return;
             }
 
-            if (nickname.Contains('@'))
+            if (!Regex.IsMatch(nickname, @"^[a-zA-Z0-9_]{3,20}$"))
             {
-                MessageBox.Show("Никнейм не может содержать символ '@'", "Ошибка");
+                MessageBox.Show("Никнейм должен содержать от 3 до 20 символов (только латинские буквы, цифры и знак '_').", "Ошибка");
+                return;
+            }
+
+            if (!Regex.IsMatch(password, @"^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$"))
+            {
+                MessageBox.Show("Пароль должен содержать минимум 8 символов, хотя бы одну букву и одну цифру, и не должен содержать пробелов.", "Ошибка");
                 return;
             }
 
             if (password != confirmPassword)
             {
                 MessageBox.Show("Пароли не совпадают!", "Ошибка");
+                return;
+            }
+
+            // Если это исполнитель — отправляем заявку админу
+            if (selectedRoleId == 2)
+            {
+                RegisterArtistRequest(nickname, email, password);
                 return;
             }
 
@@ -119,18 +134,9 @@ namespace Rewind.Pages
                 Session.AvatarPath = fullPath;
                 Session.LoadFromDatabase();
 
-                if (selectedRoleId == 3)
-                {
-                    var adminWindow = new AdminPanel();
-                    Application.Current.MainWindow = adminWindow;
-                    adminWindow.Show();
-                }
-                else
-                {
-                    MainWindow profile_window = new MainWindow();
-                    Application.Current.MainWindow = profile_window;
-                    profile_window.Show();
-                }
+                MainWindow profile_window = new MainWindow();
+                Application.Current.MainWindow = profile_window;
+                profile_window.Show();
                 this.Close();
             }
             catch (Exception ex)
@@ -139,7 +145,7 @@ namespace Rewind.Pages
             }
         }
 
-        // Вход в аккаунт 
+        // Вход в аккаунт
         private void LoginButton_Click(object sender, RoutedEventArgs e)
         {
             string login = "";
@@ -148,7 +154,7 @@ namespace Rewind.Pages
             // Определяем, из каких полей брать данные в зависимости от текущей роли
             switch (selectedRoleId)
             {
-                case 1: 
+                case 1:
                     login = UserLoginValue.Text;
                     password = UserPasswordValue.Password;
                     break;
@@ -214,10 +220,42 @@ namespace Rewind.Pages
                 }
                 this.Close();
             }
-            else 
+            else
             {
                 MessageBox.Show("Пожалуйста, проверьте пароль", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
+            }
+        }
+
+        private void RegisterArtistRequest(string nickname, string email, string password)
+        {
+            try
+            {
+                if (UserService.GetUserByEmail(email) != null || UserService.GetUserByNickname(nickname) != null)
+                {
+                    MessageBox.Show("Пользователь с таким email или никнеймом уже существует.",
+                                     "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
+                if (ArtistRequestService.HasActiveRequest(email, nickname))
+                {
+                    MessageBox.Show("Заявка с таким email или никнеймом уже отправлена или одобрена.",
+                                     "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
+                ArtistRequestService.CreateRequest(
+                    nickname, email, PasswordHelper.HashPassword(password));
+
+                MessageBox.Show(
+                    $"Заявка на регистрацию исполнителя \u00AB{nickname}\u00BB отправлена администратору.\n"
+                    + "Как только заявка будет одобрена, вы сможете войти в свой аккаунт.",
+                    "Заявка отправлена", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка: {ex.Message}");
             }
         }
 
@@ -278,7 +316,7 @@ namespace Rewind.Pages
             ArtistLoginForm.Visibility = Visibility.Collapsed;
             ArtistRegForm.Visibility = Visibility.Collapsed;
 
-            // Показываем соответствующее 
+            // Показываем соответствующее
             switch (selectedRoleId)
             {
                 // Пользователь
@@ -289,14 +327,14 @@ namespace Rewind.Pages
                     break;
 
                 // Исполнитель
-                case 2: 
+                case 2:
                     PanelArtist.Visibility = Visibility.Visible;
                     if (isLoginMode) ArtistLoginForm.Visibility = Visibility.Visible;
                     else ArtistRegForm.Visibility = Visibility.Visible;
                     break;
 
                 // Админ
-                case 3: 
+                case 3:
                     PanelAdmin.Visibility = Visibility.Visible;
                     break;
             }

@@ -49,8 +49,10 @@
 
                     <TextBlock x:Name="TrackTitleText" Text="Название трека" FontSize="32" FontWeight="Black"
                                Foreground="White" TextAlignment="Center"/>
-                    <TextBlock x:Name="TrackArtistText" Text="Исполнитель" FontSize="16" Foreground="#E4E4E0"
-                               TextAlignment="Center" Margin="0,8,0,18"/>
+                    <TextBlock x:Name="TrackArtistText" Text="Исполнитель" FontSize="16" Foreground="#2AE876"
+                               TextAlignment="Center" Margin="0,8,0,18"
+                               Cursor="Hand" TextDecorations="Underline"
+                               MouseLeftButtonDown="ArtistName_Click"/>
 
                     <Grid Width="700" Margin="0,0,0,6">
                         <Slider x:Name="ProgressSlider" Minimum="0" Maximum="1" Value="0" ValueChanged="ProgressSlider_ValueChanged"

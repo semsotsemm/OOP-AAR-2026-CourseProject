@@ -40,6 +40,10 @@ namespace Rewind.Helpers
         public int Duration { get; set; }
         public DateTime UploadDate { get; set; } = DateTime.UtcNow;
         public int ArtistID { get; set; }
+        public string? Genre { get; set; }
+        /// <summary>Published / Pending / Rejected / Banned</summary>
+        public string PublishStatus { get; set; } = "Published";
+        public string? RejectionReason { get; set; }
         public User Artist { get; set; }
         public Statistic Statistics { get; set; }
         public List<PlaylistTrack> PlaylistTracks { get; set; } = new();
@@ -93,6 +97,7 @@ namespace Rewind.Helpers
         public User Follower { get; set; }
         public int ArtistID { get; set; }
         public User Artist { get; set; }
+        public DateTime SubscribedAt { get; set; } = DateTime.UtcNow;
     }
 
     public class Favorite
@@ -101,6 +106,70 @@ namespace Rewind.Helpers
         public User User { get; set; }
         public int TrackID { get; set; }
         public Track Track { get; set; }
+    }
+
+    public class Album
+    {
+        [Key] public int AlbumId { get; set; }
+        [Required, MaxLength(100)] public string Title { get; set; } = "";
+        public int ArtistId { get; set; }
+        public User Artist { get; set; } = null!;
+        public string? CoverPath { get; set; }
+        public string? Genre { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public List<AlbumTrack> AlbumTracks { get; set; } = new();
+    }
+
+    public class AlbumTrack
+    {
+        public int AlbumId { get; set; }
+        public Album Album { get; set; } = null!;
+        public int TrackId { get; set; }
+        public Track Track { get; set; } = null!;
+    }
+
+    public class ArtistRequest
+    {
+        [Key] public int RequestId { get; set; }
+        [Required, MaxLength(50)] public string Nickname { get; set; } = "";
+        [Required, MaxLength(100)] public string Email { get; set; } = "";
+        [Required] public string PasswordHash { get; set; } = "";
+        /// <summary>Pending / Approved / Rejected</summary>
+        public string Status { get; set; } = "Pending";
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    }
+
+    public class TrackReport
+    {
+        [Key] public int ReportId { get; set; }
+        public int TrackId { get; set; }
+        public Track Track { get; set; } = null!;
+        public int ReporterId { get; set; }
+        public User Reporter { get; set; } = null!;
+        [Required] public string Reason { get; set; } = "";
+        /// <summary>Pending / Banned / Dismissed</summary>
+        public string Status { get; set; } = "Pending";
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    }
+
+    /// <summary>Уникальный слушатель плейлиста (один пользователь — один запись).</summary>
+    public class PlaylistListen
+    {
+        public int UserId { get; set; }
+        public User User { get; set; } = null!;
+        public int PlaylistId { get; set; }
+        public Playlist Playlist { get; set; } = null!;
+        public DateTime ListenedAt { get; set; } = DateTime.UtcNow;
+    }
+
+    /// <summary>Пользователь сохранил/лайкнул плейлист без копирования.</summary>
+    public class SavedPlaylist
+    {
+        public int UserId { get; set; }
+        public User User { get; set; } = null!;
+        public int PlaylistId { get; set; }
+        public Playlist Playlist { get; set; } = null!;
+        public DateTime SavedAt { get; set; } = DateTime.UtcNow;
     }
 
     // ─────────────────────────────────────────────────────────────
@@ -152,11 +221,103 @@ namespace Rewind.Helpers
         public AppDbContext()
         {
             Database.EnsureCreated();
+            EnsureArtistRequestsTable();
+            EnsureTrackSchemaUpdates();
+            EnsureAlbumsTables();
+            EnsureSubscriptionTimestamp();
             SeedDefaultAdmin();
+        }
+
+        private void EnsureTrackSchemaUpdates()
+        {
+            try { Database.ExecuteSqlRaw(@"ALTER TABLE ""Tracks"" ADD COLUMN IF NOT EXISTS ""Genre"" VARCHAR(100)"); } catch { }
+            try { Database.ExecuteSqlRaw(@"ALTER TABLE ""Tracks"" ADD COLUMN IF NOT EXISTS ""PublishStatus"" VARCHAR(20) NOT NULL DEFAULT 'Published'"); } catch { }
+            try { Database.ExecuteSqlRaw(@"ALTER TABLE ""Tracks"" ADD COLUMN IF NOT EXISTS ""RejectionReason"" TEXT"); } catch { }
+        }
+
+        private void EnsureSubscriptionTimestamp()
+        {
+            try
+            {
+                Database.ExecuteSqlRaw(@"
+                    ALTER TABLE ""Subscriptions""
+                    ADD COLUMN IF NOT EXISTS ""SubscribedAt""
+                    TIMESTAMPTZ NOT NULL DEFAULT NOW()");
+            }
+            catch { /* column already exists or table not created yet */ }
+        }
+
+        private void EnsureAlbumsTables()
+        {
+            try
+            {
+                Database.ExecuteSqlRaw(@"
+                    CREATE TABLE IF NOT EXISTS ""Albums"" (
+                        ""AlbumId""    SERIAL       PRIMARY KEY,
+                        ""Title""      VARCHAR(100) NOT NULL,
+                        ""ArtistId""   INT          NOT NULL REFERENCES ""Users""(""UserId"") ON DELETE CASCADE,
+                        ""CoverPath""  TEXT,
+                        ""Genre""      VARCHAR(100),
+                        ""CreatedAt""  TIMESTAMPTZ  NOT NULL DEFAULT NOW()
+                    )");
+                Database.ExecuteSqlRaw(@"
+                    CREATE TABLE IF NOT EXISTS ""AlbumTracks"" (
+                        ""AlbumId""  INT NOT NULL REFERENCES ""Albums""(""AlbumId"") ON DELETE CASCADE,
+                        ""TrackId""  INT NOT NULL REFERENCES ""Tracks""(""TrackID"") ON DELETE CASCADE,
+                        PRIMARY KEY (""AlbumId"", ""TrackId"")
+                    )");
+                Database.ExecuteSqlRaw(@"
+                    CREATE TABLE IF NOT EXISTS ""TrackReports"" (
+                        ""ReportId""    SERIAL       PRIMARY KEY,
+                        ""TrackId""     INT          NOT NULL REFERENCES ""Tracks""(""TrackID"") ON DELETE CASCADE,
+                        ""ReporterId""  INT          NOT NULL REFERENCES ""Users""(""UserId"") ON DELETE CASCADE,
+                        ""Reason""      TEXT         NOT NULL,
+                        ""Status""      VARCHAR(20)  NOT NULL DEFAULT 'Pending',
+                        ""CreatedAt""   TIMESTAMPTZ  NOT NULL DEFAULT NOW()
+                    )");
+                Database.ExecuteSqlRaw(@"
+                    CREATE TABLE IF NOT EXISTS ""SavedPlaylists"" (
+                        ""UserId""      INT         NOT NULL REFERENCES ""Users""(""UserId"") ON DELETE CASCADE,
+                        ""PlaylistId""  INT         NOT NULL REFERENCES ""Playlists""(""PlaylistID"") ON DELETE CASCADE,
+                        ""SavedAt""     TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+                        PRIMARY KEY (""UserId"", ""PlaylistId"")
+                    )");
+                Database.ExecuteSqlRaw(@"
+                    CREATE TABLE IF NOT EXISTS ""PlaylistListens"" (
+                        ""UserId""     INT         NOT NULL REFERENCES ""Users""(""UserId"") ON DELETE CASCADE,
+                        ""PlaylistId"" INT         NOT NULL REFERENCES ""Playlists""(""PlaylistID"") ON DELETE CASCADE,
+                        ""ListenedAt"" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+                        PRIMARY KEY (""UserId"", ""PlaylistId"")
+                    )");
+            }
+            catch { }
+        }
+
+        private void EnsureArtistRequestsTable()
+        {
+            try
+            {
+                Database.ExecuteSqlRaw(@"
+                    CREATE TABLE IF NOT EXISTS ""ArtistRequests"" (
+                        ""RequestId""     SERIAL          PRIMARY KEY,
+                        ""Nickname""      VARCHAR(50)     NOT NULL,
+                        ""Email""         VARCHAR(100)    NOT NULL,
+                        ""PasswordHash""  TEXT            NOT NULL,
+                        ""Status""        VARCHAR(20)     NOT NULL DEFAULT 'Pending',
+                        ""CreatedAt""     TIMESTAMPTZ     NOT NULL DEFAULT NOW()
+                    )");
+            }
+            catch { /* уже существует */ }
         }
 
         public DbSet<Role> Roles { get; set; }
         public DbSet<User> Users { get; set; }
+        public DbSet<ArtistRequest> ArtistRequests { get; set; }
+        public DbSet<Album> Albums { get; set; }
+        public DbSet<AlbumTrack> AlbumTracks { get; set; }
+        public DbSet<TrackReport> TrackReports { get; set; }
+        public DbSet<SavedPlaylist> SavedPlaylists { get; set; }
+        public DbSet<PlaylistListen> PlaylistListens { get; set; }
         public DbSet<Track> Tracks { get; set; }
         public DbSet<Statistic> Statistics { get; set; }
         public DbSet<Playlist> Playlists { get; set; }
@@ -176,6 +337,9 @@ namespace Rewind.Helpers
             m.Entity<PlaylistTrack>().HasKey(pt => new { pt.PlaylistID, pt.TrackID });
             m.Entity<Favorite>().HasKey(f => new { f.UserID, f.TrackID });
             m.Entity<Subscription>().HasKey(s => new { s.FollowerID, s.ArtistID });
+            m.Entity<AlbumTrack>().HasKey(at => new { at.AlbumId, at.TrackId });
+            m.Entity<SavedPlaylist>().HasKey(sp => new { sp.UserId, sp.PlaylistId });
+            m.Entity<PlaylistListen>().HasKey(pl => new { pl.UserId, pl.PlaylistId });
 
             m.Entity<ListeningHistory>().HasIndex(h => h.UserID);
             m.Entity<ListeningHistory>().HasIndex(h => h.TrackID);
@@ -284,6 +448,11 @@ namespace Rewind.Helpers
     public static class TrackService
     {
         public static event Action<int, int>? OnPlayCountUpdated;
+        /// <summary>artistId, artistName, trackTitle — файер при загрузке нового трека</summary>
+        public static event Action<int, string, string>? NewTrackUploaded;
+        /// <summary>Файерит NewTrackUploaded. Вызывать из любого места вместо прямого Invoke.</summary>
+        public static void NotifyNewTrackUploaded(int artistId, string artistName, string trackTitle)
+            => NewTrackUploaded?.Invoke(artistId, artistName, trackTitle);
         public static List<Track> GetAllTracks()
         {
             using var db = new AppDbContext();
@@ -331,6 +500,65 @@ namespace Rewind.Helpers
             db.SaveChanges();
             db.Statistics.Add(new Statistic { TrackID = track.TrackID });
             db.SaveChanges();
+        }
+
+        public static List<Track> GetPublishedTracks()
+        {
+            using var db = new AppDbContext();
+            return db.Tracks
+                .Where(t => t.PublishStatus == "Published")
+                .Include(t => t.Artist).Include(t => t.Statistics).ToList();
+        }
+
+        public static List<Track> GetPendingTracks()
+        {
+            using var db = new AppDbContext();
+            return db.Tracks
+                .Where(t => t.PublishStatus == "Pending")
+                .Include(t => t.Artist).Include(t => t.Statistics)
+                .OrderByDescending(t => t.UploadDate).ToList();
+        }
+
+        public static List<Track> GetByArtistAll(int artistId)
+        {
+            using var db = new AppDbContext();
+            return db.Tracks
+                .Where(t => t.ArtistID == artistId)
+                .Include(t => t.Statistics)
+                .OrderByDescending(t => t.UploadDate).ToList();
+        }
+
+        public static bool ApproveTrack(int trackId, string? editedTitle, string? editedGenre)
+        {
+            using var db = new AppDbContext();
+            var track = db.Tracks.Find(trackId);
+            if (track == null) return false;
+            track.PublishStatus = "Published";
+            if (!string.IsNullOrWhiteSpace(editedTitle)) track.Title = editedTitle;
+            if (!string.IsNullOrWhiteSpace(editedGenre)) track.Genre = editedGenre;
+            db.SaveChanges();
+            return true;
+        }
+
+        public static bool RejectTrack(int trackId, string reason)
+        {
+            using var db = new AppDbContext();
+            var track = db.Tracks.Find(trackId);
+            if (track == null) return false;
+            track.PublishStatus = "Rejected";
+            track.RejectionReason = reason;
+            db.SaveChanges();
+            return true;
+        }
+
+        public static bool BanUnbanTrack(int trackId)
+        {
+            using var db = new AppDbContext();
+            var track = db.Tracks.Find(trackId);
+            if (track == null) return false;
+            track.PublishStatus = track.PublishStatus == "Banned" ? "Published" : "Banned";
+            db.SaveChanges();
+            return true;
         }
 
         public static bool DeleteTrack(int id)
@@ -540,9 +768,27 @@ namespace Rewind.Helpers
             using var db = new AppDbContext();
             if (followerId == artistId) return false;
             if (db.Subscriptions.Any(s => s.FollowerID == followerId && s.ArtistID == artistId)) return false;
-            db.Subscriptions.Add(new Subscription { FollowerID = followerId, ArtistID = artistId });
+            db.Subscriptions.Add(new Subscription
+            {
+                FollowerID = followerId,
+                ArtistID = artistId,
+                SubscribedAt = DateTime.UtcNow
+            });
             db.SaveChanges();
             return true;
+        }
+
+        /// <summary>New subscriptions per day for the given artist over the last N days.</summary>
+        public static Dictionary<DateTime, int> GetSubscriptionsByDay(int artistId, int days = 14)
+        {
+            using var db = new AppDbContext();
+            var since = DateTime.UtcNow.Date.AddDays(-(days - 1));
+            return db.Subscriptions
+                .Where(s => s.ArtistID == artistId && s.SubscribedAt >= since)
+                .Select(s => s.SubscribedAt)
+                .ToList()
+                .GroupBy(dt => dt.Date)
+                .ToDictionary(g => g.Key, g => g.Count());
         }
 
         public static bool Unsubscribe(int followerId, int artistId)
@@ -580,6 +826,321 @@ namespace Rewind.Helpers
         {
             using var db = new AppDbContext();
             return db.Roles.FirstOrDefault(r => r.RoleName == name);
+        }
+    }
+
+    public static class HistoryService
+    {
+        public static void RecordListen(int userId, int trackId)
+        {
+            if (userId <= 0 || trackId <= 0) return;
+            try
+            {
+                using var db = new AppDbContext();
+                db.History.Add(new ListeningHistory
+                {
+                    UserID = userId,
+                    TrackID = trackId,
+                    ListenedAt = DateTime.UtcNow
+                });
+                db.SaveChanges();
+            }
+            catch { }
+        }
+
+        /// <summary>Listens per day for last N days for a specific track.</summary>
+        public static Dictionary<DateTime, int> GetListensByDay(int trackId, int days = 30)
+        {
+            using var db = new AppDbContext();
+            var since = DateTime.UtcNow.Date.AddDays(-(days - 1));
+            return db.History
+                .Where(h => h.TrackID == trackId && h.ListenedAt >= since)
+                .Select(h => h.ListenedAt)
+                .ToList()
+                .GroupBy(dt => dt.Date)
+                .ToDictionary(g => g.Key, g => g.Count());
+        }
+    }
+
+    public static class PlaylistListenService
+    {
+        /// <summary>Registers that a user listened to a playlist (once per user, idempotent).</summary>
+        public static void RegisterListen(int userId, int playlistId)
+        {
+            if (userId <= 0 || playlistId <= 0) return;
+            try
+            {
+                using var db = new AppDbContext();
+                if (!db.PlaylistListens.Any(l => l.UserId == userId && l.PlaylistId == playlistId))
+                {
+                    db.PlaylistListens.Add(new PlaylistListen
+                    {
+                        UserId = userId, PlaylistId = playlistId, ListenedAt = DateTime.UtcNow
+                    });
+                    db.SaveChanges();
+                }
+            }
+            catch { }
+        }
+
+        public static int GetListenerCount(int playlistId)
+        {
+            if (playlistId <= 0) return 0;
+            try
+            {
+                using var db = new AppDbContext();
+                return db.PlaylistListens.Count(l => l.PlaylistId == playlistId);
+            }
+            catch { return 0; }
+        }
+    }
+
+    public static class SavedPlaylistService
+    {
+        public static bool IsSaved(int userId, int playlistId)
+        {
+            using var db = new AppDbContext();
+            return db.SavedPlaylists.Any(sp => sp.UserId == userId && sp.PlaylistId == playlistId);
+        }
+
+        public static bool Toggle(int userId, int playlistId)
+        {
+            using var db = new AppDbContext();
+            var existing = db.SavedPlaylists.FirstOrDefault(sp => sp.UserId == userId && sp.PlaylistId == playlistId);
+            if (existing != null)
+            {
+                db.SavedPlaylists.Remove(existing);
+                db.SaveChanges();
+                return false; // removed
+            }
+            db.SavedPlaylists.Add(new SavedPlaylist { UserId = userId, PlaylistId = playlistId });
+            db.SaveChanges();
+            return true; // saved
+        }
+
+        public static List<Playlist> GetSavedByUser(int userId)
+        {
+            using var db = new AppDbContext();
+            return db.SavedPlaylists
+                .Where(sp => sp.UserId == userId)
+                .Include(sp => sp.Playlist).ThenInclude(p => p.PlaylistTracks).ThenInclude(pt => pt.Track)
+                .Include(sp => sp.Playlist).ThenInclude(p => p.Owner)
+                .OrderByDescending(sp => sp.SavedAt)
+                .Select(sp => sp.Playlist)
+                .Where(p => p != null)
+                .ToList()!;
+        }
+
+        public static int GetSavedCount(int playlistId)
+        {
+            using var db = new AppDbContext();
+            return db.SavedPlaylists.Count(sp => sp.PlaylistId == playlistId);
+        }
+    }
+
+    public static class AlbumService
+    {
+        public static List<Album> GetByArtist(int artistId)
+        {
+            using var db = new AppDbContext();
+            return db.Albums
+                .Where(a => a.ArtistId == artistId)
+                .Include(a => a.AlbumTracks).ThenInclude(at => at.Track)
+                .OrderByDescending(a => a.CreatedAt).ToList();
+        }
+
+        public static int Create(string title, int artistId, string? genre, string? coverPath)
+        {
+            using var db = new AppDbContext();
+            var album = new Album
+            {
+                Title = title, ArtistId = artistId,
+                Genre = genre, CoverPath = coverPath,
+                CreatedAt = DateTime.UtcNow
+            };
+            db.Albums.Add(album);
+            db.SaveChanges();
+            return album.AlbumId;
+        }
+
+        public static bool AddTrack(int albumId, int trackId)
+        {
+            using var db = new AppDbContext();
+            if (db.AlbumTracks.Any(at => at.AlbumId == albumId && at.TrackId == trackId)) return false;
+            db.AlbumTracks.Add(new AlbumTrack { AlbumId = albumId, TrackId = trackId });
+            db.SaveChanges();
+            return true;
+        }
+
+        public static bool RemoveTrack(int albumId, int trackId)
+        {
+            using var db = new AppDbContext();
+            var e = db.AlbumTracks.FirstOrDefault(at => at.AlbumId == albumId && at.TrackId == trackId);
+            if (e == null) return false;
+            db.AlbumTracks.Remove(e);
+            db.SaveChanges();
+            return true;
+        }
+
+        public static bool Delete(int albumId)
+        {
+            using var db = new AppDbContext();
+            var a = db.Albums.Find(albumId);
+            if (a == null) return false;
+            db.Albums.Remove(a);
+            db.SaveChanges();
+            return true;
+        }
+    }
+
+    public static class ArtistRequestService
+    {
+        /// <summary>Создать новую заявку исполнителя.</summary>
+        public static void CreateRequest(string nickname, string email, string passwordHash)
+        {
+            using var db = new AppDbContext();
+            db.ArtistRequests.Add(new ArtistRequest
+            {
+                Nickname = nickname,
+                Email = email,
+                PasswordHash = passwordHash,
+                Status = "Pending",
+                CreatedAt = DateTime.UtcNow
+            });
+            db.SaveChanges();
+        }
+
+        /// <summary>Все заявки (для отображения в панели).</summary>
+        public static List<ArtistRequest> GetAll()
+        {
+            using var db = new AppDbContext();
+            return db.ArtistRequests
+                     .OrderByDescending(r => r.CreatedAt)
+                     .ToList();
+        }
+
+        /// <summary>Только ожидающие заявки.</summary>
+        public static List<ArtistRequest> GetPending()
+        {
+            using var db = new AppDbContext();
+            return db.ArtistRequests
+                     .Where(r => r.Status == "Pending")
+                     .OrderByDescending(r => r.CreatedAt)
+                     .ToList();
+        }
+
+        public static int PendingCount()
+        {
+            using var db = new AppDbContext();
+            return db.ArtistRequests.Count(r => r.Status == "Pending");
+        }
+
+        /// <summary>Подтвердить заявку: создаёт User с ролью Artist.</summary>
+        public static bool Approve(int requestId)
+        {
+            using var db = new AppDbContext();
+            var req = db.ArtistRequests.FirstOrDefault(r => r.RequestId == requestId);
+            if (req == null || req.Status != "Pending") return false;
+
+            // Создаём аккаунт
+            var user = new User
+            {
+                Nickname = req.Nickname,
+                Email = req.Email,
+                PasswordHash = req.PasswordHash,
+                RoleId = 2, // Artist
+                Status = "Активен"
+            };
+            db.Users.Add(user);
+            req.Status = "Approved";
+            db.SaveChanges();
+            return true;
+        }
+
+        /// <summary>Отклонить заявку.</summary>
+        public static bool Reject(int requestId)
+        {
+            using var db = new AppDbContext();
+            var req = db.ArtistRequests.FirstOrDefault(r => r.RequestId == requestId);
+            if (req == null || req.Status != "Pending") return false;
+            req.Status = "Rejected";
+            db.SaveChanges();
+            return true;
+        }
+
+        /// <summary>Проверка: есть ли уже ожидающая или одобренная заявка с таким email/ником.</summary>
+        public static bool HasActiveRequest(string email, string nickname)
+        {
+            using var db = new AppDbContext();
+            return db.ArtistRequests.Any(r =>
+                (r.Email == email || r.Nickname == nickname) &&
+                (r.Status == "Pending" || r.Status == "Approved"));
+        }
+    }
+
+    public static class TrackReportService
+    {
+        public static void CreateReport(int trackId, int reporterId, string reason)
+        {
+            using var db = new AppDbContext();
+            // Prevent duplicate reports from the same user on same track
+            if (db.TrackReports.Any(r => r.TrackId == trackId && r.ReporterId == reporterId && r.Status == "Pending"))
+                return;
+            db.TrackReports.Add(new TrackReport
+            {
+                TrackId = trackId, ReporterId = reporterId,
+                Reason = reason, Status = "Pending", CreatedAt = DateTime.UtcNow
+            });
+            db.SaveChanges();
+        }
+
+        public static List<TrackReport> GetPending()
+        {
+            using var db = new AppDbContext();
+            return db.TrackReports
+                .Where(r => r.Status == "Pending")
+                .Include(r => r.Track).ThenInclude(t => t.Artist)
+                .Include(r => r.Reporter)
+                .OrderByDescending(r => r.CreatedAt)
+                .ToList();
+        }
+
+        public static List<TrackReport> GetAll()
+        {
+            using var db = new AppDbContext();
+            return db.TrackReports
+                .Include(r => r.Track).ThenInclude(t => t.Artist)
+                .Include(r => r.Reporter)
+                .OrderByDescending(r => r.CreatedAt)
+                .ToList();
+        }
+
+        public static int PendingCount()
+        {
+            using var db = new AppDbContext();
+            return db.TrackReports.Count(r => r.Status == "Pending");
+        }
+
+        public static bool BanTrackFromReport(int reportId)
+        {
+            using var db = new AppDbContext();
+            var report = db.TrackReports.Find(reportId);
+            if (report == null) return false;
+            report.Status = "Banned";
+            var track = db.Tracks.Find(report.TrackId);
+            if (track != null) track.PublishStatus = "Banned";
+            db.SaveChanges();
+            return true;
+        }
+
+        public static bool Dismiss(int reportId)
+        {
+            using var db = new AppDbContext();
+            var report = db.TrackReports.Find(reportId);
+            if (report == null) return false;
+            report.Status = "Dismissed";
+            db.SaveChanges();
+            return true;
         }
     }
 }

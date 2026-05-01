@@ -1,0 +1,59 @@
+<UserControl x:Class="Rewind.Tabs.AdminTabs.TrackReportsTab"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Grid Background="{DynamicResource BgMain}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Margin="28,24,28,16">
+            <TextBlock Text="Жалобы на треки" FontSize="28" FontWeight="Bold"
+                       FontFamily="{StaticResource HeaderFont}"
+                       Foreground="{DynamicResource TextPrimary}"/>
+            <TextBlock x:Name="CountText" Text="Загрузка..." FontSize="13"
+                       FontFamily="{StaticResource HeaderFont}"
+                       Foreground="{DynamicResource TextSecondary}" Margin="0,4,0,16"/>
+
+            <StackPanel Orientation="Horizontal">
+                <Border x:Name="FilterPending" CornerRadius="20" Padding="14,7" Cursor="Hand" Margin="0,0,8,0"
+                        MouseLeftButtonDown="FilterPending_Click">
+                    <Border.Background><SolidColorBrush Color="#1A1A18"/></Border.Background>
+                    <TextBlock Text="Активные" FontSize="12" FontWeight="SemiBold"
+                               Foreground="White" FontFamily="{StaticResource HeaderFont}"/>
+                </Border>
+                <Border x:Name="FilterAll" CornerRadius="20" Padding="14,7" Cursor="Hand"
+                        MouseLeftButtonDown="FilterAll_Click"
+                        Background="{DynamicResource BgCard}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1.5">
+                    <TextBlock Text="Все" FontSize="12" FontWeight="SemiBold"
+                               Foreground="{DynamicResource TextSecondary}" FontFamily="{StaticResource HeaderFont}"/>
+                </Border>
+            </StackPanel>
+        </StackPanel>
+
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto"
+                      HorizontalScrollBarVisibility="Disabled"
+                      Margin="28,0,28,28">
+            <StackPanel>
+                <Border x:Name="EmptyState" Visibility="Collapsed"
+                        Background="{DynamicResource BgCard}" CornerRadius="16"
+                        BorderBrush="{DynamicResource BorderColor}" BorderThickness="1"
+                        Padding="40">
+                    <StackPanel HorizontalAlignment="Center">
+                        <TextBlock Text="&#x2705;" FontSize="48" HorizontalAlignment="Center" Margin="0,0,0,12"/>
+                        <TextBlock Text="Жалоб нет" FontSize="18" FontWeight="Bold"
+                                   FontFamily="{StaticResource HeaderFont}"
+                                   Foreground="{DynamicResource TextPrimary}"
+                                   HorizontalAlignment="Center" Margin="0,0,0,8"/>
+                        <TextBlock Text="Когда пользователи пожалуются на треки, они появятся здесь"
+                                   FontSize="13" FontFamily="{StaticResource HeaderFont}"
+                                   Foreground="{DynamicResource TextSecondary}"
+                                   HorizontalAlignment="Center" TextAlignment="Center"/>
+                    </StackPanel>
+                </Border>
+                <StackPanel x:Name="ReportsContainer"/>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

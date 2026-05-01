@@ -6,73 +6,276 @@
         Icon="{help:Icon rewind_logo.png}"
         Height="780" Width="1280"
         WindowStartupLocation="CenterScreen"
-        Background="#F5F4F0">
-    <Grid Margin="24">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
+        Background="{DynamicResource BgMain}">
 
-        <Grid Grid.Row="0" Margin="0,0,0,16">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
-            <StackPanel>
-                <TextBlock Text="Admin Panel" FontSize="28" FontWeight="Bold"/>
-                <TextBlock Text="Статистика и управление пользователями" FontSize="13" Foreground="#666"/>
-            </StackPanel>
-            <Button Grid.Column="1" Content="Обновить" Click="Refresh_Click" Padding="14,8"/>
-        </Grid>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="260"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
 
-        <UniformGrid Grid.Row="1" Columns="3" Margin="0,0,0,16">
-            <Border Background="White" CornerRadius="12" Padding="16" Margin="0,0,12,0">
-                <StackPanel>
-                    <TextBlock Text="Пользователи" Foreground="#666"/>
-                    <TextBlock x:Name="UsersCountText" FontSize="30" FontWeight="Bold"/>
-                </StackPanel>
-            </Border>
-            <Border Background="White" CornerRadius="12" Padding="16" Margin="0,0,12,0">
-                <StackPanel>
-                    <TextBlock Text="Треки" Foreground="#666"/>
-                    <TextBlock x:Name="TracksCountText" FontSize="30" FontWeight="Bold"/>
-                </StackPanel>
-            </Border>
-            <Border Background="White" CornerRadius="12" Padding="16">
-                <StackPanel>
-                    <TextBlock Text="Плейлисты" Foreground="#666"/>
-                    <TextBlock x:Name="PlaylistsCountText" FontSize="30" FontWeight="Bold"/>
-                </StackPanel>
-            </Border>
-        </UniformGrid>
+        <!-- ==================== SIDEBAR ==================== -->
+        <Border Grid.Column="0"
+                Background="{DynamicResource BgSidebar}"
+                BorderBrush="{DynamicResource BorderColor}"
+                BorderThickness="0,0,1,0">
+            <DockPanel LastChildFill="False">
 
-        <Border Grid.Row="2" Background="White" CornerRadius="12" Padding="12">
-            <DataGrid x:Name="UsersGrid"
-                      AutoGenerateColumns="False"
-                      IsReadOnly="True"
-                      HeadersVisibility="Column"
-                      CanUserAddRows="False">
-                <DataGrid.Columns>
-                    <DataGridTextColumn Header="ID" Binding="{Binding UserId}" Width="60"/>
-                    <DataGridTextColumn Header="Ник" Binding="{Binding Nickname}" Width="*"/>
-                    <DataGridTextColumn Header="Email" Binding="{Binding Email}" Width="220"/>
-                    <DataGridTextColumn Header="Роль" Binding="{Binding Role}" Width="140"/>
-                    <DataGridTextColumn Header="Статус" Binding="{Binding Status}" Width="120"/>
-                    <DataGridTextColumn Header="Треков" Binding="{Binding TracksCount}" Width="90"/>
-                    <DataGridTemplateColumn Header="Действия" Width="250">
-                        <DataGridTemplateColumn.CellTemplate>
-                            <DataTemplate>
-                                <StackPanel Orientation="Horizontal">
-                                    <Button Content="Бан/Разбан" Click="BanUnban_Click" Margin="0,0,6,0" Padding="8,4"/>
-                                    <Button Content="Повысить" Click="Promote_Click" Margin="0,0,6,0" Padding="8,4"/>
-                                    <Button Content="Удалить" Click="Delete_Click" Padding="8,4"/>
-                                </StackPanel>
-                            </DataTemplate>
-                        </DataGridTemplateColumn.CellTemplate>
-                    </DataGridTemplateColumn>
-                </DataGrid.Columns>
-            </DataGrid>
+                <!-- ── ЛОГОТИП + БЕЙДЖ ── -->
+                <StackPanel DockPanel.Dock="Top" Margin="24,26,24,20">
+                    <StackPanel Orientation="Horizontal">
+                        <Border Width="34" Height="34" CornerRadius="17" Margin="0,0,10,0"
+                                ClipToBounds="True">
+                            <Image Source="{help:Icon rewind_logo.png}" Stretch="UniformToFill"/>
+                        </Border>
+                        <TextBlock Text="Rewind" VerticalAlignment="Center"
+                                   FontWeight="Black" FontSize="17"
+                                   Foreground="{DynamicResource TextPrimary}"
+                                   FontFamily="{StaticResource HeaderFont}"/>
+                    </StackPanel>
+                    <Border CornerRadius="6" Padding="8,4" Margin="0,10,0,0"
+                            HorizontalAlignment="Left">
+                        <Border.Background>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                <GradientStop Color="#2AE876" Offset="0"/>
+                                <GradientStop Color="#00BF72" Offset="1"/>
+                            </LinearGradientBrush>
+                        </Border.Background>
+                        <TextBlock Text="АДМИНИСТРАТОР" FontSize="10" FontWeight="Bold"
+                                   Foreground="White" FontFamily="{StaticResource HeaderFont}"/>
+                    </Border>
+                </StackPanel>
+
+                <!-- ── НАВИГАЦИЯ ── -->
+                <StackPanel DockPanel.Dock="Top" Margin="12,0,12,0">
+                    <TextBlock Text="НАВИГАЦИЯ" FontSize="10" FontWeight="Bold"
+                               Foreground="{DynamicResource TextMuted}"
+                               FontFamily="{StaticResource HeaderFont}"
+                               Margin="12,0,0,12"/>
+
+                    <!-- Обзор -->
+                    <Button x:Name="BtnOverview" Style="{DynamicResource ActiveNavButtonStyle}"
+                            Click="ShowOverview_Click">
+                        <StackPanel Orientation="Horizontal">
+                            <Border Width="30" Height="30" CornerRadius="7"
+                                    Background="{DynamicResource AccentColor}" Margin="0,0,10,0">
+                                <TextBlock Text="📊" FontSize="14"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <TextBlock Text="Обзор" FontSize="13" FontWeight="Bold"
+                                       Foreground="{DynamicResource AccentColor}"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+
+                    <!-- Пользователи -->
+                    <Button x:Name="BtnUsers" Style="{StaticResource NavButtonStyle}"
+                            Click="ShowUsers_Click">
+                        <StackPanel Orientation="Horizontal">
+                            <Border Width="30" Height="30" CornerRadius="7"
+                                    Background="{DynamicResource BgMain}" Margin="0,0,10,0">
+                                <TextBlock Text="👥" FontSize="14"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <TextBlock Text="Пользователи" FontSize="13"
+                                       Foreground="{DynamicResource TextPrimary}"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+
+                    <!-- Треки -->
+                    <Button x:Name="BtnTracks" Style="{StaticResource NavButtonStyle}"
+                            Click="ShowTracks_Click">
+                        <StackPanel Orientation="Horizontal">
+                            <Border Width="30" Height="30" CornerRadius="7"
+                                    Background="{DynamicResource BgMain}" Margin="0,0,10,0">
+                                <TextBlock Text="🎵" FontSize="14"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <TextBlock Text="Треки" FontSize="13"
+                                       Foreground="{DynamicResource TextPrimary}"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+
+                    <!-- Треки на проверке -->
+                    <Button x:Name="BtnSubmissions" Style="{StaticResource NavButtonStyle}"
+                            Click="ShowSubmissions_Click">
+                        <Grid>
+                            <StackPanel Orientation="Horizontal">
+                                <Border Width="30" Height="30" CornerRadius="7"
+                                        Background="{DynamicResource BgMain}" Margin="0,0,10,0">
+                                    <TextBlock Text="🎶" FontSize="14"
+                                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <TextBlock Text="На проверке" FontSize="13"
+                                           Foreground="{DynamicResource TextPrimary}"
+                                           VerticalAlignment="Center"/>
+                            </StackPanel>
+                            <Border x:Name="SubmissionsBadge" CornerRadius="9"
+                                    Width="18" Height="18"
+                                    HorizontalAlignment="Right" VerticalAlignment="Top"
+                                    Margin="0,0,4,0" Visibility="Collapsed">
+                                <Border.Background><SolidColorBrush Color="#E53935"/></Border.Background>
+                                <TextBlock x:Name="SubmissionsBadgeText" Text="0"
+                                           FontSize="10" FontWeight="Bold" Foreground="White"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                        </Grid>
+                    </Button>
+
+                    <!-- Заявки исполнителей -->
+                    <Button x:Name="BtnRequests" Style="{StaticResource NavButtonStyle}"
+                            Click="ShowRequests_Click">
+                        <Grid>
+                            <StackPanel Orientation="Horizontal">
+                                <Border Width="30" Height="30" CornerRadius="7"
+                                        Background="{DynamicResource BgMain}" Margin="0,0,10,0">
+                                    <TextBlock Text="📩" FontSize="14"
+                                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <TextBlock Text="Заявки" FontSize="13"
+                                           Foreground="{DynamicResource TextPrimary}"
+                                           VerticalAlignment="Center"/>
+                            </StackPanel>
+                            <!-- Бейдж с количеством -->
+                            <Border x:Name="RequestsBadge" CornerRadius="9"
+                                    Width="18" Height="18"
+                                    HorizontalAlignment="Right" VerticalAlignment="Top"
+                                    Margin="0,0,4,0"
+                                    Visibility="Collapsed">
+                                <Border.Background>
+                                    <SolidColorBrush Color="#E53935"/>
+                                </Border.Background>
+                                <TextBlock x:Name="RequestsBadgeText" Text="0"
+                                           FontSize="10" FontWeight="Bold"
+                                           Foreground="White"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"/>
+                            </Border>
+                        </Grid>
+                    </Button>
+
+                    <!-- Жалобы -->
+                    <Button x:Name="BtnReports" Style="{StaticResource NavButtonStyle}"
+                            Click="ShowReports_Click">
+                        <Grid>
+                            <StackPanel Orientation="Horizontal">
+                                <Border Width="30" Height="30" CornerRadius="7"
+                                        Background="{DynamicResource BgMain}" Margin="0,0,10,0">
+                                    <TextBlock Text="⚠" FontSize="14"
+                                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <TextBlock Text="Жалобы" FontSize="13"
+                                           Foreground="{DynamicResource TextPrimary}"
+                                           VerticalAlignment="Center"/>
+                            </StackPanel>
+                            <Border x:Name="ReportsBadge" CornerRadius="9" Width="18" Height="18"
+                                    HorizontalAlignment="Right" VerticalAlignment="Top"
+                                    Margin="0,0,4,0" Visibility="Collapsed">
+                                <Border.Background><SolidColorBrush Color="#E53935"/></Border.Background>
+                                <TextBlock x:Name="ReportsBadgeText" Text="0" FontSize="10" FontWeight="Bold"
+                                           Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                        </Grid>
+                    </Button>
+                </StackPanel>
+
+                <!-- ── НИЖНЯЯ СЕКЦИЯ ── -->
+                <StackPanel DockPanel.Dock="Bottom" Margin="16,0,16,24">
+
+                    <!-- Разделитель -->
+                    <Border Height="1" Background="{DynamicResource BorderColor}" Margin="0,0,0,20"/>
+
+                    <!-- Выбор темы -->
+                    <TextBlock Text="ТЕМА" FontSize="10" FontWeight="Bold"
+                               Foreground="{DynamicResource TextMuted}"
+                               FontFamily="{StaticResource HeaderFont}"
+                               Margin="4,0,0,10"/>
+
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                        <!-- Classic (зелёная) -->
+                        <Border x:Name="ThemeClassicCircle"
+                                Width="26" Height="26" CornerRadius="13"
+                                Cursor="Hand" Margin="0,0,8,0"
+                                Tag="ThemeClassic.xaml"
+                                MouseLeftButtonDown="ThemeCircle_Click"
+                                BorderThickness="2" BorderBrush="Transparent">
+                            <Border.Background>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                    <GradientStop Color="#2AE876" Offset="0"/>
+                                    <GradientStop Color="#004D40" Offset="1"/>
+                                </LinearGradientBrush>
+                            </Border.Background>
+                        </Border>
+
+                        <!-- Pink (розовая) -->
+                        <Border x:Name="ThemePinkCircle"
+                                Width="26" Height="26" CornerRadius="13"
+                                Cursor="Hand" Margin="0,0,8,0"
+                                Tag="ThemePink.xaml"
+                                MouseLeftButtonDown="ThemeCircle_Click"
+                                BorderThickness="2" BorderBrush="Transparent">
+                            <Border.Background>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                    <GradientStop Color="#FF6B95" Offset="0"/>
+                                    <GradientStop Color="#FFA07A" Offset="1"/>
+                                </LinearGradientBrush>
+                            </Border.Background>
+                        </Border>
+
+                        <!-- Midnight (тёмная) -->
+                        <Border x:Name="ThemeMidnightCircle"
+                                Width="26" Height="26" CornerRadius="13"
+                                Cursor="Hand" Margin="0,0,8,0"
+                                Tag="ThemeMidnight.xaml"
+                                MouseLeftButtonDown="ThemeCircle_Click"
+                                BorderThickness="2" BorderBrush="Transparent">
+                            <Border.Background>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                    <GradientStop Color="#64FFDA" Offset="0"/>
+                                    <GradientStop Color="#0A192F" Offset="1"/>
+                                </LinearGradientBrush>
+                            </Border.Background>
+                        </Border>
+
+                        <!-- Lavender (фиолетовая) -->
+                        <Border x:Name="ThemeLavenderCircle"
+                                Width="26" Height="26" CornerRadius="13"
+                                Cursor="Hand"
+                                Tag="ThemeLavender.xaml"
+                                MouseLeftButtonDown="ThemeCircle_Click"
+                                BorderThickness="2" BorderBrush="Transparent">
+                            <Border.Background>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                    <GradientStop Color="#A388EE" Offset="0"/>
+                                    <GradientStop Color="#6C4AB6" Offset="1"/>
+                                </LinearGradientBrush>
+                            </Border.Background>
+                        </Border>
+                    </StackPanel>
+
+                    <!-- Выйти из аккаунта -->
+                    <Border x:Name="LogOutBorder" CornerRadius="12" Cursor="Hand"
+                            Background="{DynamicResource BgCardHover}"
+                            MouseLeftButtonDown="LogOut_Click">
+                        <StackPanel Orientation="Horizontal" Margin="14,10">
+                            <TextBlock Text="←" FontSize="16" FontWeight="Bold"
+                                       Foreground="{DynamicResource TextSecondary}"
+                                       VerticalAlignment="Center" Margin="0,0,8,0"/>
+                            <TextBlock Text="Выйти из аккаунта" FontSize="13"
+                                       FontFamily="{StaticResource HeaderFont}"
+                                       Foreground="{DynamicResource TextSecondary}"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+
+            </DockPanel>
         </Border>
+
+        <!-- ==================== CONTENT ==================== -->
+        <ContentControl x:Name="AdminContentArea" Grid.Column="1"/>
+
     </Grid>
 </Window>

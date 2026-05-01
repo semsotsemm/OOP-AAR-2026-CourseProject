@@ -4,11 +4,11 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d">
-    <Grid Background="{StaticResource BgMain}">
+    <Grid Background="{DynamicResource BgMain}">
         <ScrollViewer VerticalScrollBarVisibility="Auto">
             <StackPanel Margin="32,28,32,120">
                 <TextBlock Text="Поиск" FontSize="28" FontWeight="Bold" Margin="0,0,0,16"/>
-                <Border Background="{StaticResource BgSidebar}" CornerRadius="14" BorderBrush="{StaticResource BorderColor}" BorderThickness="1.5" Margin="0,0,0,18">
+                <Border Background="{DynamicResource BgSidebar}" CornerRadius="14" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1.5" Margin="0,0,0,18">
                     <TextBox x:Name="SearchBox"
                              Height="46"
                              FontSize="14"
@@ -20,6 +20,27 @@
                              TextChanged="SearchBox_TextChanged"
                              Style="{StaticResource SearchBoxStyle}"/>
                 </Border>
+                <!-- Sort row -->
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                    <Border x:Name="SortTitle" CornerRadius="18" Padding="14,7" Cursor="Hand" Margin="0,0,8,0"
+                            MouseLeftButtonDown="SortTitle_Click">
+                        <Border.Background><SolidColorBrush Color="#1A1A18"/></Border.Background>
+                        <TextBlock Text="По названию" FontSize="12" FontWeight="SemiBold" Foreground="White"
+                                   FontFamily="{StaticResource HeaderFont}"/>
+                    </Border>
+                    <Border x:Name="SortArtist" CornerRadius="18" Padding="14,7" Cursor="Hand" Margin="0,0,8,0"
+                            MouseLeftButtonDown="SortArtist_Click"
+                            Background="{DynamicResource BgCard}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1.5">
+                        <TextBlock Text="По исполнителю" FontSize="12" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource TextSecondary}" FontFamily="{StaticResource HeaderFont}"/>
+                    </Border>
+                    <Border x:Name="SortDuration" CornerRadius="18" Padding="14,7" Cursor="Hand"
+                            MouseLeftButtonDown="SortDuration_Click"
+                            Background="{DynamicResource BgCard}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1.5">
+                        <TextBlock Text="По длительности" FontSize="12" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource TextSecondary}" FontFamily="{StaticResource HeaderFont}"/>
+                    </Border>
+                </StackPanel>
                 <StackPanel x:Name="ResultsContainer"/>
             </StackPanel>
         </ScrollViewer>

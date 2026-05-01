@@ -6,10 +6,10 @@
              xmlns:help="clr-namespace:Rewind.Helpers"
              mc:Ignorable="d"
              Height="auto" Width="auto">
-    <Grid Background="{StaticResource BgMain}">
+    <Grid Background="{DynamicResource BgMain}">
         <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
             <StackPanel Margin="32,28,32,120">
-                <Border Background="{StaticResource GreenGradientStyle}" CornerRadius="20" Padding="24" Margin="0,0,0,18">
+                <Border Background="{DynamicResource GreenGradientStyle}" CornerRadius="20" Padding="24" Margin="0,0,0,18">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
@@ -36,7 +36,7 @@
 
                 <TextBlock Text="Треки плейлиста" FontSize="18" FontWeight="Bold" Margin="0,0,0,10"/>
                 <StackPanel x:Name="TracksContainer"/>
-                <TextBlock x:Name="EmptyText" Text="В этом плейлисте пока нет треков" Visibility="Collapsed" Foreground="{StaticResource TextSecondary}" Margin="0,8,0,0"/>
+                <TextBlock x:Name="EmptyText" Text="В этом плейлисте пока нет треков" Visibility="Collapsed" Foreground="{DynamicResource TextSecondary}" Margin="0,8,0,0"/>
             </StackPanel>
         </ScrollViewer>
     </Grid>

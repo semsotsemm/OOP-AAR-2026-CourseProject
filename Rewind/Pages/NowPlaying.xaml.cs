@@ -67,23 +67,120 @@ namespace Rewind.Pages
         private void RenderQueue()
         {
             QueuePanel.Children.Clear();
-            foreach (var item in _host.CurrentContext)
+            var context = _host.CurrentContext.ToList();
+            int currentId = _host.CurrentTrack?.TrackId ?? -1;
+
+            for (int i = 0; i < context.Count; i++)
             {
+                var item = context[i];
+                bool isCurrent = item.TrackId == currentId;
+
                 var row = new Border
                 {
-                    Background = item.TrackId == _host.CurrentTrack?.TrackId ? new SolidColorBrush(Color.FromArgb(95, 42, 232, 118)) : new SolidColorBrush(Color.FromArgb(70, 20, 20, 20)),
+                    Background = isCurrent
+                        ? new SolidColorBrush(Color.FromArgb(95, 42, 232, 118))
+                        : new SolidColorBrush(Color.FromArgb(70, 20, 20, 20)),
                     CornerRadius = new CornerRadius(12),
                     Padding = new Thickness(10, 8, 10, 8),
-                    Margin = new Thickness(0, 0, 0, 8),
+                    Margin = new Thickness(0, 0, 0, 6),
                     Cursor = Cursors.Hand
                 };
-                row.MouseLeftButtonDown += (_, _) => _host.PlayTrackFromContext(item, _host.CurrentContext);
 
-                var meta = new StackPanel();
-                meta.Children.Add(new TextBlock { Text = item.TrackName, Foreground = Brushes.White, FontWeight = FontWeights.SemiBold });
-                meta.Children.Add(new TextBlock { Text = item.ArtistName, Foreground = new SolidColorBrush(Color.FromRgb(210, 210, 202)), FontSize = 12 });
-                row.Child = meta;
+                var rowGrid = new Grid();
+                rowGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+                rowGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Auto) });
+
+                // Track info (left)
+                var meta = new StackPanel { VerticalAlignment = VerticalAlignment.Center };
+                var titleBlock = new TextBlock
+                {
+                    Text = item.TrackName,
+                    Foreground = isCurrent ? new SolidColorBrush(Color.FromRgb(42, 232, 118)) : Brushes.White,
+                    FontWeight = isCurrent ? FontWeights.Bold : FontWeights.SemiBold,
+                    TextTrimming = TextTrimming.CharacterEllipsis
+                };
+                meta.Children.Add(titleBlock);
+                meta.Children.Add(new TextBlock
+                {
+                    Text = item.ArtistName,
+                    Foreground = new SolidColorBrush(Color.FromRgb(180, 180, 172)),
+                    FontSize = 11
+                });
+                Grid.SetColumn(meta, 0);
+
+                // Actions (right)
+                var btnPanel = new StackPanel
+                {
+                    Orientation = Orientation.Horizontal,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Margin = new Thickness(8, 0, 0, 0)
+                };
+
+                if (!isCurrent)
+                {
+                    // Remove button
+                    var removeBtn = new Border
+                    {
+                        Width = 26, Height = 26, CornerRadius = new CornerRadius(13),
+                        Background = new SolidColorBrush(Color.FromArgb(90, 220, 60, 60)),
+                        Cursor = Cursors.Hand, Margin = new Thickness(0, 0, 4, 0),
+                        ToolTip = "Удалить из очереди"
+                    };
+                    removeBtn.Child = new TextBlock
+                    {
+                        Text = "×", FontSize = 15, FontWeight = FontWeights.Bold,
+                        Foreground = Brushes.White,
+                        HorizontalAlignment = HorizontalAlignment.Center,
+                        VerticalAlignment = VerticalAlignment.Center
+                    };
+                    int capturedId = item.TrackId;
+                    removeBtn.MouseLeftButtonDown += (_, ev) =>
+                    {
+                        ev.Handled = true;
+                        _host.RemoveFromQueue(capturedId);
+                    };
+                    btnPanel.Children.Add(removeBtn);
+
+                    // Right-click context menu on the row
+                    var ctxMenu = new ContextMenu();
+                    var removeMenuItem = new MenuItem { Header = "×  Удалить из очереди" };
+                    int rid = item.TrackId;
+                    removeMenuItem.Click += (_, __) => _host.RemoveFromQueue(rid);
+                    ctxMenu.Items.Add(removeMenuItem);
+
+                    var playNextMenuItem = new MenuItem { Header = "⇥  Играть следующим" };
+                    var capturedItem2 = item;
+                    playNextMenuItem.Click += (_, __) => _host.PlayNext(capturedItem2);
+                    ctxMenu.Items.Add(playNextMenuItem);
+
+                    row.ContextMenu = ctxMenu;
+                }
+
+                Grid.SetColumn(btnPanel, 1);
+
+                rowGrid.Children.Add(meta);
+                rowGrid.Children.Add(btnPanel);
+                row.Child = rowGrid;
+
+                var capturedItem = item;
+                row.MouseLeftButtonDown += (_, _) =>
+                {
+                    if (!isCurrent)
+                        _host.PlayTrackFromContext(capturedItem, _host.CurrentContext.ToList());
+                };
+
                 QueuePanel.Children.Add(row);
+            }
+
+            if (context.Count == 0)
+            {
+                QueuePanel.Children.Add(new TextBlock
+                {
+                    Text = "Очередь пуста",
+                    Foreground = new SolidColorBrush(Color.FromRgb(130, 130, 120)),
+                    FontSize = 13, HorizontalAlignment = HorizontalAlignment.Center,
+                    Margin = new Thickness(0, 20, 0, 0)
+                });
             }
         }
 
@@ -165,6 +262,15 @@ namespace Rewind.Pages
             if (sec <= 0) return "0:00";
             var ts = TimeSpan.FromSeconds(sec);
             return ts.Hours > 0 ? $"{ts.Hours}:{ts.Minutes:D2}:{ts.Seconds:D2}" : $"{ts.Minutes}:{ts.Seconds:D2}";
+        }
+
+        private void ArtistName_Click(object sender, MouseButtonEventArgs e)
+        {
+            var artistName = TrackArtistText.Text;
+            if (string.IsNullOrWhiteSpace(artistName)) return;
+            Close();
+            _host.OpenArtistProfileByName(artistName);
+            _host.Activate();
         }
 
         private void BackButton_Click(object sender, MouseButtonEventArgs e)

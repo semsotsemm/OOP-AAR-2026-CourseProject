@@ -1,0 +1,261 @@
+<UserControl x:Class="Rewind.Tabs.AdminTabs.UsersTab"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:help="clr-namespace:Rewind.Helpers">
+
+    <UserControl.Resources>
+
+        <!-- DataGrid general style -->
+        <Style TargetType="DataGrid">
+            <Setter Property="Background" Value="{DynamicResource BgCard}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderColor}"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="RowBackground" Value="{DynamicResource BgCard}"/>
+            <Setter Property="AlternatingRowBackground" Value="{DynamicResource BgCardHover}"/>
+            <Setter Property="HorizontalGridLinesBrush" Value="{DynamicResource BorderColor}"/>
+            <Setter Property="VerticalGridLinesBrush" Value="Transparent"/>
+            <Setter Property="GridLinesVisibility" Value="Horizontal"/>
+            <Setter Property="RowHeight" Value="52"/>
+            <Setter Property="CanUserResizeRows" Value="False"/>
+            <Setter Property="SelectionMode" Value="Single"/>
+            <Setter Property="SelectionUnit" Value="FullRow"/>
+        </Style>
+
+        <!-- Column header style -->
+        <Style TargetType="DataGridColumnHeader">
+            <Setter Property="Background" Value="{DynamicResource BgCardHover}"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextMuted}"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Padding" Value="14,0"/>
+            <Setter Property="Height" Value="40"/>
+            <Setter Property="BorderThickness" Value="0,0,0,1"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderColor}"/>
+            <Setter Property="SeparatorBrush" Value="{DynamicResource BorderColor}"/>
+        </Style>
+
+        <!-- Cell style -->
+        <Style TargetType="DataGridCell">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="14,0"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Style.Triggers>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="{DynamicResource ActiveCardBackground}"/>
+                    <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Row style -->
+        <Style TargetType="DataGridRow">
+            <Setter Property="Background" Value="{DynamicResource BgCard}"/>
+            <Style.Triggers>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="{DynamicResource ActiveCardBackground}"/>
+                </Trigger>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="{DynamicResource BgCardHover}"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Action button style -->
+        <Style x:Key="ActionBtn" TargetType="Button">
+            <Setter Property="Background" Value="{DynamicResource BgCardHover}"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextSecondary}"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Padding" Value="10,5"/>
+            <Setter Property="Margin" Value="0,0,5,0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd" Background="{TemplateBinding Background}"
+                                CornerRadius="8" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Opacity" Value="0.8"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="DangerBtn" TargetType="Button" BasedOn="{StaticResource ActionBtn}">
+            <Setter Property="Background" Value="#FFEAEA"/>
+            <Setter Property="Foreground" Value="#D32F2F"/>
+        </Style>
+
+        <Style x:Key="SuccessBtn" TargetType="Button" BasedOn="{StaticResource ActionBtn}">
+            <Setter Property="Background" Value="#E8F5E9"/>
+            <Setter Property="Foreground" Value="#2E7D32"/>
+        </Style>
+
+    </UserControl.Resources>
+
+    <Grid Background="{DynamicResource BgMain}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- ===== ЗАГОЛОВОК + ПОИСК ===== -->
+        <StackPanel Grid.Row="0" Margin="28,24,28,16">
+            <TextBlock Text="Пользователи" FontSize="28" FontWeight="Bold"
+                       FontFamily="{StaticResource HeaderFont}"
+                       Foreground="{DynamicResource TextPrimary}"/>
+            <TextBlock Text="Управление аккаунтами платформы" FontSize="13"
+                       FontFamily="{StaticResource HeaderFont}"
+                       Foreground="{DynamicResource TextSecondary}" Margin="0,4,0,16"/>
+
+            <!-- Search -->
+            <Border Background="{DynamicResource BgCard}" CornerRadius="14"
+                    BorderBrush="{DynamicResource BorderColor}" BorderThickness="1.5">
+                <Grid Margin="14,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="🔍" FontSize="14" VerticalAlignment="Center" Margin="0,0,10,0"
+                               Foreground="{DynamicResource TextMuted}"/>
+                    <TextBox Grid.Column="1" x:Name="SearchBox"
+                             Height="46" FontSize="14"
+                             FontFamily="{StaticResource BodyFont}"
+                             Foreground="{DynamicResource TextPrimary}"
+                             Background="Transparent" BorderThickness="0"
+                             VerticalContentAlignment="Center"
+                             TextChanged="SearchBox_TextChanged">
+                        <TextBox.Style>
+                            <Style TargetType="TextBox">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="TextBox">
+                                            <Grid>
+                                                <TextBlock x:Name="Placeholder"
+                                                           Text="Поиск по нику, email, роли..."
+                                                           FontSize="14"
+                                                           Foreground="{DynamicResource TextMuted}"
+                                                           VerticalAlignment="Center"
+                                                           Visibility="Collapsed"/>
+                                                <ScrollViewer x:Name="PART_ContentHost" VerticalAlignment="Center"/>
+                                            </Grid>
+                                            <ControlTemplate.Triggers>
+                                                <MultiTrigger>
+                                                    <MultiTrigger.Conditions>
+                                                        <Condition Property="Text" Value=""/>
+                                                        <Condition Property="IsFocused" Value="False"/>
+                                                    </MultiTrigger.Conditions>
+                                                    <Setter TargetName="Placeholder" Property="Visibility" Value="Visible"/>
+                                                </MultiTrigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </TextBox.Style>
+                    </TextBox>
+                </Grid>
+            </Border>
+        </StackPanel>
+
+        <!-- ===== ТАБЛИЦА ПОЛЬЗОВАТЕЛЕЙ ===== -->
+        <Border Grid.Row="1" Background="{DynamicResource BgCard}" CornerRadius="16"
+                Margin="28,0,28,28"
+                BorderBrush="{DynamicResource BorderColor}" BorderThickness="1"
+                ClipToBounds="True">
+            <DataGrid x:Name="UsersGrid"
+                      AutoGenerateColumns="False"
+                      IsReadOnly="True"
+                      HeadersVisibility="Column"
+                      CanUserAddRows="False"
+                      CanUserReorderColumns="False"
+                      CanUserSortColumns="True"
+                      SelectionChanged="UsersGrid_SelectionChanged">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="ID" Binding="{Binding UserId}" Width="55">
+                        <DataGridTextColumn.ElementStyle>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="VerticalAlignment" Value="Center"/>
+                                <Setter Property="Foreground" Value="{DynamicResource TextMuted}"/>
+                                <Setter Property="FontSize" Value="12"/>
+                                <Setter Property="Margin" Value="14,0"/>
+                            </Style>
+                        </DataGridTextColumn.ElementStyle>
+                    </DataGridTextColumn>
+
+                    <DataGridTemplateColumn Header="ПОЛЬЗОВАТЕЛЬ" Width="*">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <StackPanel Margin="14,0" VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding Nickname}" FontSize="13"
+                                               FontWeight="SemiBold"
+                                               Foreground="{DynamicResource TextPrimary}"/>
+                                    <TextBlock Text="{Binding Email}" FontSize="11"
+                                               Foreground="{DynamicResource TextSecondary}"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
+                    <DataGridTemplateColumn Header="РОЛЬ" Width="140">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Border CornerRadius="6" Padding="8,3" Margin="14,0" HorizontalAlignment="Left"
+                                        Background="{Binding RoleBg}" VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding Role}" FontSize="11" FontWeight="SemiBold"
+                                               Foreground="{Binding RoleFg}"/>
+                                </Border>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
+                    <DataGridTemplateColumn Header="СТАТУС" Width="120">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Border CornerRadius="6" Padding="8,3" Margin="14,0" HorizontalAlignment="Left"
+                                        Background="{Binding StatusBg}" VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding Status}" FontSize="11" FontWeight="SemiBold"
+                                               Foreground="{Binding StatusFg}"/>
+                                </Border>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
+                    <DataGridTextColumn Header="ТРЕКОВ" Binding="{Binding TracksCount}" Width="85">
+                        <DataGridTextColumn.ElementStyle>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="VerticalAlignment" Value="Center"/>
+                                <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+                                <Setter Property="FontWeight" Value="SemiBold"/>
+                                <Setter Property="HorizontalAlignment" Value="Center"/>
+                                <Setter Property="Margin" Value="14,0"/>
+                            </Style>
+                        </DataGridTextColumn.ElementStyle>
+                    </DataGridTextColumn>
+
+                    <DataGridTemplateColumn Header="ДЕЙСТВИЯ" Width="240">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal" Margin="10,0" VerticalAlignment="Center">
+                                    <Button Content="⛔ Бан/Разбан" Style="{StaticResource ActionBtn}"
+                                            Click="BanUnban_Click"/>
+                                    <Button Content="🗑" Style="{StaticResource DangerBtn}"
+                                            Width="32" Padding="0"
+                                            Click="Delete_Click"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                </DataGrid.Columns>
+            </DataGrid>
+        </Border>
+    </Grid>
+</UserControl>

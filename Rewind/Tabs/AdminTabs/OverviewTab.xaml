@@ -1,0 +1,219 @@
+<UserControl x:Class="Rewind.Tabs.AdminTabs.OverviewTab"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:Rewind.Controls"
+             xmlns:help="clr-namespace:Rewind.Helpers">
+
+    <Grid Background="{DynamicResource BgMain}">
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <StackPanel Margin="28,24,28,100">
+
+                <!-- ===== ЗАГОЛОВОК ===== -->
+                <Grid Margin="0,0,0,24">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel>
+                        <TextBlock Text="Обзор" FontSize="28" FontWeight="Bold"
+                                   FontFamily="{StaticResource HeaderFont}"
+                                   Foreground="{DynamicResource TextPrimary}"/>
+                        <TextBlock Text="Статистика и аналитика платформы"
+                                   FontSize="13" FontFamily="{StaticResource HeaderFont}"
+                                   Foreground="{DynamicResource TextSecondary}" Margin="0,4,0,0"/>
+                    </StackPanel>
+                    <Border Grid.Column="1" CornerRadius="12" Cursor="Hand"
+                            VerticalAlignment="Center" MouseLeftButtonDown="Refresh_Click"
+                            Background="{DynamicResource BgCard}"
+                            BorderBrush="{DynamicResource BorderColor}" BorderThickness="1.5">
+                        <TextBlock Text="↻  Обновить" FontSize="13" FontWeight="SemiBold"
+                                   FontFamily="{StaticResource HeaderFont}"
+                                   Foreground="{DynamicResource TextSecondary}"
+                                   Margin="14,9"/>
+                    </Border>
+                </Grid>
+
+                <!-- ===== КАРТОЧКИ СТАТИСТИКИ ===== -->
+                <UniformGrid Columns="4" Margin="0,0,0,20">
+
+                    <!-- Пользователи -->
+                    <Border Background="{DynamicResource BgCard}" CornerRadius="16"
+                            Padding="20" Margin="0,0,12,0"
+                            BorderBrush="{DynamicResource BorderColor}" BorderThickness="1">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <Border Grid.Row="0" Width="40" Height="40" CornerRadius="12"
+                                    HorizontalAlignment="Left" Margin="0,0,0,14">
+                                <Border.Background>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                        <GradientStop Color="#2AE876" Offset="0"/>
+                                        <GradientStop Color="#004D40" Offset="1"/>
+                                    </LinearGradientBrush>
+                                </Border.Background>
+                                <TextBlock Text="👥" FontSize="18" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <TextBlock x:Name="CardUsersCount" Grid.Row="1"
+                                       Text="0" FontSize="34" FontWeight="Black"
+                                       FontFamily="{StaticResource HeaderFont}"
+                                       Foreground="{DynamicResource TextPrimary}"/>
+                            <TextBlock Grid.Row="2" Text="Пользователей" FontSize="12"
+                                       FontFamily="{StaticResource HeaderFont}"
+                                       Foreground="{DynamicResource TextSecondary}" Margin="0,4,0,0"/>
+                        </Grid>
+                    </Border>
+
+                    <!-- Треки -->
+                    <Border Background="{DynamicResource BgCard}" CornerRadius="16"
+                            Padding="20" Margin="0,0,12,0"
+                            BorderBrush="{DynamicResource BorderColor}" BorderThickness="1">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <Border Grid.Row="0" Width="40" Height="40" CornerRadius="12"
+                                    HorizontalAlignment="Left" Margin="0,0,0,14">
+                                <Border.Background>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                        <GradientStop Color="#667EEA" Offset="0"/>
+                                        <GradientStop Color="#764BA2" Offset="1"/>
+                                    </LinearGradientBrush>
+                                </Border.Background>
+                                <TextBlock Text="🎵" FontSize="18" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <TextBlock x:Name="CardTracksCount" Grid.Row="1"
+                                       Text="0" FontSize="34" FontWeight="Black"
+                                       FontFamily="{StaticResource HeaderFont}"
+                                       Foreground="{DynamicResource TextPrimary}"/>
+                            <TextBlock Grid.Row="2" Text="Треков" FontSize="12"
+                                       FontFamily="{StaticResource HeaderFont}"
+                                       Foreground="{DynamicResource TextSecondary}" Margin="0,4,0,0"/>
+                        </Grid>
+                    </Border>
+
+                    <!-- Плейлисты -->
+                    <Border Background="{DynamicResource BgCard}" CornerRadius="16"
+                            Padding="20" Margin="0,0,12,0"
+                            BorderBrush="{DynamicResource BorderColor}" BorderThickness="1">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <Border Grid.Row="0" Width="40" Height="40" CornerRadius="12"
+                                    HorizontalAlignment="Left" Margin="0,0,0,14">
+                                <Border.Background>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                        <GradientStop Color="#FF6B95" Offset="0"/>
+                                        <GradientStop Color="#FFA07A" Offset="1"/>
+                                    </LinearGradientBrush>
+                                </Border.Background>
+                                <TextBlock Text="📋" FontSize="18" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <TextBlock x:Name="CardPlaylistsCount" Grid.Row="1"
+                                       Text="0" FontSize="34" FontWeight="Black"
+                                       FontFamily="{StaticResource HeaderFont}"
+                                       Foreground="{DynamicResource TextPrimary}"/>
+                            <TextBlock Grid.Row="2" Text="Плейлистов" FontSize="12"
+                                       FontFamily="{StaticResource HeaderFont}"
+                                       Foreground="{DynamicResource TextSecondary}" Margin="0,4,0,0"/>
+                        </Grid>
+                    </Border>
+
+                    <!-- Прослушивания -->
+                    <Border Background="{DynamicResource BgCard}" CornerRadius="16"
+                            Padding="20"
+                            BorderBrush="{DynamicResource BorderColor}" BorderThickness="1">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <Border Grid.Row="0" Width="40" Height="40" CornerRadius="12"
+                                    HorizontalAlignment="Left" Margin="0,0,0,14">
+                                <Border.Background>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                        <GradientStop Color="#F7971E" Offset="0"/>
+                                        <GradientStop Color="#FFD200" Offset="1"/>
+                                    </LinearGradientBrush>
+                                </Border.Background>
+                                <TextBlock Text="▶" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="White"/>
+                            </Border>
+                            <TextBlock x:Name="CardPlaysCount" Grid.Row="1"
+                                       Text="0" FontSize="34" FontWeight="Black"
+                                       FontFamily="{StaticResource HeaderFont}"
+                                       Foreground="{DynamicResource TextPrimary}"/>
+                            <TextBlock Grid.Row="2" Text="Прослушиваний" FontSize="12"
+                                       FontFamily="{StaticResource HeaderFont}"
+                                       Foreground="{DynamicResource TextSecondary}" Margin="0,4,0,0"/>
+                        </Grid>
+                    </Border>
+                </UniformGrid>
+
+                <!-- ===== ГРАФИКИ (2 колонки) ===== -->
+                <Grid Margin="0,0,0,20">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="16"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Активность за 14 дней -->
+                    <Border Grid.Column="0" Background="{DynamicResource BgCard}" CornerRadius="16"
+                            Padding="20" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1">
+                        <StackPanel>
+                            <TextBlock Text="Активность за 14 дней" FontSize="16" FontWeight="Bold"
+                                       FontFamily="{StaticResource HeaderFont}"
+                                       Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,4"/>
+                            <TextBlock Text="Количество прослушиваний по дням" FontSize="11"
+                                       FontFamily="{StaticResource HeaderFont}"
+                                       Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,16"/>
+                            <controls:AdminBarChart x:Name="ActivityChart" Height="200"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Пользователи по ролям -->
+                    <Border Grid.Column="2" Background="{DynamicResource BgCard}" CornerRadius="16"
+                            Padding="20" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1">
+                        <StackPanel>
+                            <TextBlock Text="Пользователи по ролям" FontSize="16" FontWeight="Bold"
+                                       FontFamily="{StaticResource HeaderFont}"
+                                       Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,4"/>
+                            <TextBlock Text="Распределение по типам аккаунтов" FontSize="11"
+                                       FontFamily="{StaticResource HeaderFont}"
+                                       Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,16"/>
+                            <controls:AdminBarChart x:Name="RolesChart" Height="200"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+
+                <!-- ===== ТОП ТРЕКОВ ===== -->
+                <Border Background="{DynamicResource BgCard}" CornerRadius="16"
+                        Padding="20" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1">
+                    <StackPanel>
+                        <TextBlock Text="Топ треков по прослушиваниям" FontSize="16" FontWeight="Bold"
+                                   FontFamily="{StaticResource HeaderFont}"
+                                   Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,4"/>
+                        <TextBlock Text="Самые популярные треки на платформе" FontSize="11"
+                                   FontFamily="{StaticResource HeaderFont}"
+                                   Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,16"/>
+                        <StackPanel x:Name="TopTracksList"/>
+                        <TextBlock x:Name="TopTracksEmpty" Text="Нет данных о прослушиваниях"
+                                   FontSize="13" FontFamily="{StaticResource HeaderFont}"
+                                   Foreground="{DynamicResource TextMuted}"
+                                   HorizontalAlignment="Center" Margin="0,20"
+                                   Visibility="Collapsed"/>
+                    </StackPanel>
+                </Border>
+
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

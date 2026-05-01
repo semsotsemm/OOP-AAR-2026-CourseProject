@@ -32,7 +32,7 @@
                             <Image Source="{help:Icon rewind_logo.png}" Stretch="UniformToFill"/>
                         </Border>
                         <TextBlock Text="Rewind" VerticalAlignment="Center"
-                                   FontWeight="Black" FontSize="16" Foreground="#1A1A18"
+                                   FontWeight="Black" FontSize="16" Foreground="{DynamicResource TextPrimary}"
                                    FontFamily="{StaticResource HeaderFont}"/>
                     </StackPanel>
                 </StackPanel>
@@ -44,77 +44,77 @@
 
                     <Button Style="{StaticResource NavButtonStyle}" Click="ShowHome_Click" x:Name="BtnHome">
                         <StackPanel Orientation="Horizontal">
-                            <Border Width="30" Height="30" CornerRadius="7" Background="#F0EFEB" Margin="0,0,10,0">
-                                <Rectangle x:Name="NavHomeIcon" 
-                                           Width="20" 
+                            <Border Width="30" Height="30" CornerRadius="7" Background="{DynamicResource BgMain}" Margin="0,0,10,0">
+                                <Rectangle x:Name="NavHomeIcon"
+                                           Width="20"
                                            Height="20"
-                                           Fill="{StaticResource AccentColor}" 
-                                           VerticalAlignment="Center" 
+                                           Fill="{StaticResource AccentColor}"
+                                           VerticalAlignment="Center"
                                            Cursor="Hand">
                                     <Rectangle.OpacityMask>
-                                        <ImageBrush ImageSource="{help:Icon nav_home.png}" 
+                                        <ImageBrush ImageSource="{help:Icon nav_home.png}"
                                                     Stretch="Uniform"/>
                                     </Rectangle.OpacityMask>
                                 </Rectangle>
                             </Border>
-                            <TextBlock Text="Главная" FontSize="13" Foreground="#888880" VerticalAlignment="Center"/>
+                            <TextBlock Text="Главная" FontSize="13" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
                         </StackPanel>
                     </Button>
 
                     <Button Style="{StaticResource NavButtonStyle}" x:Name="BtnSearch" Click="ShowSearch_Click">
                         <StackPanel Orientation="Horizontal">
-                            <Border Width="30" Height="30" CornerRadius="7" Background="#F0EFEB" Margin="0,0,10,0">
-                                <Rectangle x:Name="NavSearchIcon" 
-                                           Width="16" 
+                            <Border Width="30" Height="30" CornerRadius="7" Background="{DynamicResource BgMain}" Margin="0,0,10,0">
+                                <Rectangle x:Name="NavSearchIcon"
+                                           Width="16"
                                            Height="16"
-                                           Fill="{StaticResource AccentColor}" 
-                                           VerticalAlignment="Center" 
+                                           Fill="{StaticResource AccentColor}"
+                                           VerticalAlignment="Center"
                                            Cursor="Hand">
                                     <Rectangle.OpacityMask>
-                                        <ImageBrush ImageSource="{help:Icon nav_search.png}" 
+                                        <ImageBrush ImageSource="{help:Icon nav_search.png}"
                                                     Stretch="Uniform"/>
                                     </Rectangle.OpacityMask>
                                 </Rectangle>
                             </Border>
-                            <TextBlock Text="Поиск" FontSize="13" Foreground="#888880" VerticalAlignment="Center"/>
+                            <TextBlock Text="Поиск" FontSize="13" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
                         </StackPanel>
                     </Button>
 
                     <Button Style="{StaticResource NavButtonStyle}" x:Name="BtnFavorites" Click="ShowLiked_Click">
                         <StackPanel Orientation="Horizontal">
-                            <Border Width="30" Height="30" CornerRadius="7" Background="#F0EFEB" Margin="0,0,10,0">
-                                <Rectangle x:Name="NavFavoritesIcon" 
-                                           Width="20" 
+                            <Border Width="30" Height="30" CornerRadius="7" Background="{DynamicResource BgMain}" Margin="0,0,10,0">
+                                <Rectangle x:Name="NavFavoritesIcon"
+                                           Width="20"
                                            Height="20"
-                                           Fill="{StaticResource AccentColor}" 
-                                           VerticalAlignment="Center" 
+                                           Fill="{StaticResource AccentColor}"
+                                           VerticalAlignment="Center"
                                            Cursor="Hand">
                                     <Rectangle.OpacityMask>
-                                        <ImageBrush ImageSource="{help:Icon nav_favorites.png}" 
+                                        <ImageBrush ImageSource="{help:Icon nav_favorites.png}"
                                                     Stretch="Uniform"/>
                                     </Rectangle.OpacityMask>
                                 </Rectangle>
                             </Border>
-                            <TextBlock Text="Любимые" FontSize="13" Foreground="#888880" VerticalAlignment="Center"/>
+                            <TextBlock Text="Любимые" FontSize="13" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
                         </StackPanel>
                     </Button>
 
                     <Button x:Name="BtnPlaylists" Style="{StaticResource NavButtonStyle}" Click="ShowPlaylists_Click">
                         <StackPanel Orientation="Horizontal">
-                            <Border Width="30" Height="30" CornerRadius="7" Background="#F0EFEB" Margin="0,0,10,0">
-                                <Rectangle x:Name="NavPlaylistsIcon" 
-                                           Width="20" 
+                            <Border Width="30" Height="30" CornerRadius="7" Background="{DynamicResource BgMain}" Margin="0,0,10,0">
+                                <Rectangle x:Name="NavPlaylistsIcon"
+                                           Width="20"
                                            Height="20"
-                                           Fill="{StaticResource AccentColor}" 
-                                           VerticalAlignment="Center" 
+                                           Fill="{StaticResource AccentColor}"
+                                           VerticalAlignment="Center"
                                            Cursor="Hand">
                                     <Rectangle.OpacityMask>
-                                        <ImageBrush ImageSource="{help:Icon nav_playlists.png}" 
+                                        <ImageBrush ImageSource="{help:Icon nav_playlists.png}"
                                                     Stretch="Uniform"/>
                                     </Rectangle.OpacityMask>
                                 </Rectangle>
                             </Border>
-                            <TextBlock Text="Плейлисты" FontSize="13" Foreground="#888880" VerticalAlignment="Center"/>
+                            <TextBlock Text="Плейлисты" FontSize="13" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
                         </StackPanel>
                     </Button>
 
@@ -122,20 +122,39 @@
                     <Button x:Name="BtnProfile" Style="{DynamicResource ActiveNavButtonStyle}" Click="ShowProfile_Click">
                         <StackPanel Orientation="Horizontal">
                             <Border Width="30" Height="30" CornerRadius="7" Background="{DynamicResource AccentColor}" Margin="0,0,10,0">
-                                    <Rectangle x:Name="NavProfileIcon" 
-                                               Width="20" 
+                                    <Rectangle x:Name="NavProfileIcon"
+                                               Width="20"
                                                Height="20"
-                                               Fill="{StaticResource AccentColor}" 
-                                               VerticalAlignment="Center" 
+                                               Fill="{DynamicResource AccentColor}"
+                                               VerticalAlignment="Center"
                                                Cursor="Hand">
                                     <Rectangle.OpacityMask>
-                                        <ImageBrush ImageSource="{help:Icon nav_profile.png}" 
+                                        <ImageBrush ImageSource="{help:Icon nav_profile.png}"
                                                     Stretch="Uniform"/>
                                     </Rectangle.OpacityMask>
                                 </Rectangle>
                             </Border>
                             <TextBlock Text="Профиль" FontSize="13" FontWeight="Bold"
                                        Foreground="{DynamicResource AccentColor}" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+
+                    <!-- СТУДИЯ — только для исполнителей -->
+                    <Button x:Name="BtnStudio" Style="{StaticResource NavButtonStyle}" Click="ShowStudio_Click" Visibility="Collapsed">
+                        <StackPanel Orientation="Horizontal">
+                            <Border Width="30" Height="30" CornerRadius="7" Background="{DynamicResource BgMain}" Margin="0,0,10,0">
+                                <Rectangle x:Name="NavStudioIcon"
+                                           Width="18"
+                                           Height="18"
+                                           Fill="{StaticResource AccentColor}"
+                                           VerticalAlignment="Center"
+                                           Cursor="Hand">
+                                    <Rectangle.OpacityMask>
+                                        <ImageBrush ImageSource="{help:Icon upload.png}" Stretch="Uniform"/>
+                                    </Rectangle.OpacityMask>
+                                </Rectangle>
+                            </Border>
+                            <TextBlock Text="Студия" FontSize="13" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
                         </StackPanel>
                     </Button>
                 </StackPanel>
@@ -148,5 +167,47 @@
                             Height="100"
                             Visibility="Collapsed"
                             Panel.ZIndex="50"/>
+
+        <!-- Тоаст-уведомление (правый нижний угол) -->
+        <Border x:Name="ToastBorder"
+                Grid.Column="1" Grid.Row="0"
+                VerticalAlignment="Bottom" HorizontalAlignment="Right"
+                Margin="0,0,24,110"
+                CornerRadius="16" Padding="18,14"
+                MinWidth="280" MaxWidth="340"
+                Visibility="Collapsed"
+                Panel.ZIndex="300">
+            <Border.Background>
+                <SolidColorBrush Color="#1F1F1D"/>
+            </Border.Background>
+            <Border.Effect>
+                <DropShadowEffect BlurRadius="24" ShadowDepth="4"
+                                  Color="#000000" Opacity="0.4"/>
+            </Border.Effect>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                    <TextBlock x:Name="ToastTitle"
+                               FontSize="13" FontWeight="Bold" Foreground="White"
+                               FontFamily="{StaticResource HeaderFont}"
+                               TextWrapping="Wrap" Margin="0,0,0,4"/>
+                    <TextBlock x:Name="ToastBody"
+                               FontSize="12" Foreground="#AAAAAA"
+                               FontFamily="{StaticResource HeaderFont}"
+                               TextWrapping="Wrap"/>
+                </StackPanel>
+                <Border Grid.Column="1" CornerRadius="10"
+                        Background="#2D2D2B" Padding="8,5"
+                        Margin="12,0,0,0" VerticalAlignment="Top"
+                        Cursor="Hand"
+                        MouseLeftButtonDown="ToastDismiss_Click">
+                    <TextBlock Text="✕" FontSize="10" Foreground="#888880"
+                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </Border>
+            </Grid>
+        </Border>
     </Grid>
 </Window>

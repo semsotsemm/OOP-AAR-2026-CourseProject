@@ -1,0 +1,162 @@
+<UserControl x:Class="Rewind.Tabs.UsersTabs.ArtistProfilePage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:help="clr-namespace:Rewind.Helpers"
+             mc:Ignorable="d"
+             Height="auto" Width="auto">
+
+    <Grid Background="{DynamicResource BgMain}">
+        <Grid.RowDefinitions>
+            <!-- Row 0: Hero banner -->
+            <RowDefinition Height="Auto"/>
+            <!-- Row 1: Scrollable content -->
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- ═══════════════════════════════════════════════════
+             Row 0 — HERO BANNER (green gradient)
+             ═══════════════════════════════════════════════════ -->
+        <Border Grid.Row="0"
+                Background="{DynamicResource GreenGradientStyle}"
+                Padding="32,28,32,28">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <!-- Left: back arrow -->
+                    <ColumnDefinition Width="Auto"/>
+                    <!-- Center: avatar + name + stats -->
+                    <ColumnDefinition Width="*"/>
+                    <!-- Right: subscribe button -->
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- ← Back link -->
+                <TextBlock Grid.Column="0"
+                           Text="←"
+                           FontSize="24" FontWeight="Bold"
+                           Foreground="White"
+                           VerticalAlignment="Center"
+                           Cursor="Hand"
+                           Margin="0,0,20,0"
+                           MouseLeftButtonDown="Back_Click"/>
+
+                <!-- Center: avatar + artist name + stats -->
+                <StackPanel Grid.Column="1"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Margin="12,0">
+
+                    <!-- Avatar circle -->
+                    <Border Width="88" Height="88"
+                            CornerRadius="44"
+                            HorizontalAlignment="Center"
+                            BorderThickness="3"
+                            Margin="0,0,0,14">
+                        <Border.BorderBrush>
+                            <SolidColorBrush Color="#2D2D2B"/>
+                        </Border.BorderBrush>
+                        <Ellipse Width="80" Height="80"
+                                 HorizontalAlignment="Center"
+                                 VerticalAlignment="Center">
+                            <Ellipse.Fill>
+                                <ImageBrush x:Name="HeroAvatarBrush" Stretch="UniformToFill"/>
+                            </Ellipse.Fill>
+                        </Ellipse>
+                    </Border>
+
+                    <!-- Artist name -->
+                    <TextBlock x:Name="ArtistNameText"
+                               FontSize="28" FontWeight="Black"
+                               Foreground="White"
+                               HorizontalAlignment="Center"
+                               FontFamily="{StaticResource HeaderFont}"
+                               Margin="0,0,0,6"/>
+
+                    <!-- Tracks · Followers -->
+                    <TextBlock x:Name="ArtistStatsText"
+                               FontSize="13"
+                               Foreground="#CCFFFFFF"
+                               HorizontalAlignment="Center"/>
+                </StackPanel>
+
+                <!-- Subscribe button (far right) -->
+                <Border x:Name="SubscribeBtn"
+                        Grid.Column="2"
+                        Background="White"
+                        CornerRadius="16"
+                        Padding="18,10"
+                        VerticalAlignment="Center"
+                        Cursor="Hand"
+                        BorderThickness="0"
+                        MouseLeftButtonDown="Subscribe_Click">
+                    <TextBlock x:Name="SubscribeBtnText"
+                               FontSize="13"
+                               FontWeight="SemiBold"
+                               Foreground="#1A1A18"/>
+                </Border>
+            </Grid>
+        </Border>
+
+        <!-- ═══════════════════════════════════════════════════
+             Row 1 — SCROLLABLE CONTENT
+             ═══════════════════════════════════════════════════ -->
+        <ScrollViewer Grid.Row="1"
+                      VerticalScrollBarVisibility="Auto"
+                      HorizontalScrollBarVisibility="Disabled"
+                      Background="{DynamicResource BgMain}">
+            <StackPanel Margin="32,24,32,80">
+
+                <!-- ── Section: Popular tracks ── -->
+                <TextBlock Text="Популярные треки"
+                           FontSize="20" FontWeight="Bold"
+                           Foreground="{DynamicResource TextPrimary}"
+                           FontFamily="{StaticResource HeaderFont}"
+                           Margin="0,0,0,12"/>
+
+                <!-- Top-3 tracks -->
+                <StackPanel x:Name="TopTracksContainer"
+                            Margin="0,0,0,4"/>
+
+                <!-- "Все треки →" / "↑ Скрыть" toggle button -->
+                <Border Cursor="Hand"
+                        HorizontalAlignment="Left"
+                        Padding="0,6,0,6"
+                        Margin="0,4,0,4"
+                        MouseLeftButtonDown="ToggleAllTracks_Click">
+                    <TextBlock x:Name="ShowAllBtn"
+                               Text="Все треки →"
+                               FontSize="13" FontWeight="SemiBold"
+                               Foreground="{DynamicResource AccentColor}"/>
+                </Border>
+
+                <!-- Remaining tracks (collapsed by default) -->
+                <StackPanel x:Name="AllTracksContainer"
+                            Visibility="Collapsed"
+                            Margin="0,0,0,8"/>
+
+                <!-- ── Section: Albums (hidden until data loads) ── -->
+                <StackPanel x:Name="AlbumsSection"
+                            Visibility="Collapsed"
+                            Margin="0,20,0,0">
+
+                    <TextBlock Text="Альбомы"
+                               FontSize="20" FontWeight="Bold"
+                               Foreground="{DynamicResource TextPrimary}"
+                               FontFamily="{StaticResource HeaderFont}"
+                               Margin="0,0,0,12"/>
+
+                    <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                                  VerticalScrollBarVisibility="Disabled">
+                        <StackPanel x:Name="AlbumsContainer"
+                                    Orientation="Horizontal"
+                                    Margin="0,0,0,4"/>
+                    </ScrollViewer>
+
+                </StackPanel>
+
+            </StackPanel>
+        </ScrollViewer>
+
+    </Grid>
+</UserControl>

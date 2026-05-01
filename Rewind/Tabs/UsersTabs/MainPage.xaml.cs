@@ -19,7 +19,7 @@ namespace Rewind.Tabs.UsersTabs
             InitializeComponent();
 
             UpdateGreeting();
-            
+
             TrackService.OnPlayCountUpdated += Global_OnPlayCountUpdated;
 
             Loaded += (_, _) =>
@@ -27,6 +27,8 @@ namespace Rewind.Tabs.UsersTabs
                 LoadMusicFromFolder();
                 LoadPopularPlaylists();
                 LoadFeaturedTrack();
+                // Показываем бейдж если есть непрочитанные уведомления
+                UpdateBadge();
             };
 
             OpacityLabel.Text = $"{IslandOpacitySlider.Value * 100:F0}%";
@@ -135,33 +137,63 @@ namespace Rewind.Tabs.UsersTabs
         private void LoadPopularPlaylists()
         {
             PopularPlaylistsContainer.Children.Clear();
-            var top = PlaylistAnalyticsService.GetTopPlaylists(8);
+
+            // Получаем плейлисты из БД (не из пустого кеша в памяти)
+            List<Playlist> all;
+            try
+            {
+                var pub = PlaylistService.GetPublicPlaylists(0);
+                var own = Session.CachedPlaylists.Where(p => !p.IsPrivate && p.PlaylistID > 0);
+                all = pub
+                    .Concat(own.Where(o => !pub.Any(p => p.PlaylistID == o.PlaylistID)))
+                    .Where(p => p.PlaylistID > 0)
+                    .ToList();
+            }
+            catch { return; }
+
+            if (all.Count == 0) return;
+
+            // Загружаем счётчики из БД для всех плейлистов сразу
+            var counts = all.ToDictionary(
+                p => p.PlaylistID,
+                p =>
+                {
+                    int s = 0, l = 0;
+                    try { s = SavedPlaylistService.GetSavedCount(p.PlaylistID); } catch { }
+                    try { l = PlaylistListenService.GetListenerCount(p.PlaylistID); } catch { }
+                    return (saves: s, listens: l);
+                });
+
+            var top = all
+                .OrderByDescending(p => counts[p.PlaylistID].saves + counts[p.PlaylistID].listens)
+                .Take(8)
+                .ToList();
 
             foreach (var playlist in top)
             {
-                var likes = PlaylistAnalyticsService.GetLikesCount(playlist.PlaylistID);
-                var listens = PlaylistAnalyticsService.GetListenersCount(playlist.PlaylistID);
+                var (saves, listens) = counts[playlist.PlaylistID];
 
-                // Создаем карточку
                 var card = new AlbumCard
                 {
                     AlbumTitle = playlist.Title,
-                    Artist = $"♥ {likes}  •  ▶ {listens}",
+                    Artist = $"♥ {saves}  •  ► {listens}",
                     StartColor = (Color)ColorConverter.ConvertFromString("#11998e"),
                     EndColor = (Color)ColorConverter.ConvertFromString("#38ef7d"),
                     Cursor = Cursors.Hand
                 };
 
+                // Обложка: поддерживаем абсолютные и относительные пути
                 if (!string.IsNullOrEmpty(playlist.CoverPath))
                 {
                     try
                     {
-                        card.CoverImageSource = new System.Windows.Media.Imaging.BitmapImage(new Uri(playlist.CoverPath, UriKind.RelativeOrAbsolute));
+                        string coverPath = playlist.CoverPath.Contains(":")
+                            ? playlist.CoverPath
+                            : System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "CoversLibrary", playlist.CoverPath);
+                        if (System.IO.File.Exists(coverPath))
+                            card.CoverImageSource = new System.Windows.Media.Imaging.BitmapImage(new Uri(coverPath));
                     }
-                    catch (Exception)
-                    {
-                        card.CoverImageSource = null;
-                    }
+                    catch { card.CoverImageSource = null; }
                 }
 
                 card.MouseLeftButtonDown += (_, _) =>
@@ -223,9 +255,10 @@ namespace Rewind.Tabs.UsersTabs
 
         private void Bell_Click(object sender, MouseButtonEventArgs e)
         {
-            NotificationsPanel.Visibility = NotificationsPanel.Visibility == Visibility.Visible
-                ? Visibility.Collapsed
-                : Visibility.Visible;
+            bool opening = NotificationsPanel.Visibility != Visibility.Visible;
+            NotificationsPanel.Visibility = opening
+                ? Visibility.Visible
+                : Visibility.Collapsed;
 
             if (!_settingsInitialized)
             {
@@ -234,9 +267,83 @@ namespace Rewind.Tabs.UsersTabs
                     IslandEnabledToggle.IsChecked = mainWindow.IslandEnabled;
                     IslandOpacitySlider.Value = mainWindow.IslandOpacity;
                 }
+
+                // Синхронизация настроек уведомлений с Session
+                NotifNewTracks.IsChecked = Session.NotifNewTracksEnabled;
+                NotifPush.IsChecked = Session.NotifPushEnabled;
+                NotifNewTracks.Checked   += (_, _) => Session.NotifNewTracksEnabled = true;
+                NotifNewTracks.Unchecked += (_, _) => Session.NotifNewTracksEnabled = false;
+                NotifPush.Checked   += (_, _) => Session.NotifPushEnabled = true;
+                NotifPush.Unchecked += (_, _) => Session.NotifPushEnabled = false;
+
                 _settingsInitialized = true;
                 ApplyIslandSettings();
+
+                // Проверяем новые треки от подписок (async)
+                CheckSubscriptionNotifications();
             }
+
+            // Сбрасываем бейдж при открытии панели
+            if (opening && Session.NotificationCount > 0)
+            {
+                Session.NotificationCount = 0;
+                NotifBadge.Visibility = Visibility.Collapsed;
+            }
+        }
+
+        private void CheckSubscriptionNotifications()
+        {
+            if (!Session.NotifNewTracksEnabled || Session.UserId <= 0) return;
+
+            System.Threading.Tasks.Task.Run(() =>
+            {
+                try
+                {
+                    var followed = SubscriptionService.GetFollowing(Session.UserId);
+                    if (followed.Count == 0) return;
+
+                    var since = Session.LastNotificationCheck ?? DateTime.UtcNow.AddDays(-7);
+                    Session.LastNotificationCheck = DateTime.UtcNow;
+
+                    var newTracks = followed
+                        .SelectMany(a => TrackService.GetPublishedTracks()
+                            .Where(t => t.ArtistID == a.UserId && t.UploadDate > since))
+                        .Take(3)
+                        .ToList();
+
+                    if (newTracks.Count == 0) return;
+
+                    if (Session.NotifPushEnabled)
+                    {
+                        string msg = newTracks.Count == 1
+                            ? $"Новый трек: «{newTracks[0].Title}»"
+                            : $"{newTracks.Count} новых трека от исполнителей, на которых вы подписаны";
+                        Dispatcher.Invoke(() =>
+                        {
+                            if (Window.GetWindow(this) is MainWindow mw)
+                                mw.ShowToastNotification("🎵 Новые треки", msg);
+                        });
+                    }
+                    else
+                    {
+                        Session.NotificationCount += newTracks.Count;
+                        Dispatcher.Invoke(UpdateBadge);
+                    }
+                }
+                catch { /* игнорируем ошибки СБД */ }
+            });
+        }
+
+        private void UpdateBadge()
+        {
+            int cnt = Session.NotificationCount;
+            if (cnt <= 0)
+            {
+                NotifBadge.Visibility = Visibility.Collapsed;
+                return;
+            }
+            NotifBadge.Visibility = Visibility.Visible;
+            NotifBadgeText.Text = cnt > 99 ? "99+" : cnt.ToString();
         }
 
         private void IslandSettings_Changed(object sender, RoutedEventArgs e)

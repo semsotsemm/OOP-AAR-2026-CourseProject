@@ -20,37 +20,9 @@ namespace Rewind.Tabs.UsersTabs
 
 
 
-        private void LoadMusicFromFolder()
-        {
-            try
-            {
-                TracksContainer.Children.Clear();
-                _trackItems.Clear();
-
-                List<Track> tracks = TrackService.GetAllTracks();
-
-                foreach (var track in tracks)
-                {
-                    string durStr = FormatDuration(track.Duration);
-                    string fullPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "MusicLibrary", track.FilePath);
-                    var item = new TrackItem(track.TrackID, track.Title, UserService.GetUserById(track.ArtistID).Nickname, durStr, fullPath, track.CoverPath, track.Duration);
-                    _trackItems.Add(item);
-                    TracksContainer.Children.Add(item);
-                }
-            }
-            catch { }
-        }
-
-        private void FavortitePage_Loaded(object sender, RoutedEventArgs e)
-        {
-            LoadMusicFromFolder();
-        }
-
         public FavoritesPage()
         {
             InitializeComponent();
-
-            this.Loaded += FavortitePage_Loaded;
             LoadFavorites();
             BuildGenreFilters();
             Render();

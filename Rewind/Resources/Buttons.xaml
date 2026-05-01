@@ -40,7 +40,7 @@
                             Background="#DDDDD8" Width="44" Height="24"/>
                         <!-- Кружок -->
                         <Border x:Name="Thumb" Width="18" Height="18"
-                            CornerRadius="9" Background="White"
+                            CornerRadius="9" Background="{DynamicResource BgCard}"
                             HorizontalAlignment="Left" VerticalAlignment="Center"
                             Margin="3,0,0,0">
                             <Border.Effect>
@@ -51,7 +51,7 @@
                     </Grid>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsChecked" Value="True">
-                            <Setter TargetName="Track" Property="Background" Value="#38C96A"/>
+                            <Setter TargetName="Track" Property="Background" Value="{DynamicResource AccentColor}"/>
                             <Setter TargetName="Thumb" Property="Margin" Value="23,0,0,0"/>
                         </Trigger>
                     </ControlTemplate.Triggers>

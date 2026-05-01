@@ -1,102 +1,223 @@
 ﻿using Rewind.Helpers;
+using Rewind.Tabs.AdminTabs;
+using System;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Threading;
 
 namespace Rewind.Pages
 {
     public partial class AdminPanel : Window
     {
-        private sealed class UserRow
-        {
-            public int UserId { get; set; }
-            public string Nickname { get; set; } = string.Empty;
-            public string Email { get; set; } = string.Empty;
-            public string Role { get; set; } = string.Empty;
-            public string Status { get; set; } = string.Empty;
-            public int TracksCount { get; set; }
-        }
+        private Button? _activeBtn;
+        private readonly DispatcherTimer _refreshTimer;
 
         public AdminPanel()
         {
             InitializeComponent();
-            LoadDashboard();
-        }
+            ApplyCurrentTheme();
+            ShowOverview();
+            _activeBtn = BtnOverview;
+            MarkActiveThemeCircle();
 
-        private void LoadDashboard()
-        {
-            using var db = new AppDbContext();
-
-            var users = db.Users.ToList();
-            var tracksCount = db.Tracks.Count();
-            var playlistsCount = db.Playlists.Count();
-
-            UsersCountText.Text = users.Count.ToString();
-            TracksCountText.Text = tracksCount.ToString();
-            PlaylistsCountText.Text = playlistsCount.ToString();
-
-            UsersGrid.ItemsSource = users
-                .OrderBy(u => u.UserId)
-                .Select(u => new UserRow
-                {
-                    UserId = u.UserId,
-                    Nickname = u.Nickname,
-                    Email = u.Email,
-                    Role = ResolveRole(u.RoleId),
-                    Status = string.IsNullOrWhiteSpace(u.Status) ? "Активен" : u.Status,
-                    TracksCount = db.Tracks.Count(t => t.ArtistID == u.UserId)
-                })
-                .ToList();
-        }
-
-        private static string ResolveRole(int roleId) => roleId switch
-        {
-            1 => "Администратор",
-            2 => "Исполнитель",
-            _ => "Слушатель"
-        };
-
-        private void Refresh_Click(object sender, RoutedEventArgs e) => LoadDashboard();
-
-        private void BanUnban_Click(object sender, RoutedEventArgs e)
-        {
-            if ((sender as FrameworkElement)?.DataContext is not UserRow row) return;
-            using var db = new AppDbContext();
-            var user = db.Users.FirstOrDefault(u => u.UserId == row.UserId);
-            if (user == null) return;
-
-            user.Status = user.Status == "Заблокирован" ? "Активен" : "Заблокирован";
-            db.SaveChanges();
-            LoadDashboard();
-        }
-
-        private void Promote_Click(object sender, RoutedEventArgs e)
-        {
-            if ((sender as FrameworkElement)?.DataContext is not UserRow row) return;
-            using var db = new AppDbContext();
-            var user = db.Users.FirstOrDefault(u => u.UserId == row.UserId);
-            if (user == null) return;
-
-            user.RoleId = user.RoleId == 2 ? 1 : 2;
-            db.SaveChanges();
-            LoadDashboard();
-        }
-
-        private void Delete_Click(object sender, RoutedEventArgs e)
-        {
-            if ((sender as FrameworkElement)?.DataContext is not UserRow row) return;
-            if (row.Role == "Администратор")
+            // Реальное время: обновляем текущую вкладку каждые 5 секунд
+            _refreshTimer = new DispatcherTimer
             {
-                MessageBox.Show("Администратора удалять нельзя.");
-                return;
+                Interval = TimeSpan.FromSeconds(5)
+            };
+            _refreshTimer.Tick += RefreshTimer_Tick;
+            _refreshTimer.Start();
+
+            Closing += (_, _) => _refreshTimer.Stop();
+        }
+
+        private void RefreshTimer_Tick(object? sender, EventArgs e)
+        {
+            UpdateRequestsBadge();
+            UpdateSubmissionsBadge();
+            UpdateReportsBadge();
+            if (AdminContentArea.Content is IAdminTab tab)
+                tab.Refresh();
+        }
+
+        private void UpdateRequestsBadge()
+        {
+            try
+            {
+                int count = ArtistRequestService.PendingCount();
+                RequestsBadgeText.Text = count > 99 ? "99+" : count.ToString();
+                RequestsBadge.Visibility = count > 0 ? Visibility.Visible : Visibility.Collapsed;
+            }
+            catch { }
+        }
+
+        private void UpdateSubmissionsBadge()
+        {
+            try
+            {
+                int count = TrackService.GetPendingTracks().Count;
+                SubmissionsBadgeText.Text = count > 99 ? "99+" : count.ToString();
+                SubmissionsBadge.Visibility = count > 0 ? Visibility.Visible : Visibility.Collapsed;
+            }
+            catch { }
+        }
+
+        private void UpdateReportsBadge()
+        {
+            try
+            {
+                int count = TrackReportService.PendingCount();
+                ReportsBadgeText.Text = count > 99 ? "99+" : count.ToString();
+                ReportsBadge.Visibility = count > 0 ? Visibility.Visible : Visibility.Collapsed;
+            }
+            catch { }
+        }
+
+        // ── Navigation ──
+
+        private void ShowOverview_Click(object sender, RoutedEventArgs e)
+        {
+            ShowOverview();
+            HighlightBtn(BtnOverview);
+        }
+
+        private void ShowUsers_Click(object sender, RoutedEventArgs e)
+        {
+            AdminContentArea.Content = new UsersTab();
+            HighlightBtn(BtnUsers);
+        }
+
+        private void ShowTracks_Click(object sender, RoutedEventArgs e)
+        {
+            AdminContentArea.Content = new TracksTab();
+            HighlightBtn(BtnTracks);
+        }
+
+        private void ShowSubmissions_Click(object sender, RoutedEventArgs e)
+        {
+            AdminContentArea.Content = new TrackSubmissionsTab();
+            HighlightBtn(BtnSubmissions);
+        }
+
+        private void ShowRequests_Click(object sender, RoutedEventArgs e)
+        {
+            AdminContentArea.Content = new ArtistRequestsTab();
+            HighlightBtn(BtnRequests);
+        }
+
+        private void ShowReports_Click(object sender, RoutedEventArgs e)
+        {
+            AdminContentArea.Content = new TrackReportsTab();
+            HighlightBtn(BtnReports);
+        }
+
+        private void ShowOverview()
+        {
+            AdminContentArea.Content = new OverviewTab();
+        }
+
+        private void HighlightBtn(Button btn)
+        {
+            Button[] btns = { BtnOverview, BtnUsers, BtnTracks, BtnSubmissions, BtnRequests, BtnReports };
+
+            var accentBrush = (Brush)FindResource("AccentColor");
+            var bgMainBrush = (Brush)FindResource("BgMain");
+            var textPrimaryBrush = (Brush)FindResource("TextPrimary");
+
+            foreach (var b in btns)
+            {
+                bool isActive = b == btn;
+                b.Style = (Style)FindResource(isActive ? "ActiveNavButtonStyle" : "NavButtonStyle");
+
+                // BtnRequests uses a Grid as Content (to show badge), others use StackPanel
+                var contentSp = b.Content is StackPanel sp ? sp
+                    : b.Content is Grid g ? g.Children.OfType<StackPanel>().FirstOrDefault()
+                    : null;
+
+                if (contentSp != null)
+                {
+                    if (contentSp.Children.Count > 0 && contentSp.Children[0] is Border iconBorder)
+                        iconBorder.Background = isActive ? accentBrush : bgMainBrush;
+
+                    if (contentSp.Children.Count > 1 && contentSp.Children[1] is TextBlock tb)
+                    {
+                        tb.Foreground = isActive ? accentBrush : textPrimaryBrush;
+                        tb.FontWeight = isActive ? FontWeights.Bold : FontWeights.Normal;
+                    }
+                }
             }
 
-            using var db = new AppDbContext();
-            var user = db.Users.FirstOrDefault(u => u.UserId == row.UserId);
-            if (user == null) return;
-            db.Users.Remove(user);
-            db.SaveChanges();
-            LoadDashboard();
+            _activeBtn = btn;
+        }
+
+        // ── Theme switching ──
+
+        private void ThemeCircle_Click(object sender, MouseButtonEventArgs e)
+        {
+            if (sender is Border b && b.Tag is string themeFile)
+            {
+                ApplyThemeFile(themeFile);
+                Session.ActiveTheme = themeFile.Replace(".xaml", "");
+                MarkActiveThemeCircle();
+
+                // Пересоздаём текущую вкладку, чтобы она подхватила новые DynamicResource
+                if (_activeBtn == BtnOverview) ShowOverview();
+                else if (_activeBtn == BtnUsers) AdminContentArea.Content = new UsersTab();
+                else if (_activeBtn == BtnTracks) AdminContentArea.Content = new TracksTab();
+                else if (_activeBtn == BtnSubmissions) AdminContentArea.Content = new TrackSubmissionsTab();
+                else if (_activeBtn == BtnRequests) AdminContentArea.Content = new ArtistRequestsTab();
+                else if (_activeBtn == BtnReports) AdminContentArea.Content = new TrackReportsTab();
+            }
+        }
+
+        private void ApplyThemeFile(string themeFile)
+        {
+            var uri = new Uri($"/Resources/Themes/{themeFile}", UriKind.Relative);
+            var dicts = Application.Current.Resources.MergedDictionaries;
+            var existing = dicts.FirstOrDefault(d =>
+                d.Source?.OriginalString.Contains("Theme") == true);
+            if (existing != null) dicts.Remove(existing);
+            dicts.Add(new ResourceDictionary { Source = uri });
+        }
+
+        private void ApplyCurrentTheme()
+        {
+            var themeFile = (Session.ActiveTheme ?? "ThemeClassic") + ".xaml";
+            ApplyThemeFile(themeFile);
+        }
+
+        private void MarkActiveThemeCircle()
+        {
+            var circles = new[]
+            {
+                (ThemeClassicCircle,  "ThemeClassic"),
+                (ThemePinkCircle,     "ThemePink"),
+                (ThemeMidnightCircle, "ThemeMidnight"),
+                (ThemeLavenderCircle, "ThemeLavender")
+            };
+
+            foreach (var (circle, name) in circles)
+            {
+                bool isActive = Session.ActiveTheme == name;
+                circle.BorderBrush = isActive
+                    ? (Brush)FindResource("AccentColor")
+                    : Brushes.Transparent;
+                circle.BorderThickness = new Thickness(isActive ? 2.5 : 2);
+            }
+        }
+
+        // ── Log out ──
+
+        private void LogOut_Click(object sender, MouseButtonEventArgs e)
+        {
+            _refreshTimer.Stop();
+            var reg = new Registration();
+            reg.Show();
+            Application.Current.MainWindow = reg;
+            Close();
         }
     }
 }

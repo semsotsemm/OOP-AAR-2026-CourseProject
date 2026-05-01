@@ -35,20 +35,40 @@
             <StackPanel Grid.Column="1" VerticalAlignment="Center">
                 <TextBlock x:Name="TrackTitleText" FontSize="14" FontWeight="SemiBold"
                            Foreground="{DynamicResource TextPrimary}" TextTrimming="CharacterEllipsis"/>
-                <TextBlock x:Name="ArtistNameText" FontSize="12" Foreground="{DynamicResource TextSecondary}"
-                           Margin="0,3,0,0"/>
+                <TextBlock x:Name="ArtistNameText" FontSize="12" Foreground="{DynamicResource AccentColor}"
+                           Margin="0,3,0,0" Cursor="Hand"
+                           TextDecorations="Underline"
+                           MouseLeftButtonDown="ArtistName_Click"/>
             </StackPanel>
-           
+
 
             <!-- Длительность и плей -->
             <StackPanel Grid.Column="4" Orientation="Horizontal" VerticalAlignment="Center">
-                
-                <!-- Кнопка лайк -->
+
+                <!-- Количество прослушиваний -->
+                <TextBlock x:Name="PlayCountText"
+                           FontSize="11"
+                           Foreground="{DynamicResource TextMuted}"
+                           VerticalAlignment="Center"
+                           Margin="0,0,10,0"/>
+
+                <!-- Кнопка в плейлист -->
                 <Border Grid.Column="3" Width="36" Height="36" CornerRadius="18"
-                        Background="{DynamicResource BgCardHover}" Cursor="Hand" Margin="0,0,16,0"
-                        MouseLeftButtonDown="AddToPlaylist_Click">      
+                        Background="{DynamicResource BgCardHover}" Cursor="Hand" Margin="0,0,8,0"
+                        MouseLeftButtonDown="AddToPlaylist_Click"
+                        ToolTip="Добавить в плейлист">
                     <TextBlock Text="+" FontSize="16" FontWeight="Bold"
                                Foreground="{DynamicResource TextPrimary}"
+                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </Border>
+
+                <!-- Играть следующим -->
+                <Border x:Name="PlayNextBtn" Width="36" Height="36" CornerRadius="18"
+                        Background="{DynamicResource BgCardHover}" Cursor="Hand" Margin="0,0,8,0"
+                        MouseLeftButtonDown="PlayNext_Click"
+                        ToolTip="Играть следующим">
+                    <TextBlock Text="⇥" FontSize="18" FontWeight="Bold"
+                               Foreground="{DynamicResource AccentColor}"
                                HorizontalAlignment="Center" VerticalAlignment="Center"/>
                 </Border>
                 <Button x:Name="PlayBtn" Style="{StaticResource PlayButtonStyle}" Click="Play_Click"
@@ -67,18 +87,18 @@
                         </ControlTemplate>
                     </Button.Template>
                 </Button>
-                <Rectangle x:Name="LikeBtn" 
+                <Rectangle x:Name="LikeBtn"
                            Grid.Column="2"
-                           Width="20" 
+                           Width="20"
                            Height="20"
-                           Fill="{StaticResource AccentColor}" 
-                           VerticalAlignment="Center" 
-                           Margin="16,0,16,0" 
+                           Fill="{StaticResource AccentColor}"
+                           VerticalAlignment="Center"
+                           Margin="16,0,16,0"
                            Cursor="Hand"
-                           MouseLeftButtonDown="LikeBtn_Click"> 
+                           MouseLeftButtonDown="LikeBtn_Click">
                     <Rectangle.OpacityMask>
-                        <ImageBrush ImageSource="{help:Icon like_outline.png}" 
-                                    x:Name="LikeIcon" 
+                        <ImageBrush ImageSource="{help:Icon like_outline.png}"
+                                    x:Name="LikeIcon"
                                     Stretch="Uniform"/>
                     </Rectangle.OpacityMask>
                 </Rectangle>
