@@ -49,8 +49,8 @@
                         Background="{DynamicResource BgCardHover}" Cursor="Hand" Margin="0,0,8,0"
                         MouseLeftButtonDown="AddToPlaylist_Click"
                         ToolTip="Добавить в плейлист">
-                    <TextBlock Text="+" FontSize="16" FontWeight="Bold"
-                               Foreground="{DynamicResource TextPrimary}"
+                    <TextBlock Text="+" FontSize="16" FontWeight="Black"
+                               Foreground="{DynamicResource TextSecondary}"
                                HorizontalAlignment="Center" VerticalAlignment="Center"/>
                 </Border>
 
@@ -59,9 +59,16 @@
                         Background="{DynamicResource BgCardHover}" Cursor="Hand" Margin="0,0,8,0"
                         MouseLeftButtonDown="PlayNext_Click"
                         ToolTip="Играть следующим">
-                    <TextBlock Text="⇥" FontSize="18" FontWeight="Bold"
-                               Foreground="{DynamicResource AccentColor}"
-                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    <Rectangle Width="16"
+                                Height="16"
+                                Fill="{StaticResource TextSecondary}"
+                                VerticalAlignment="Center"
+                               HorizontalAlignment="Center"
+                                Cursor="Hand">
+                        <Rectangle.OpacityMask>
+                            <ImageBrush ImageSource="{help:Icon nav_playlists.png}" Stretch="Uniform"/>
+                        </Rectangle.OpacityMask>
+                    </Rectangle>
                 </Border>
                 <Button x:Name="PlayBtn" Style="{StaticResource PlayButtonStyle}" Click="Play_Click"
                         Width="36" Height="36">

@@ -59,7 +59,7 @@
                                     </Rectangle.OpacityMask>
                                 </Rectangle>
                             </Border>
-                            <TextBlock Text="Главная" FontSize="13" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
+                            <TextBlock Text="Главная" FontSize="14" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
                         </StackPanel>
                     </Button>
 
@@ -78,7 +78,7 @@
                                     </Rectangle.OpacityMask>
                                 </Rectangle>
                             </Border>
-                            <TextBlock Text="Поиск" FontSize="13" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
+                            <TextBlock Text="Поиск" FontSize="14" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
                         </StackPanel>
                     </Button>
 
@@ -86,8 +86,8 @@
                         <StackPanel Orientation="Horizontal">
                             <Border Width="30" Height="30" CornerRadius="7" Background="{DynamicResource BgMain}" Margin="0,0,10,0">
                                 <Rectangle x:Name="NavFavoritesIcon"
-                                           Width="20"
-                                           Height="20"
+                                           Width="18"
+                                           Height="18"
                                            Fill="{StaticResource AccentColor}"
                                            VerticalAlignment="Center"
                                            Cursor="Hand">
@@ -97,7 +97,7 @@
                                     </Rectangle.OpacityMask>
                                 </Rectangle>
                             </Border>
-                            <TextBlock Text="Любимые" FontSize="13" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
+                            <TextBlock Text="Любимые" FontSize="14" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
                         </StackPanel>
                     </Button>
 
@@ -105,8 +105,8 @@
                         <StackPanel Orientation="Horizontal">
                             <Border Width="30" Height="30" CornerRadius="7" Background="{DynamicResource BgMain}" Margin="0,0,10,0">
                                 <Rectangle x:Name="NavPlaylistsIcon"
-                                           Width="20"
-                                           Height="20"
+                                           Width="18"
+                                           Height="18"
                                            Fill="{StaticResource AccentColor}"
                                            VerticalAlignment="Center"
                                            Cursor="Hand">
@@ -116,7 +116,7 @@
                                     </Rectangle.OpacityMask>
                                 </Rectangle>
                             </Border>
-                            <TextBlock Text="Плейлисты" FontSize="13" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
+                            <TextBlock Text="Плейлисты" FontSize="14" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
                         </StackPanel>
                     </Button>
 
@@ -124,9 +124,9 @@
                     <Button x:Name="BtnProfile" Style="{DynamicResource ActiveNavButtonStyle}" Click="ShowProfile_Click">
                         <StackPanel Orientation="Horizontal">
                             <Border Width="30" Height="30" CornerRadius="7" Background="{DynamicResource AccentColor}" Margin="0,0,10,0">
-                                    <Rectangle x:Name="NavProfileIcon"
-                                               Width="20"
-                                               Height="20"
+                                <Rectangle x:Name="NavProfileIcon"
+                                               Width="18"
+                                               Height="18"
                                                Fill="{DynamicResource AccentColor}"
                                                VerticalAlignment="Center"
                                                Cursor="Hand">
@@ -136,7 +136,7 @@
                                     </Rectangle.OpacityMask>
                                 </Rectangle>
                             </Border>
-                            <TextBlock Text="Профиль" FontSize="13" FontWeight="Bold"
+                            <TextBlock Text="Профиль" FontSize="14" FontWeight="Bold"
                                        Foreground="{DynamicResource AccentColor}" VerticalAlignment="Center"/>
                         </StackPanel>
                     </Button>
@@ -164,8 +164,8 @@
         </Border>
         <ContentControl x:Name="MainContentArea" Grid.Column="1" Grid.Row="0" />
         <controls:PlayerBar x:Name="GlobalPlayerBar"
-                            Grid.Column="1"
-                            Grid.Row="1"
+                            Grid.Column="0" Grid.Row="1"
+                            Grid.ColumnSpan="2"
                             Height="76"
                             Visibility="Collapsed"
                             Panel.ZIndex="50"/>

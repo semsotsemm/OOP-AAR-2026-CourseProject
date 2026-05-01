@@ -68,11 +68,11 @@
                                              IsSelected="True"/>
 
                                 <ListBoxItem Content="Исполнитель"
-                                             ToolTip="Загружай треки"
+                                             ToolTip="Загружай музыку"
                                              Tag="role_artist.png"
                                              Style="{DynamicResource RoleCardButtonStyle}"/>
 
-                                <ListBoxItem Content="Администратор"
+                                <ListBoxItem Content="Админ"
                                              ToolTip="Управление"
                                              Tag="role_admin.png"
                                              Style="{DynamicResource RoleCardButtonStyle}"/>

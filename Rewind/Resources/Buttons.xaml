@@ -446,17 +446,17 @@
 
     <!-- Кнопка тёмная -->
     <Style x:Key="BtnDark" TargetType="Button" BasedOn="{StaticResource BtnRed}">
-        <Setter Property="Background" Value="#1A1A18"/>
+        <Setter Property="Background" Value="{DynamicResource PrimaryColor}"/>
         <Style.Triggers>
             <Trigger Property="IsMouseOver" Value="True">
-                <Setter Property="Background" Value="#333330"/>
+                <Setter Property="Background" Value="{DynamicResource AccentColor}"/>
             </Trigger>
         </Style.Triggers>
     </Style>
 
     <!-- Метка поля -->
     <Style x:Key="FieldLabel" TargetType="TextBlock">
-        <Setter Property="FontSize" Value="11"/>
+        <Setter Property="FontSize" Value="12"/>
         <Setter Property="FontWeight" Value="Bold"/>
         <Setter Property="Foreground" Value="{DynamicResource TextSecondary}"/>
         <Setter Property="Margin" Value="0,0,0,7"/>
@@ -477,11 +477,11 @@
                             Padding="14,16"
                             Margin="5">
                         <StackPanel HorizontalAlignment="Center">
-                            <Border x:Name="IconContainer" Width="40" Height="40" CornerRadius="10" 
+                            <Border x:Name="IconContainer" Width="50" Height="50" CornerRadius="10" 
                                     Background="{DynamicResource DefaultIconBackground}" 
                                     HorizontalAlignment="Center" Margin="0,0,0,10">
                                 <Rectangle x:Name="IconRect"
-                                       Width="18" Height="18"
+                                       Width="20" Height="20"
                                        Fill="{DynamicResource TextMuted}"
                                        HorizontalAlignment="Center" 
                                        VerticalAlignment="Center">
@@ -494,12 +494,12 @@
                             </Border>
                             <TextBlock x:Name="LabelText" 
                                        Text="{Binding Content, RelativeSource={RelativeSource TemplatedParent}}"
-                                       FontSize="13" FontWeight="Bold" 
+                                       FontSize="14" FontWeight="Bold" 
                                        Foreground="{DynamicResource DefaultSecondaryText}" 
                                        HorizontalAlignment="Center"/>
                             <TextBlock x:Name="DescText" 
                                        Text="{Binding ToolTip, RelativeSource={RelativeSource TemplatedParent}}" 
-                                       FontSize="11" Foreground="{DynamicResource TextMuted}" 
+                                       FontSize="12" Foreground="{DynamicResource TextMuted}" 
                                        HorizontalAlignment="Center" Margin="0,3,0,0"/>
                         </StackPanel>
                     </Border>
@@ -570,7 +570,7 @@
     <Style x:Key="ModeBtn" TargetType="Button">
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="Foreground" Value="{DynamicResource TextSecondary}"/>
-        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="FontSize" Value="14"/>
         <Setter Property="FontWeight" Value="SemiBold"/>
         <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="Cursor" Value="Hand"/>

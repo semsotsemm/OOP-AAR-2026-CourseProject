@@ -43,11 +43,10 @@
                                MouseLeftButtonDown="PlayerInfo_Click"/>
                     <!-- Исполнитель — клик открывает страницу исполнителя -->
                     <TextBlock Text="{Binding CurrentArtist, ElementName=thisPlayer}"
-                               FontSize="11" Foreground="{DynamicResource AccentColor}"
+                               FontSize="11" Foreground="{DynamicResource TextSecondary}"
                                Margin="0,3,0,0"
                                TextTrimming="CharacterEllipsis"
                                Cursor="Hand"
-                               TextDecorations="Underline"
                                MouseLeftButtonDown="ArtistName_Click"/>
                 </StackPanel>
             </StackPanel>
