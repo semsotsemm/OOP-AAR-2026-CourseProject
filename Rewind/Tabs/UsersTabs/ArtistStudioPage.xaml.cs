@@ -15,6 +15,8 @@ namespace Rewind.Tabs.UsersTabs
     {
         private string? _selectedCoverPath;
         private string? _selectedAudioPath;
+        private string? _selectedAlbumCoverPath;
+        private int? _editingAlbumId;
 
         public ArtistStudioPage()
         {
@@ -30,20 +32,208 @@ namespace Rewind.Tabs.UsersTabs
         {
             TabUpload.Style    = (Style)FindResource("ProfileTabActive");
             TabMyTracks.Style  = (Style)FindResource("ProfileTab");
+            TabAlbums.Style    = (Style)FindResource("ProfileTab");
             PanelUpload.Visibility   = Visibility.Visible;
             PanelMyTracks.Visibility = Visibility.Collapsed;
+            PanelAlbums.Visibility   = Visibility.Collapsed;
         }
 
         private void TabMyTracks_Click(object sender, RoutedEventArgs e)
         {
             TabUpload.Style    = (Style)FindResource("ProfileTab");
             TabMyTracks.Style  = (Style)FindResource("ProfileTabActive");
+            TabAlbums.Style    = (Style)FindResource("ProfileTab");
             PanelUpload.Visibility   = Visibility.Collapsed;
             PanelMyTracks.Visibility = Visibility.Visible;
+            PanelAlbums.Visibility   = Visibility.Collapsed;
             LoadMyTracks();
         }
 
+        private void TabAlbums_Click(object sender, RoutedEventArgs e)
+        {
+            TabUpload.Style    = (Style)FindResource("ProfileTab");
+            TabMyTracks.Style  = (Style)FindResource("ProfileTab");
+            TabAlbums.Style    = (Style)FindResource("ProfileTabActive");
+            PanelUpload.Visibility   = Visibility.Collapsed;
+            PanelMyTracks.Visibility = Visibility.Collapsed;
+            PanelAlbums.Visibility   = Visibility.Visible;
+            LoadAlbumBuilder();
+            LoadArtistAlbums();
+        }
+
         private void RefreshTracks_Click(object sender, MouseButtonEventArgs e) => LoadMyTracks();
+
+        private void LoadAlbumBuilder()
+        {
+            AlbumTrackChecks.Children.Clear();
+            List<Track> tracks;
+            try { tracks = TrackService.GetByArtistAll(Session.UserId).Where(t => t.PublishStatus == "Published").ToList(); }
+            catch { tracks = new List<Track>(); }
+
+            if (tracks.Count == 0)
+            {
+                AlbumTrackChecks.Children.Add(new TextBlock
+                {
+                    Text = "Опубликованных треков пока нет",
+                    Foreground = new SolidColorBrush(Color.FromRgb(136, 136, 128)),
+                    FontSize = 12
+                });
+                return;
+            }
+
+            foreach (var track in tracks)
+            {
+                var cb = new CheckBox
+                {
+                    Content = $"🎵 {track.Title}",
+                    Tag = track.TrackID,
+                    Margin = new Thickness(0, 0, 10, 8),
+                    Padding = new Thickness(8, 4, 8, 4),
+                    FontSize = 12,
+                    Foreground = (Brush)Application.Current.Resources["TextPrimary"]
+                };
+                AlbumTrackChecks.Children.Add(cb);
+            }
+        }
+
+        private void CreateAlbum_Click(object sender, RoutedEventArgs e)
+        {
+            string title = AlbumTitleBox.Text.Trim();
+            if (string.IsNullOrWhiteSpace(title))
+            {
+                MessageBox.Show("Введите название альбома.", "Rewind");
+                return;
+            }
+
+            var selectedTrackIds = AlbumTrackChecks.Children
+                .OfType<CheckBox>()
+                .Where(cb => cb.IsChecked == true && cb.Tag is int)
+                .Select(cb => (int)cb.Tag)
+                .ToList();
+
+            if (selectedTrackIds.Count == 0)
+            {
+                MessageBox.Show("Выберите хотя бы один трек для альбома.", "Rewind");
+                return;
+            }
+
+            string? albumCover = null;
+            if (!string.IsNullOrWhiteSpace(_selectedAlbumCoverPath))
+                albumCover = FileStorage.CopyAlbumCover(_selectedAlbumCoverPath);
+
+            string genre = (AlbumGenreSelector.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "Other";
+            bool wasEditing = _editingAlbumId.HasValue;
+            int albumId;
+            if (_editingAlbumId.HasValue)
+            {
+                albumId = _editingAlbumId.Value;
+                AlbumService.Update(albumId, title, genre, albumCover);
+            }
+            else
+            {
+                albumId = AlbumService.Create(title, Session.UserId, genre, albumCover);
+            }
+            foreach (int trackId in selectedTrackIds)
+                AlbumService.AddTrack(albumId, trackId);
+
+            ResetAlbumForm();
+            LoadArtistAlbums();
+            MessageBox.Show(wasEditing ? "Альбом обновлён." : "Альбом создан.", "Rewind");
+        }
+
+        private void PickAlbumCover_Click(object sender, MouseButtonEventArgs e)
+        {
+            var dlg = new OpenFileDialog { Filter = "Images|*.jpg;*.jpeg;*.png;*.webp" };
+            if (dlg.ShowDialog() == true)
+            {
+                _selectedAlbumCoverPath = dlg.FileName;
+                AlbumCoverPreview.Source = new BitmapImage(new Uri(_selectedAlbumCoverPath));
+                AlbumCoverPlaceholder.Visibility = Visibility.Collapsed;
+            }
+        }
+
+        private void LoadArtistAlbums()
+        {
+            ArtistAlbumsContainer.Children.Clear();
+            List<Album> albums;
+            try { albums = AlbumService.GetByArtist(Session.UserId); }
+            catch { albums = new List<Album>(); }
+
+            if (albums.Count == 0)
+            {
+                ArtistAlbumsContainer.Children.Add(MakeEmptyCard("Альбомов пока нет"));
+                return;
+            }
+
+            foreach (var album in albums)
+                ArtistAlbumsContainer.Children.Add(MakeAlbumCard(album));
+        }
+
+        private UIElement MakeAlbumCard(Album album)
+        {
+            var card = new Border
+            {
+                Width = 160,
+                Height = 190,
+                CornerRadius = new CornerRadius(16),
+                Background = (Brush)Application.Current.Resources["BgSidebar"],
+                BorderBrush = (Brush)Application.Current.Resources["BorderColor"],
+                BorderThickness = new Thickness(1.5),
+                Padding = new Thickness(12),
+                Margin = new Thickness(0, 0, 12, 12)
+            };
+            card.MouseLeftButtonDown += (_, _) => SelectAlbumForEdit(album);
+            var stack = new StackPanel();
+            stack.Children.Add(new Border
+            {
+                Height = 100,
+                CornerRadius = new CornerRadius(12),
+                Background = new LinearGradientBrush(Color.FromRgb(42, 232, 118), Color.FromRgb(0, 77, 64), new Point(0, 0), new Point(1, 1)),
+                Child = new TextBlock { Text = "💿", FontSize = 32, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center }
+            });
+            stack.Children.Add(new TextBlock { Text = album.Title, FontWeight = FontWeights.Bold, FontSize = 13, Margin = new Thickness(0, 10, 0, 2), TextTrimming = TextTrimming.CharacterEllipsis, Foreground = (Brush)Application.Current.Resources["TextPrimary"] });
+            stack.Children.Add(new TextBlock { Text = $"{album.AlbumTracks?.Count ?? 0} треков • {album.Genre}", FontSize = 11, Foreground = (Brush)Application.Current.Resources["TextSecondary"] });
+            card.Child = stack;
+            return card;
+        }
+
+        private void SelectAlbumForEdit(Album album)
+        {
+            _editingAlbumId = album.AlbumId;
+            AlbumTitleBox.Text = album.Title;
+            CreateAlbumBtn.Content = "💾  Сохранить изменения";
+
+            foreach (ComboBoxItem item in AlbumGenreSelector.Items)
+                item.IsSelected = string.Equals(item.Content?.ToString(), album.Genre, StringComparison.OrdinalIgnoreCase);
+
+            foreach (var cb in AlbumTrackChecks.Children.OfType<CheckBox>())
+                cb.IsChecked = album.AlbumTracks?.Any(at => at.TrackId == (int)cb.Tag) == true;
+
+            if (!string.IsNullOrWhiteSpace(album.CoverPath))
+            {
+                try
+                {
+                    string fp = album.CoverPath.Contains(":") ? album.CoverPath : Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "CoversLibrary", album.CoverPath);
+                    if (File.Exists(fp))
+                    {
+                        AlbumCoverPreview.Source = new BitmapImage(new Uri(fp));
+                        AlbumCoverPlaceholder.Visibility = Visibility.Collapsed;
+                    }
+                }
+                catch { }
+            }
+        }
+
+        private void ResetAlbumForm()
+        {
+            _editingAlbumId = null;
+            AlbumTitleBox.Clear();
+            AlbumCoverPreview.Source = null;
+            AlbumCoverPlaceholder.Visibility = Visibility.Visible;
+            _selectedAlbumCoverPath = null;
+            CreateAlbumBtn.Content = "💿  Создать альбом";
+            foreach (var cb in AlbumTrackChecks.Children.OfType<CheckBox>()) cb.IsChecked = false;
+        }
 
         // ─────────────────────────────────────────────
         //  Stats
@@ -444,13 +634,13 @@ namespace Rewind.Tabs.UsersTabs
 
             try
             {
-                string uniqueFileName = CopyAudioToMusicLibrary(_selectedAudioPath, trackName);
+                string uniqueFileName = FileStorage.CopyTrackAudio(_selectedAudioPath, trackName);
                 string destPath       = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "MusicLibrary", uniqueFileName);
                 int    duration       = GetTrackDuration(destPath);
 
                 string? finalCoverPath = null;
                 if (!string.IsNullOrWhiteSpace(_selectedCoverPath))
-                    finalCoverPath = CopyImageToProjectFolder(_selectedCoverPath, "CoversLibrary", keepName: true, absPath: true);
+                    finalCoverPath = FileStorage.CopyTrackCover(_selectedCoverPath);
 
                 string genre = (GenreSelector.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "";
 

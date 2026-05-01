@@ -13,11 +13,13 @@ namespace Rewind.Tabs.UsersTabs
     public partial class SearchPage : UserControl
     {
         private readonly List<TrackItem> _trackItems = new();
+        private readonly HashSet<string> _selectedGenres = new(StringComparer.OrdinalIgnoreCase);
         private string _sortMode = "title"; // title / artist / duration
 
         public SearchPage()
         {
             InitializeComponent();
+            BuildGenreFilters();
             Render(string.Empty);
         }
 
@@ -52,9 +54,11 @@ namespace Rewind.Tabs.UsersTabs
             _trackItems.Clear();
 
             var tracks = TrackService.GetPublishedTracks()
+                .Where(t => _selectedGenres.Count == 0 || _selectedGenres.Contains(NormalizeGenre(t.Genre)))
                 .Where(t => string.IsNullOrEmpty(query)
                             || t.Title.ToLower().Contains(query)
-                            || (t.Artist?.Nickname?.ToLower().Contains(query) ?? false))
+                            || (t.Artist?.Nickname?.ToLower().Contains(query) ?? false)
+                            || NormalizeGenre(t.Genre).ToLower().Contains(query))
                 .ToList();
 
             tracks = _sortMode switch
@@ -74,6 +78,86 @@ namespace Rewind.Tabs.UsersTabs
                 ResultsContainer.Children.Add(item);
             }
         }
+
+        private void BuildGenreFilters()
+        {
+            GenreFilters.Children.Clear();
+            var genres = GenreService.DefaultGenres
+                .Concat(TrackService.GetPublishedTracks().Select(t => NormalizeGenre(t.Genre)))
+                .Where(g => !string.IsNullOrWhiteSpace(g))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .OrderBy(g => g)
+                .ToList();
+
+            GenreFilters.Children.Add(BuildGenreChip("Все", "✦", _selectedGenres.Count == 0));
+            foreach (var genre in genres)
+                GenreFilters.Children.Add(BuildGenreChip(genre, GenreEmoji(genre), _selectedGenres.Contains(genre)));
+
+            UpdateGenreDropdownLabel();
+        }
+
+        private UIElement BuildGenreChip(string genre, string emoji, bool active)
+        {
+            var border = new Border
+            {
+                CornerRadius = new CornerRadius(18),
+                Padding = new Thickness(14, 8, 14, 8),
+                Margin = new Thickness(0, 0, 8, 8),
+                Cursor = Cursors.Hand,
+                Background = active ? (Brush)Application.Current.Resources["AccentColor"] : (Brush)Application.Current.Resources["BgSidebar"],
+                BorderBrush = active ? Brushes.Transparent : (Brush)Application.Current.Resources["BorderColor"],
+                BorderThickness = new Thickness(active ? 0 : 1.5),
+                Tag = genre
+            };
+            var stack = new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center };
+            stack.Children.Add(new TextBlock { Text = emoji, FontSize = 12, Margin = new Thickness(0, 0, 6, 0), VerticalAlignment = VerticalAlignment.Center });
+            stack.Children.Add(new TextBlock
+            {
+                Text = genre, FontSize = 12, FontWeight = FontWeights.SemiBold,
+                FontFamily = (FontFamily)Application.Current.Resources["HeaderFont"],
+                Foreground = active ? Brushes.White : (Brush)Application.Current.Resources["TextSecondary"],
+                VerticalAlignment = VerticalAlignment.Center
+            });
+            border.Child = stack;
+            border.MouseLeftButtonDown += (_, _) =>
+            {
+                if (genre == "Все") _selectedGenres.Clear();
+                else if (_selectedGenres.Contains(genre)) _selectedGenres.Remove(genre);
+                else _selectedGenres.Add(genre);
+                BuildGenreFilters();
+                Render(SearchBox.Text.Trim().ToLower());
+            };
+            return border;
+        }
+
+        private void ToggleGenreDropdown_Click(object sender, MouseButtonEventArgs e)
+            => GenreDropdownPopup.IsOpen = !GenreDropdownPopup.IsOpen;
+
+        private void ClearGenreFilters_Click(object sender, MouseButtonEventArgs e)
+        {
+            _selectedGenres.Clear();
+            BuildGenreFilters();
+            Render(SearchBox.Text.Trim().ToLower());
+            GenreDropdownPopup.IsOpen = false;
+        }
+
+        private void UpdateGenreDropdownLabel()
+        {
+            GenreDropdownLabel.Text = _selectedGenres.Count == 0
+                ? "Все жанры"
+                : _selectedGenres.Count <= 3
+                    ? string.Join(", ", _selectedGenres.OrderBy(g => g))
+                    : $"Выбрано жанров: {_selectedGenres.Count}";
+        }
+
+        private static string NormalizeGenre(string? genre) => string.IsNullOrWhiteSpace(genre) ? "Other" : genre.Trim();
+
+        private static string GenreEmoji(string genre) => genre.ToLower() switch
+        {
+            "pop" => "✨", "rock" => "🎸", "hip-hop" => "🎤", "electronic" => "⚡", "r&b" => "💜",
+            "jazz" => "🎷", "classical" => "🎻", "metal" => "🔥", "folk" => "🌿", "indie" => "🌙",
+            "alternative" => "🌀", "dance" => "💃", "reggae" => "🌴", "latin" => "☀", _ => "🎵"
+        };
 
         private static string FormatDuration(int sec) => $"{sec / 60}:{sec % 60:D2}";
         public IReadOnlyList<TrackItem> GetTrackItems() => _trackItems;

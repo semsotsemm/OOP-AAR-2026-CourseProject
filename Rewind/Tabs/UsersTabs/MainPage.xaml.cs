@@ -33,7 +33,20 @@ namespace Rewind.Tabs.UsersTabs
 
             OpacityLabel.Text = $"{IslandOpacitySlider.Value * 100:F0}%";
 
-            Unloaded += (_, _) => TrackService.OnPlayCountUpdated -= Global_OnPlayCountUpdated;
+            PlaylistListenService.OnPlaylistListenChanged += OnPlaylistStatsChanged;
+            SavedPlaylistService.OnPlaylistSavedChanged += OnPlaylistStatsChanged;
+
+            Unloaded += (_, _) =>
+            {
+                TrackService.OnPlayCountUpdated -= Global_OnPlayCountUpdated;
+                PlaylistListenService.OnPlaylistListenChanged -= OnPlaylistStatsChanged;
+                SavedPlaylistService.OnPlaylistSavedChanged -= OnPlaylistStatsChanged;
+            };
+        }
+
+        private void OnPlaylistStatsChanged(int playlistId)
+        {
+            Dispatcher.Invoke(LoadPopularPlaylists);
         }
 
         private void Global_OnPlayCountUpdated(int trackId, int newCount)

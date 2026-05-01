@@ -55,35 +55,63 @@
                                     Click="TabMyTracks_Click"
                                     Style="{StaticResource ProfileTab}"
                                     Width="120"/>
+                            <Button x:Name="TabAlbums"
+                                    Content="Альбомы"
+                                    Click="TabAlbums_Click"
+                                    Style="{StaticResource ProfileTab}"
+                                    Width="120"/>
                         </StackPanel>
                     </Border>
 
                     <!-- ======= PANEL: Upload Track ======= -->
                     <Border x:Name="PanelUpload" Grid.Row="1"
-                            Background="White" CornerRadius="16" Padding="24"
-                            BorderBrush="#E0DFD9" BorderThickness="1"
+                            Background="{DynamicResource BgCard}" CornerRadius="20" Padding="24"
+                            BorderBrush="{DynamicResource BorderColor}" BorderThickness="1.5"
                             Visibility="Visible">
                         <StackPanel>
 
                             <!-- Panel header -->
-                            <StackPanel Orientation="Horizontal" Margin="0,0,0,20">
-                                <Image Source="{help:Icon upload.png}"
-                                       Width="18" Height="18"
-                                       VerticalAlignment="Center" Margin="0,0,8,0"/>
-                                <TextBlock Text="Загрузить новый трек"
-                                           FontWeight="Black" FontSize="18"
-                                           FontFamily="{StaticResource HeaderFont}"
-                                           Foreground="#1A1A18"
-                                           VerticalAlignment="Center"/>
-                            </StackPanel>
+                            <Border Background="{DynamicResource GreenGradientStyle}"
+                                    CornerRadius="16" Padding="18,16"
+                                    Margin="0,0,0,22">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Border Width="44" Height="44" CornerRadius="14"
+                                            Background="#FFFFFF22" Margin="0,0,14,0">
+                                        <Image Source="{help:Icon upload.png}"
+                                               Width="20" Height="20"
+                                               VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                    </Border>
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                        <TextBlock Text="Загрузить новый трек"
+                                                   FontWeight="Black" FontSize="18"
+                                                   FontFamily="{StaticResource HeaderFont}"
+                                                   Foreground="White"/>
+                                        <TextBlock Text="Добавьте обложку, аудио и жанр — после проверки трек появится на платформе"
+                                                   FontSize="12" TextWrapping="Wrap"
+                                                   Foreground="#DDFFFFFF" Margin="0,3,0,0"/>
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
 
                             <!-- Track name -->
                             <TextBlock Text="Название трека"
                                        FontSize="12" FontWeight="Bold"
-                                       Foreground="#888880" Margin="0,0,0,5"/>
-                            <TextBox x:Name="NewTrackName"
-                                     Margin="0,0,0,18" Padding="10,8"
-                                     Tag="Введите название..."/>
+                                       Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,6"/>
+                            <Border Background="{DynamicResource BgSidebar}"
+                                    BorderBrush="{DynamicResource BorderColor}"
+                                    BorderThickness="1.5" CornerRadius="12"
+                                    Margin="0,0,0,18">
+                                <TextBox x:Name="NewTrackName"
+                                         Padding="12,9"
+                                         Background="Transparent" BorderThickness="0"
+                                         Foreground="{DynamicResource TextPrimary}"
+                                         FontFamily="{StaticResource BodyFont}"
+                                         Tag="Введите название..."/>
+                            </Border>
 
                             <!-- Cover + Audio row -->
                             <Grid>
@@ -97,9 +125,9 @@
                                     <TextBlock Text="Обложка"
                                                FontSize="12" FontWeight="Bold"
                                                Foreground="#888880" Margin="0,0,0,5"/>
-                                    <Border Width="120" Height="120"
-                                            Background="#F5F4F0" CornerRadius="8"
-                                            BorderBrush="#E0DFD9" BorderThickness="1"
+                                    <Border Width="132" Height="132"
+                                            Background="{DynamicResource BgSidebar}" CornerRadius="16"
+                                            BorderBrush="{DynamicResource BorderColor}" BorderThickness="1.5"
                                             Cursor="Hand" ClipToBounds="True"
                                             MouseDown="SelectCover_Click">
                                         <Grid>
@@ -113,8 +141,8 @@
                                                        HorizontalAlignment="Center"
                                                        Margin="0,0,0,5"/>
                                                 <TextBlock Text="Выбрать"
-                                                           FontSize="10" Foreground="#888880"
-                                                           HorizontalAlignment="Center"/>
+                                               FontSize="10" Foreground="{DynamicResource TextSecondary}"
+                                               HorizontalAlignment="Center"/>
                                             </StackPanel>
                                         </Grid>
                                     </Border>
@@ -125,9 +153,10 @@
                                     <TextBlock Text="Аудиофайл"
                                                FontSize="12" FontWeight="Bold"
                                                Foreground="#888880" Margin="0,0,0,5"/>
-                                    <Button Click="SelectAudio_Click" Height="40"
-                                            Background="#F5F4F0" BorderBrush="#E0DFD9"
-                                            HorizontalContentAlignment="Left" Padding="15,0">
+                                    <Button Click="SelectAudio_Click" Height="42"
+                                            Background="{DynamicResource BgSidebar}" BorderBrush="{DynamicResource BorderColor}"
+                                            HorizontalContentAlignment="Left" Padding="15,0"
+                                            Cursor="Hand">
                                         <StackPanel Orientation="Horizontal">
                                             <Image Source="{help:Icon music_note.png}"
                                                    Width="14" Height="14"
@@ -145,7 +174,10 @@
                                     <TextBlock Text="Жанр"
                                                FontSize="12" FontWeight="Bold"
                                                Foreground="#888880" Margin="0,15,0,5"/>
-                                    <ComboBox x:Name="GenreSelector" Height="35">
+                                    <ComboBox x:Name="GenreSelector" Height="38"
+                                              Background="{DynamicResource BgSidebar}"
+                                              BorderBrush="{DynamicResource BorderColor}"
+                                              Foreground="{DynamicResource TextPrimary}">
                                         <ComboBoxItem Content="Pop" IsSelected="True"/>
                                         <ComboBoxItem Content="Rock"/>
                                         <ComboBoxItem Content="Hip-Hop"/>
@@ -165,14 +197,15 @@
                                 </StackPanel>
                             </Grid>
 
-                            <Separator Margin="0,20" Background="#F5F4F0"/>
+                            <Separator Margin="0,22" Background="{DynamicResource BorderColor}"/>
 
                             <Button Content="📤  Отправить на проверку"
                                     Click="UploadTrack_Click"
-                                    Height="45"
+                                    Height="46"
                                     Background="{DynamicResource AccentColor}"
                                     Foreground="White"
                                     FontWeight="Bold"
+                                    FontFamily="{StaticResource HeaderFont}"
                                     BorderThickness="0"
                                     Cursor="Hand"/>
                         </StackPanel>
@@ -180,8 +213,8 @@
 
                     <!-- ======= PANEL: My Tracks ======= -->
                     <Border x:Name="PanelMyTracks" Grid.Row="1"
-                            Background="White" CornerRadius="16" Padding="24"
-                            BorderBrush="#E0DFD9" BorderThickness="1"
+                            Background="{DynamicResource BgCard}" CornerRadius="20" Padding="24"
+                            BorderBrush="{DynamicResource BorderColor}" BorderThickness="1.5"
                             Visibility="Collapsed">
                         <StackPanel>
 
@@ -190,20 +223,84 @@
                                 <TextBlock x:Name="MyTracksHeader"
                                            Text="Мои треки"
                                            FontSize="16" FontWeight="Black"
-                                           Foreground="#1A1A18"
+                                           Foreground="{DynamicResource TextPrimary}"
                                            FontFamily="{StaticResource HeaderFont}"
                                            VerticalAlignment="Center"/>
-                                <Border Background="#F5F4F0" CornerRadius="8"
+                                <Border Background="{DynamicResource BgSidebar}" CornerRadius="8"
                                         Padding="12,6" HorizontalAlignment="Right"
                                         Cursor="Hand"
                                         MouseLeftButtonDown="RefreshTracks_Click">
                                     <TextBlock Text="↻ Обновить"
-                                               FontSize="12" Foreground="#888880"/>
+                                               FontSize="12" Foreground="{DynamicResource TextSecondary}"/>
                                 </Border>
                             </Grid>
 
                             <StackPanel x:Name="MyTracksContainer"/>
                         </StackPanel>
+                    </Border>
+
+                    <!-- ======= PANEL: Albums ======= -->
+                    <Border x:Name="PanelAlbums" Grid.Row="1"
+                            Background="{DynamicResource BgCard}" CornerRadius="20" Padding="24"
+                            BorderBrush="{DynamicResource BorderColor}" BorderThickness="1.5"
+                            Visibility="Collapsed">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                            <StackPanel>
+                                <Border Background="{DynamicResource GreenGradientStyle}" CornerRadius="16" Padding="18,16" Margin="0,0,0,18">
+                                    <StackPanel>
+                                        <TextBlock Text="Создать альбом" FontSize="18" FontWeight="Black" Foreground="White" FontFamily="{StaticResource HeaderFont}"/>
+                                        <TextBlock Text="Альбом можно собрать только из ваших опубликованных треков" FontSize="12" Foreground="#DDFFFFFF" Margin="0,3,0,0"/>
+                                    </StackPanel>
+                                </Border>
+
+                                <Grid Margin="0,0,0,18">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="14"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="12"/>
+                                        <ColumnDefinition Width="180"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Border x:Name="AlbumCoverPicker" Grid.Column="0" Width="86" Height="86" Background="{DynamicResource BgSidebar}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1.5" CornerRadius="14" Cursor="Hand" MouseLeftButtonDown="PickAlbumCover_Click" ClipToBounds="True">
+                                        <Grid>
+                                            <Image x:Name="AlbumCoverPreview" Stretch="UniformToFill"/>
+                                            <TextBlock x:Name="AlbumCoverPlaceholder" Text="💿" FontSize="30" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Grid>
+                                    </Border>
+                                    <Border Grid.Column="2" Background="{DynamicResource BgSidebar}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1.5" CornerRadius="12" VerticalAlignment="Top">
+                                        <TextBox x:Name="AlbumTitleBox" Padding="12,9" Background="Transparent" BorderThickness="0" Tag="Название альбома"/>
+                                    </Border>
+                                    <ComboBox Grid.Column="4" x:Name="AlbumGenreSelector" Height="40" Background="{DynamicResource BgSidebar}" BorderBrush="{DynamicResource BorderColor}" VerticalAlignment="Top">
+                                        <ComboBoxItem Content="Pop" IsSelected="True"/>
+                                        <ComboBoxItem Content="Rock"/>
+                                        <ComboBoxItem Content="Hip-Hop"/>
+                                        <ComboBoxItem Content="Electronic"/>
+                                        <ComboBoxItem Content="R&amp;B"/>
+                                        <ComboBoxItem Content="Jazz"/>
+                                        <ComboBoxItem Content="Classical"/>
+                                        <ComboBoxItem Content="Metal"/>
+                                        <ComboBoxItem Content="Other"/>
+                                    </ComboBox>
+                                </Grid>
+
+                                <Border Background="{DynamicResource BgSidebar}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1.5" CornerRadius="14" Padding="14" Margin="0,0,0,16">
+                                    <StackPanel>
+                                        <Grid Margin="0,0,0,10">
+                                            <TextBlock Text="Выберите треки" FontWeight="Bold" FontSize="13" Foreground="{DynamicResource TextPrimary}"/>
+                                            <TextBlock Text="только ваши опубликованные" FontSize="11" Foreground="{DynamicResource TextMuted}" HorizontalAlignment="Right"/>
+                                        </Grid>
+                                        <WrapPanel x:Name="AlbumTrackChecks"/>
+                                    </StackPanel>
+                                </Border>
+
+                                <Button x:Name="CreateAlbumBtn" Content="💿  Создать альбом" Click="CreateAlbum_Click" Height="44" Background="{DynamicResource AccentColor}" Foreground="White" FontWeight="Bold" BorderThickness="0" Cursor="Hand"/>
+
+                                <Separator Margin="0,22" Background="{DynamicResource BorderColor}"/>
+
+                                <TextBlock Text="Мои альбомы" FontSize="16" FontWeight="Black" Foreground="{DynamicResource TextPrimary}" FontFamily="{StaticResource HeaderFont}" Margin="0,0,0,12"/>
+                                <WrapPanel x:Name="ArtistAlbumsContainer"/>
+                            </StackPanel>
+                        </ScrollViewer>
                     </Border>
                 </Grid>
 

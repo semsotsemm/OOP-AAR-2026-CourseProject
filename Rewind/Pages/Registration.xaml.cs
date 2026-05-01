@@ -112,10 +112,7 @@ namespace Rewind.Pages
 
             try
             {
-                string exePath = AppDomain.CurrentDomain.BaseDirectory;
-
-                string avatarFileName = "default_avatar.jpg";
-                string fullPath = Path.Combine(exePath, "Images", avatarFileName);
+                string fullPath = FileStorage.DefaultAvatar;
                 User newUser = new User
                 {
                     Email = email,
@@ -203,7 +200,9 @@ namespace Rewind.Pages
                 Session.Password = password;
                 Session.UserRole = NormalizeRoleName(selectedRoleId);
                 Session.HidedPassword = new string('●', Session.Password.Length);
-                Session.AvatarPath = checking_user.ProfilePhotoPath;
+                Session.AvatarPath = string.IsNullOrWhiteSpace(checking_user.ProfilePhotoPath)
+                    ? FileStorage.DefaultAvatar
+                    : checking_user.ProfilePhotoPath;
                 Session.LoadFromDatabase();
 
                 if (selectedRoleId == 3)

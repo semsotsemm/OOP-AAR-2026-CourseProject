@@ -67,15 +67,7 @@ namespace Rewind.Contols
                     mw.PlaybackStateChanged += OnPlaybackStateChanged;
                 }
 
-                // Подписываемся на реальное время
                 TrackService.OnPlayCountUpdated += OnTrackPlayCountUpdated;
-                // Загружаем начальное значение из БД
-                try
-                {
-                    var stats = StatisticService.GetStatsByTrack(TrackId);
-                    PlayCountText.Text = FormatPlayCount(stats?.PlayCount ?? 0);
-                }
-                catch { PlayCountText.Text = ""; }
             };
 
             Unloaded += (_, _) =>
@@ -108,9 +100,7 @@ namespace Rewind.Contols
             if (string.IsNullOrEmpty(path)) return;
             try
             {
-                string fullPath = path.Contains(":")
-                    ? path
-                    : Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "CoversLibrary", path);
+                string fullPath = FileStorage.ResolveImagePath(path);
 
                 if (File.Exists(fullPath))
                 {
@@ -148,15 +138,6 @@ namespace Rewind.Contols
         private void OnTrackPlayCountUpdated(int trackId, int newCount)
         {
             if (trackId != TrackId) return;
-            Dispatcher.Invoke(() => PlayCountText.Text = FormatPlayCount(newCount));
-        }
-
-        private static string FormatPlayCount(int count)
-        {
-            if (count <= 0)   return "";
-            if (count >= 1_000_000) return $"► {count / 1_000_000.0:F1}M";
-            if (count >= 1_000)     return $"► {count / 1000.0:F1}K";
-            return $"► {count}";
         }
 
         public void SetPlayPauseIcon(bool isPlaying)
@@ -182,37 +163,72 @@ namespace Rewind.Contols
         {
             PlayClicked?.Invoke(this, new RoutedEventArgs());
 
-            Session.AddListenedTrack(TrackId, DurationSeconds);
-            DependencyObject parent = VisualTreeHelper.GetParent(this);
-
-            while (parent != null && parent is not MainPage && parent is not FavoritesPage && parent is not PlaylistDetailsPage && parent is not SearchPage)
-            {
-                parent = VisualTreeHelper.GetParent(parent);
-            }
+            DependencyObject? par = VisualTreeHelper.GetParent(this);
+            while (par != null && par is not MainPage && par is not FavoritesPage
+                                && par is not PlaylistDetailsPage && par is not Tabs.UsersTabs.AlbumDetailsPage
+                                && par is not SearchPage && par is not Tabs.UsersTabs.ArtistProfilePage)
+                par = VisualTreeHelper.GetParent(par);
 
             if (Window.GetWindow(this) is not MainWindow mainWindow) return;
+
+            string sourcePage = par switch
+            {
+                FavoritesPage        => "Любимые",
+                PlaylistDetailsPage  => "Плейлист",
+                Tabs.UsersTabs.AlbumDetailsPage => "Альбом",
+                SearchPage           => "Поиск",
+                Tabs.UsersTabs.ArtistProfilePage => "Исполнитель",
+                _                    => "Главная"
+            };
+
             if (mainWindow.CurrentTrack?.TrackId == TrackId)
             {
+                // Трек уже играет — просто пауза/плей
                 mainWindow.TogglePlayPause();
-                return;
+            }
+            else
+            {
+                Session.AddListenedTrack(TrackId, DurationSeconds);
+
+                if (par is MainPage mp)
+                {
+                    Session.ResetPlaybackScope();
+                    mainWindow.PlayTrackFromContext(this, mp.GetTrackItems());
+                }
+                else if (par is FavoritesPage fp)
+                {
+                    Session.ResetPlaybackScope();
+                    mainWindow.PlayTrackFromContext(this, fp.GetTrackItems());
+                }
+                else if (par is PlaylistDetailsPage pp)
+                {
+                    pp.RegisterPlaylistListen();
+                    mainWindow.PlayTrackFromContext(this, pp.GetTrackItems());
+                }
+                else if (par is Tabs.UsersTabs.AlbumDetailsPage ad)
+                {
+                    ad.RegisterAlbumListen();
+                    mainWindow.PlayTrackFromContext(this, ad.GetTrackItems());
+                }
+                else if (par is SearchPage sp)
+                {
+                    Session.ResetPlaybackScope();
+                    mainWindow.PlayTrackFromContext(this, sp.GetTrackItems());
+                }
+                else if (par is Tabs.UsersTabs.ArtistProfilePage ap)
+                {
+                    Session.ResetPlaybackScope();
+                    mainWindow.PlayTrackFromContext(this, ap.GetTrackItems());
+                }
+                else
+                {
+                    Session.ResetPlaybackScope();
+                    mainWindow.PlayTrackFromContext(this, new List<TrackItem> { this });
+                }
             }
 
-            if (parent is MainPage mainPage)
-            {
-                mainWindow.PlayTrackFromContext(this, mainPage.GetTrackItems());
-            }
-            else if (parent is FavoritesPage favPage)
-            {
-                mainWindow.PlayTrackFromContext(this, favPage.GetTrackItems());
-            }
-            else if (parent is PlaylistDetailsPage playlistPage)
-            {
-                mainWindow.PlayTrackFromContext(this, playlistPage.GetTrackItems());
-            }
-            else if (parent is SearchPage searchPage)
-            {
-                mainWindow.PlayTrackFromContext(this, searchPage.GetTrackItems());
-            }
+            // NowPlaying не открываем автоматически —
+            // пользователь открывает его сам кликом по PlayerBar.
         }
         // ─────────────────────────────────────────────
         //  Лайк — работает через Session-кеш
@@ -407,6 +423,7 @@ namespace Rewind.Contols
 
         private void TrackCard_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
+            // Игнорируем клики по кнопкам/слайдерам/меню
             var origin = e.OriginalSource as DependencyObject;
             while (origin != null)
             {
@@ -415,23 +432,8 @@ namespace Rewind.Contols
                 origin = VisualTreeHelper.GetParent(origin);
             }
 
-            if (Window.GetWindow(this) is not MainWindow mainWindow) return;
-
-            string sourcePage = "Главная";
-            DependencyObject parent = VisualTreeHelper.GetParent(this);
-            while (parent != null && parent is not MainPage && parent is not FavoritesPage && parent is not PlaylistDetailsPage && parent is not SearchPage)
-                parent = VisualTreeHelper.GetParent(parent);
-
-            if (parent is FavoritesPage) sourcePage = "Любимые";
-            else if (parent is PlaylistDetailsPage) sourcePage = "Плейлист";
-            else if (parent is SearchPage) sourcePage = "Поиск";
-
-            if (mainWindow.CurrentTrack == null || mainWindow.CurrentTrack.TrackId != TrackId)
-            {
-                Play_Click(PlayBtn, new RoutedEventArgs());
-            }
-
-            mainWindow.OpenNowPlaying(sourcePage);
+            // Play_Click уже открывает NowPlaying внутри
+            Play_Click(PlayBtn, new RoutedEventArgs());
             e.Handled = true;
         }
 

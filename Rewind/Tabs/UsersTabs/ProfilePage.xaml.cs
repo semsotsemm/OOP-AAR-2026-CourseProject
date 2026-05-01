@@ -37,7 +37,25 @@ namespace Rewind.Controls
                 Tog2.Checked   += (_, _) => Session.NotifPushEnabled = true;
                 Tog2.Unchecked += (_, _) => Session.NotifPushEnabled = false;
             };
+
+            PlaylistListenService.OnPlaylistListenChanged += OnPlaylistStatsChanged;
+            SavedPlaylistService.OnPlaylistSavedChanged += OnPlaylistStatsChanged;
+            Unloaded += (_, _) =>
+            {
+                PlaylistListenService.OnPlaylistListenChanged -= OnPlaylistStatsChanged;
+                SavedPlaylistService.OnPlaylistSavedChanged -= OnPlaylistStatsChanged;
+            };
+
             LoadOverviewSection();
+        }
+
+        private void OnPlaylistStatsChanged(int playlistId)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                if (PanelOverview.Visibility == Visibility.Visible) LoadOverviewSection();
+                if (PanelPlaylists.Visibility == Visibility.Visible) LoadPlaylistsSection();
+            });
         }
 
         private void TabOverview_Click(object sender, RoutedEventArgs e)
@@ -54,6 +72,11 @@ namespace Rewind.Controls
         {
             LoadPlaylistsSection();
             SetActiveTab(TabPlaylists, PanelPlaylists);
+        }
+        private void TabAlbums_Click(object sender, RoutedEventArgs e)
+        {
+            LoadAlbumsSection();
+            SetActiveTab(TabAlbums, PanelAlbums);
         }
         private void TabSettings_Click(object sender, RoutedEventArgs e) => SetActiveTab(TabSettings, PanelSettings);
 
@@ -77,8 +100,8 @@ namespace Rewind.Controls
 
             if (openFileDialog.ShowDialog() == true)
             {
-                tempAvatarPath = CopyImageToProjectFolder(openFileDialog.FileName, "AvatarsLibrary", keepOriginalName: true, returnAbsolutePath: true);
-                AvatarPreview.ImageSource = new BitmapImage(new Uri(tempAvatarPath));
+                tempAvatarPath = FileStorage.CopyAvatar(openFileDialog.FileName);
+                AvatarPreview.ImageSource = new BitmapImage(new Uri(FileStorage.ResolvePath(tempAvatarPath)));
             }
         }
 
@@ -156,6 +179,7 @@ namespace Rewind.Controls
             PanelOverview.Visibility = Visibility.Collapsed;
             PanelLiked.Visibility = Visibility.Collapsed;
             PanelPlaylists.Visibility = Visibility.Collapsed;
+            PanelAlbums.Visibility = Visibility.Collapsed;
             PanelSettings.Visibility = Visibility.Collapsed;
 
             PanelArtistStudio.Visibility = Visibility.Visible;
@@ -240,7 +264,7 @@ namespace Rewind.Controls
 
             try
             {
-                string uniqueFileName = CopyAudioToMusicLibrary(_selectedAudioPath, trackName);
+                string uniqueFileName = FileStorage.CopyTrackAudio(_selectedAudioPath, trackName);
                 string destPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "MusicLibrary", uniqueFileName);
 
                 int duration = GetTrackDuration(destPath);
@@ -248,7 +272,7 @@ namespace Rewind.Controls
                 string? finalCoverPath = null;
                 if (!string.IsNullOrWhiteSpace(_selectedCoverPath))
                 {
-                    finalCoverPath = CopyImageToProjectFolder(_selectedCoverPath, "CoversLibrary", keepOriginalName: true, returnAbsolutePath: true);
+                    finalCoverPath = FileStorage.CopyTrackCover(_selectedCoverPath);
                 }
 
                 string genre = (GenreSelector.SelectedItem as System.Windows.Controls.ComboBoxItem)?.Content?.ToString() ?? "";
@@ -346,7 +370,7 @@ namespace Rewind.Controls
             Style inactiveStyle = (Style)FindResource("ProfileTab");
 
             TabOverview.Style = TabLiked.Style = TabPlaylists.Style =
-            TabSettings.Style = inactiveStyle;
+            TabAlbums.Style = TabSettings.Style = inactiveStyle;
 
             if (Session.UserRole?.ToLower() == "исполнитель")
             {
@@ -354,7 +378,7 @@ namespace Rewind.Controls
             }
 
             PanelOverview.Visibility = PanelLiked.Visibility =
-            PanelPlaylists.Visibility = PanelSettings.Visibility =
+            PanelPlaylists.Visibility = PanelAlbums.Visibility = PanelSettings.Visibility =
             PanelArtistStudio.Visibility = Visibility.Collapsed;
 
             activeTabBtn.Style = (Style)FindResource("ProfileTabActive");
@@ -632,6 +656,61 @@ namespace Rewind.Controls
                         MakePlaylistCard(playlist, $"От {owner}  •  {trackCount} тр.  •  ► {listens}"));
                 }
             }
+        }
+
+        private void LoadAlbumsSection()
+        {
+            ProfileAlbumsContainer.Children.Clear();
+            List<Album> albums;
+            try { albums = AlbumService.GetSavedByUser(Session.UserId); }
+            catch { albums = new List<Album>(); }
+
+            if (albums.Count == 0)
+            {
+                ProfileAlbumsContainer.Children.Add(MakeEmptyCard("Сохранённых альбомов пока нет"));
+                return;
+            }
+
+            foreach (var album in albums)
+                ProfileAlbumsContainer.Children.Add(MakeAlbumCard(album));
+        }
+
+        private UIElement MakeAlbumCard(Album album)
+        {
+            var card = new Border
+            {
+                Width = 170,
+                Height = 205,
+                CornerRadius = new CornerRadius(16),
+                Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(245, 244, 240)),
+                Padding = new Thickness(12),
+                Margin = new Thickness(0, 0, 12, 12),
+                Cursor = Cursors.Hand
+            };
+            var stack = new StackPanel();
+            var cover = new Border { Height = 110, CornerRadius = new CornerRadius(12), Background = new System.Windows.Media.LinearGradientBrush(System.Windows.Media.Color.FromRgb(42,232,118), System.Windows.Media.Color.FromRgb(0,77,64), new Point(0,0), new Point(1,1)) };
+            if (!string.IsNullOrWhiteSpace(album.CoverPath))
+            {
+                try
+                {
+                    string fp = album.CoverPath.Contains(":") ? album.CoverPath : System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "CoversLibrary", album.CoverPath);
+                    if (System.IO.File.Exists(fp)) cover.Background = new System.Windows.Media.ImageBrush(new BitmapImage(new Uri(fp))) { Stretch = System.Windows.Media.Stretch.UniformToFill };
+                }
+                catch { }
+            }
+            cover.Child = new TextBlock { Text = "💿", FontSize = 28, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
+            stack.Children.Add(cover);
+            stack.Children.Add(new TextBlock { Text = album.Title, FontWeight = FontWeights.Bold, FontSize = 13, Margin = new Thickness(0, 10, 0, 2), TextTrimming = TextTrimming.CharacterEllipsis });
+            var artist = album.Artist?.Nickname ?? UserService.GetUserById(album.ArtistId)?.Nickname ?? "Исполнитель";
+            stack.Children.Add(new TextBlock { Text = $"{artist} • {album.AlbumTracks?.Count ?? 0} треков", FontSize = 11, Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(136,136,128)) });
+            card.Child = stack;
+            int albumId = album.AlbumId;
+            card.MouseLeftButtonDown += (_, _) =>
+            {
+                var full = AlbumService.GetById(albumId) ?? album;
+                if (Window.GetWindow(this) is MainWindow mw) mw.OpenAlbumDetails(full);
+            };
+            return card;
         }
 
         private void OpenPlaylistsPage_MouseDown(object sender, MouseButtonEventArgs e)

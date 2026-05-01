@@ -96,6 +96,10 @@
                                 Style="{StaticResource ProfileTab}"
                                 Click="TabPlaylists_Click"
                                 Width="110"/>
+                                <Button x:Name="TabAlbums" Content="Альбомы"
+                                Style="{StaticResource ProfileTab}"
+                                Click="TabAlbums_Click"
+                                Width="105"/>
                                 <Button x:Name="TabSettings" Content="Настройки"
                                 Click="TabSettings_Click"
                                 Style="{StaticResource ProfileTab}"
@@ -178,6 +182,16 @@
                                 </Border>
                             </Grid>
                             <StackPanel x:Name="ProfilePlaylistsContainer"/>
+                        </StackPanel>
+
+                        <!-- ======= ТАБ: СОХРАНЁННЫЕ АЛЬБОМЫ ======= -->
+                        <StackPanel x:Name="PanelAlbums" Visibility="Collapsed">
+                            <Grid Margin="0,0,0,16">
+                                <TextBlock Text="Сохранённые альбомы" FontSize="16" FontWeight="Black"
+                                   Foreground="#1A1A18"
+                                   FontFamily="{StaticResource HeaderFont}"/>
+                            </Grid>
+                            <WrapPanel x:Name="ProfileAlbumsContainer"/>
                         </StackPanel>
 
                         <!-- ======= ТАБ: НАСТРОЙКИ ======= -->

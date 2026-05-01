@@ -16,18 +16,18 @@
         </EventTrigger>
     </Window.Triggers>
 
-    <Grid>
-        <Ellipse x:Name="Circle1" Width="520" Height="520" Fill="{StaticResource AccentColor}" Opacity="0.15" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,-160,-100,0">
+    <Grid Background="{DynamicResource BgMain}">
+        <Ellipse x:Name="Circle1" Width="520" Height="520" Fill="{DynamicResource AccentColor}" Opacity="0.15" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,-160,-100,0">
             <Ellipse.RenderTransform>
                 <TranslateTransform />
             </Ellipse.RenderTransform>
         </Ellipse>
-        <Ellipse x:Name="Circle2" Width="300" Height="300" Fill="{StaticResource AccentColor}" Opacity="0.1" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="-60,0,0,-80">
+        <Ellipse x:Name="Circle2" Width="300" Height="300" Fill="{DynamicResource AccentColor}" Opacity="0.1" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="-60,0,0,-80">
             <Ellipse.RenderTransform>
                 <TranslateTransform />
             </Ellipse.RenderTransform>
         </Ellipse>
-        <Ellipse x:Name="Circle3" Width="200" Height="200" Fill="{StaticResource PrimaryColor}" Opacity="0.07" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,60,-40">
+        <Ellipse x:Name="Circle3" Width="200" Height="200" Fill="{DynamicResource AccentColor}" Opacity="0.07" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,60,-40">
             <Ellipse.RenderTransform>
                 <TranslateTransform />
             </Ellipse.RenderTransform>
@@ -40,13 +40,13 @@
                     <Border Width="32" Height="32" CornerRadius="20" ClipToBounds="True" Margin="0,0,10,0">
                         <Image Source="{help:Icon rewind_logo.png}" Stretch="UniformToFill"/>
                     </Border>
-                    <TextBlock Text="Rewind" FontSize="22" FontWeight="Black" Foreground="#1A1A18" VerticalAlignment="Center" FontFamily="{StaticResource HeaderFont}"/>
+                    <TextBlock Text="Rewind" FontSize="22" FontWeight="Black" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center" FontFamily="{StaticResource HeaderFont}"/>
                 </StackPanel>
 
-                <Border Background="#FFFFFF" CornerRadius="24" Padding="40,36" BorderBrush="#E0DFD9" BorderThickness="1">
+                <Border Background="{DynamicResource BgCard}" CornerRadius="24" Padding="40,36" BorderBrush="{DynamicResource BgMain}" BorderThickness="1">
                     <StackPanel>
-                        <TextBlock x:Name="CardTitle" Text="Добро пожаловать" FontSize="26" FontWeight="Black" Foreground="#1A1A18" Margin="0,0,0,6" FontFamily="{StaticResource HeaderFont}"/>
-                        <TextBlock x:Name="CardSubtitle" Text="Выберите роль, чтобы начать" FontSize="14" Foreground="#888880" Margin="0,0,0,28" LineHeight="22"/>
+                        <TextBlock x:Name="CardTitle" Text="Добро пожаловать" FontSize="26" FontWeight="Black" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,6" FontFamily="{StaticResource HeaderFont}"/>
+                        <TextBlock x:Name="CardSubtitle" Text="Выберите роль, чтобы начать" FontSize="14" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,28" LineHeight="22"/>
 
                         <Border Margin="0,0,0,28">
                             <ListBox x:Name="RoleSelector"
@@ -79,24 +79,24 @@
                             </ListBox>
                         </Border>
 
-                        <Border x:Name="ModeSwitchContainer" Background="#F5F4F0" CornerRadius="12" Padding="4" Margin="0,0,0,24">
+                        <Border x:Name="ModeSwitchContainer" Background="{DynamicResource BgMain}" CornerRadius="12" Padding="4" Margin="0,0,0,24">
                             <Grid x:Name="ModeSwitchGrid">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
-                                <Button x:Name="LoginModeBtn" Grid.Column="0" Content="Войти" Click="ModeBtn_Click" Style="{StaticResource ModeBtnActive}"/>
-                                <Button x:Name="RegModeBtn" Grid.Column="1" Content="Создать аккаунт" Click="ModeBtn_Click" Style="{StaticResource ModeBtn}"/>
+                                <Button x:Name="LoginModeBtn" Grid.Column="0" Content="Войти" Click="ModeBtn_Click" Style="{DynamicResource ModeBtnActive}"/>
+                                <Button x:Name="RegModeBtn" Grid.Column="1" Content="Создать аккаунт" Click="ModeBtn_Click" Style="{DynamicResource ModeBtn}"/>
                             </Grid>
                         </Border>
 
                         <StackPanel x:Name="PanelUser" Visibility="Visible">
                             <StackPanel x:Name="UserLoginForm" Visibility="Visible">
-                                <TextBlock Text="ЛОГИН ИЛИ EMAIL" Style="{StaticResource FieldLabel}"/>
-                                <TextBox x:Name="UserLoginValue" Style="{StaticResource InputField}" Tag="alexey@mail.ru" Margin="0,0,0,16"/>
-                                <TextBlock Text="ПАРОЛЬ" Style="{StaticResource FieldLabel}"/>
-                                <PasswordBox x:Name="UserPasswordValue" Style="{StaticResource PasswordField}" Margin="0,0,0,20"/>
-                                <Button Content="Войти в Rewind" Style="{StaticResource BtnRed}" Click="LoginButton_Click"/>
+                                <TextBlock Text="ЛОГИН ИЛИ EMAIL" Style="{DynamicResource FieldLabel}"/>
+                                <TextBox x:Name="UserLoginValue" Style="{DynamicResource InputField}" Tag="alexey@mail.ru" Margin="0,0,0,16"/>
+                                <TextBlock Text="ПАРОЛЬ" Style="{DynamicResource FieldLabel}"/>
+                                <PasswordBox x:Name="UserPasswordValue" Style="{DynamicResource PasswordField}" Margin="0,0,0,20"/>
+                                <Button Content="Войти в Rewind" Style="{DynamicResource BtnRed}" Click="LoginButton_Click"/>
                             </StackPanel>
 
                             <StackPanel x:Name="UserRegForm" Visibility="Collapsed">
@@ -160,7 +160,7 @@
                             <TextBlock Text="ЛОГИН АДМИНИСТРАТОРА" Style="{StaticResource FieldLabel}"/>
                             <TextBox x:Name="AdminLoginValue" Style="{StaticResource InputField}" Tag="admin" Margin="0,0,0,16"/>
                             <TextBlock Text="ПАРОЛЬ" Style="{StaticResource FieldLabel}"/>
-                            <PasswordBox x:Name="AdminPasswordValue" Style="{StaticResource PasswordField}" Margin="0,0,0,20"/>
+                            <PasswordBox x:Name="AdminPasswordValue" Style="{DynamicResource PasswordField}" Margin="0,0,0,20"/>
                             <Button Content="Войти как администратор" Style="{StaticResource BtnDark}" Click="LoginButton_Click"/>
                         </StackPanel>
 

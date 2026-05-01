@@ -128,6 +128,25 @@ namespace Rewind.Helpers
         public Track Track { get; set; } = null!;
     }
 
+    public class SavedAlbum
+    {
+        public int UserId { get; set; }
+        public User User { get; set; } = null!;
+        public int AlbumId { get; set; }
+        public Album Album { get; set; } = null!;
+        public DateTime SavedAt { get; set; } = DateTime.UtcNow;
+    }
+
+    public class AlbumListenEvent
+    {
+        [Key] public int AlbumListenEventId { get; set; }
+        public int UserId { get; set; }
+        public User User { get; set; } = null!;
+        public int AlbumId { get; set; }
+        public Album Album { get; set; } = null!;
+        public DateTime ListenedAt { get; set; } = DateTime.UtcNow;
+    }
+
     public class ArtistRequest
     {
         [Key] public int RequestId { get; set; }
@@ -155,6 +174,17 @@ namespace Rewind.Helpers
     /// <summary>Уникальный слушатель плейлиста (один пользователь — один запись).</summary>
     public class PlaylistListen
     {
+        public int UserId { get; set; }
+        public User User { get; set; } = null!;
+        public int PlaylistId { get; set; }
+        public Playlist Playlist { get; set; } = null!;
+        public DateTime ListenedAt { get; set; } = DateTime.UtcNow;
+    }
+
+    /// <summary>Каждое нажатие Play внутри плейлиста — отдельное событие прослушивания.</summary>
+    public class PlaylistPlayEvent
+    {
+        [Key] public int PlaylistPlayEventId { get; set; }
         public int UserId { get; set; }
         public User User { get; set; } = null!;
         public int PlaylistId { get; set; }
@@ -267,6 +297,20 @@ namespace Rewind.Helpers
                         PRIMARY KEY (""AlbumId"", ""TrackId"")
                     )");
                 Database.ExecuteSqlRaw(@"
+                    CREATE TABLE IF NOT EXISTS ""SavedAlbums"" (
+                        ""UserId"" INT NOT NULL REFERENCES ""Users""(""UserId"") ON DELETE CASCADE,
+                        ""AlbumId"" INT NOT NULL REFERENCES ""Albums""(""AlbumId"") ON DELETE CASCADE,
+                        ""SavedAt"" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+                        PRIMARY KEY (""UserId"", ""AlbumId"")
+                    )");
+                Database.ExecuteSqlRaw(@"
+                    CREATE TABLE IF NOT EXISTS ""AlbumListenEvents"" (
+                        ""AlbumListenEventId"" SERIAL PRIMARY KEY,
+                        ""UserId"" INT NOT NULL REFERENCES ""Users""(""UserId"") ON DELETE CASCADE,
+                        ""AlbumId"" INT NOT NULL REFERENCES ""Albums""(""AlbumId"") ON DELETE CASCADE,
+                        ""ListenedAt"" TIMESTAMPTZ NOT NULL DEFAULT NOW()
+                    )");
+                Database.ExecuteSqlRaw(@"
                     CREATE TABLE IF NOT EXISTS ""TrackReports"" (
                         ""ReportId""    SERIAL       PRIMARY KEY,
                         ""TrackId""     INT          NOT NULL REFERENCES ""Tracks""(""TrackID"") ON DELETE CASCADE,
@@ -288,6 +332,13 @@ namespace Rewind.Helpers
                         ""PlaylistId"" INT         NOT NULL REFERENCES ""Playlists""(""PlaylistID"") ON DELETE CASCADE,
                         ""ListenedAt"" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
                         PRIMARY KEY (""UserId"", ""PlaylistId"")
+                    )");
+                Database.ExecuteSqlRaw(@"
+                    CREATE TABLE IF NOT EXISTS ""PlaylistPlayEvents"" (
+                        ""PlaylistPlayEventId"" SERIAL PRIMARY KEY,
+                        ""UserId""     INT         NOT NULL REFERENCES ""Users""(""UserId"") ON DELETE CASCADE,
+                        ""PlaylistId"" INT         NOT NULL REFERENCES ""Playlists""(""PlaylistID"") ON DELETE CASCADE,
+                        ""ListenedAt"" TIMESTAMPTZ NOT NULL DEFAULT NOW()
                     )");
             }
             catch { }
@@ -315,9 +366,12 @@ namespace Rewind.Helpers
         public DbSet<ArtistRequest> ArtistRequests { get; set; }
         public DbSet<Album> Albums { get; set; }
         public DbSet<AlbumTrack> AlbumTracks { get; set; }
+        public DbSet<SavedAlbum> SavedAlbums { get; set; }
+        public DbSet<AlbumListenEvent> AlbumListenEvents { get; set; }
         public DbSet<TrackReport> TrackReports { get; set; }
         public DbSet<SavedPlaylist> SavedPlaylists { get; set; }
         public DbSet<PlaylistListen> PlaylistListens { get; set; }
+        public DbSet<PlaylistPlayEvent> PlaylistPlayEvents { get; set; }
         public DbSet<Track> Tracks { get; set; }
         public DbSet<Statistic> Statistics { get; set; }
         public DbSet<Playlist> Playlists { get; set; }
@@ -338,6 +392,7 @@ namespace Rewind.Helpers
             m.Entity<Favorite>().HasKey(f => new { f.UserID, f.TrackID });
             m.Entity<Subscription>().HasKey(s => new { s.FollowerID, s.ArtistID });
             m.Entity<AlbumTrack>().HasKey(at => new { at.AlbumId, at.TrackId });
+            m.Entity<SavedAlbum>().HasKey(sa => new { sa.UserId, sa.AlbumId });
             m.Entity<SavedPlaylist>().HasKey(sp => new { sp.UserId, sp.PlaylistId });
             m.Entity<PlaylistListen>().HasKey(pl => new { pl.UserId, pl.PlaylistId });
 
@@ -381,6 +436,28 @@ namespace Rewind.Helpers
     // ─────────────────────────────────────────────────────────────
     //  СЕРВИСЫ
     // ─────────────────────────────────────────────────────────────
+
+    public static class GenreService
+    {
+        public static IReadOnlyList<string> DefaultGenres { get; } = new[]
+        {
+            "Pop", "Rock", "Hip-Hop", "Electronic", "R&B", "Jazz", "Classical", "Metal",
+            "Folk", "Indie", "Alternative", "Dance", "Reggae", "Latin", "Other"
+        };
+
+        public static List<string> GetAllGenresFromTracks()
+        {
+            using var db = new AppDbContext();
+            return db.Tracks
+                .Select(t => t.Genre)
+                .Where(g => g != null && g != "")
+                .ToList()!
+                .Select(g => g!.Trim())
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .OrderBy(g => g)
+                .ToList();
+        }
+    }
 
     public static class UserService
     {
@@ -864,21 +941,23 @@ namespace Rewind.Helpers
 
     public static class PlaylistListenService
     {
-        /// <summary>Registers that a user listened to a playlist (once per user, idempotent).</summary>
+        public static event Action<int>? OnPlaylistListenChanged;
+
+        /// <summary>Каждое нажатие Play внутри плейлиста = +1 прослушивание.</summary>
         public static void RegisterListen(int userId, int playlistId)
         {
             if (userId <= 0 || playlistId <= 0) return;
             try
             {
                 using var db = new AppDbContext();
-                if (!db.PlaylistListens.Any(l => l.UserId == userId && l.PlaylistId == playlistId))
+                db.PlaylistPlayEvents.Add(new PlaylistPlayEvent
                 {
-                    db.PlaylistListens.Add(new PlaylistListen
-                    {
-                        UserId = userId, PlaylistId = playlistId, ListenedAt = DateTime.UtcNow
-                    });
-                    db.SaveChanges();
-                }
+                    UserId = userId,
+                    PlaylistId = playlistId,
+                    ListenedAt = DateTime.UtcNow
+                });
+                db.SaveChanges();
+                OnPlaylistListenChanged?.Invoke(playlistId);
             }
             catch { }
         }
@@ -889,7 +968,10 @@ namespace Rewind.Helpers
             try
             {
                 using var db = new AppDbContext();
-                return db.PlaylistListens.Count(l => l.PlaylistId == playlistId);
+                // Старые уникальные прослушивания + новые события Play
+                int oldUnique = db.PlaylistListens.Count(l => l.PlaylistId == playlistId);
+                int playEvents = db.PlaylistPlayEvents.Count(l => l.PlaylistId == playlistId);
+                return oldUnique + playEvents;
             }
             catch { return 0; }
         }
@@ -897,6 +979,8 @@ namespace Rewind.Helpers
 
     public static class SavedPlaylistService
     {
+        public static event Action<int>? OnPlaylistSavedChanged;
+
         public static bool IsSaved(int userId, int playlistId)
         {
             using var db = new AppDbContext();
@@ -911,10 +995,12 @@ namespace Rewind.Helpers
             {
                 db.SavedPlaylists.Remove(existing);
                 db.SaveChanges();
+                OnPlaylistSavedChanged?.Invoke(playlistId);
                 return false; // removed
             }
             db.SavedPlaylists.Add(new SavedPlaylist { UserId = userId, PlaylistId = playlistId });
             db.SaveChanges();
+            OnPlaylistSavedChanged?.Invoke(playlistId);
             return true; // saved
         }
 
@@ -940,6 +1026,17 @@ namespace Rewind.Helpers
 
     public static class AlbumService
     {
+        public static event Action<int>? OnAlbumSavedChanged;
+        public static event Action<int>? OnAlbumListenChanged;
+
+        public static Album? GetById(int albumId)
+        {
+            using var db = new AppDbContext();
+            return db.Albums
+                .Include(a => a.Artist)
+                .Include(a => a.AlbumTracks).ThenInclude(at => at.Track).ThenInclude(t => t.Artist)
+                .FirstOrDefault(a => a.AlbumId == albumId);
+        }
         public static List<Album> GetByArtist(int artistId)
         {
             using var db = new AppDbContext();
@@ -980,6 +1077,74 @@ namespace Rewind.Helpers
             db.AlbumTracks.Remove(e);
             db.SaveChanges();
             return true;
+        }
+
+        public static bool Update(int albumId, string title, string? genre, string? coverPath)
+        {
+            using var db = new AppDbContext();
+            var a = db.Albums.Find(albumId);
+            if (a == null) return false;
+            a.Title = title;
+            a.Genre = genre;
+            if (coverPath != null) a.CoverPath = coverPath;
+            db.SaveChanges();
+            return true;
+        }
+
+        public static bool ToggleSave(int userId, int albumId)
+        {
+            using var db = new AppDbContext();
+            var existing = db.SavedAlbums.FirstOrDefault(sa => sa.UserId == userId && sa.AlbumId == albumId);
+            if (existing != null)
+            {
+                db.SavedAlbums.Remove(existing);
+                db.SaveChanges();
+                OnAlbumSavedChanged?.Invoke(albumId);
+                return false;
+            }
+            db.SavedAlbums.Add(new SavedAlbum { UserId = userId, AlbumId = albumId, SavedAt = DateTime.UtcNow });
+            db.SaveChanges();
+            OnAlbumSavedChanged?.Invoke(albumId);
+            return true;
+        }
+
+        public static bool IsSaved(int userId, int albumId)
+        {
+            using var db = new AppDbContext();
+            return db.SavedAlbums.Any(sa => sa.UserId == userId && sa.AlbumId == albumId);
+        }
+
+        public static int GetSavedCount(int albumId)
+        {
+            using var db = new AppDbContext();
+            return db.SavedAlbums.Count(sa => sa.AlbumId == albumId);
+        }
+
+        public static List<Album> GetSavedByUser(int userId)
+        {
+            using var db = new AppDbContext();
+            return db.SavedAlbums
+                .Where(sa => sa.UserId == userId)
+                .Include(sa => sa.Album).ThenInclude(a => a.Artist)
+                .Include(sa => sa.Album).ThenInclude(a => a.AlbumTracks).ThenInclude(at => at.Track)
+                .OrderByDescending(sa => sa.SavedAt)
+                .Select(sa => sa.Album)
+                .ToList();
+        }
+
+        public static void RegisterListen(int userId, int albumId)
+        {
+            if (userId <= 0 || albumId <= 0) return;
+            using var db = new AppDbContext();
+            db.AlbumListenEvents.Add(new AlbumListenEvent { UserId = userId, AlbumId = albumId, ListenedAt = DateTime.UtcNow });
+            db.SaveChanges();
+            OnAlbumListenChanged?.Invoke(albumId);
+        }
+
+        public static int GetListenCount(int albumId)
+        {
+            using var db = new AppDbContext();
+            return db.AlbumListenEvents.Count(e => e.AlbumId == albumId);
         }
 
         public static bool Delete(int albumId)

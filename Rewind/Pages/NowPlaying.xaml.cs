@@ -195,9 +195,7 @@ namespace Rewind.Pages
                     return;
                 }
 
-                string fullPath = coverPath.Contains(":")
-                    ? coverPath
-                    : Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "CoversLibrary", coverPath);
+                string fullPath = FileStorage.ResolveImagePath(coverPath);
                 if (!File.Exists(fullPath))
                 {
                     CoverImage.Source = null;

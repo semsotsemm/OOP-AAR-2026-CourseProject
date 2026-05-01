@@ -139,7 +139,7 @@
                         <Grid Margin="0,0,0,16">
                             <TextBlock Text="Рекомендации для вас" FontSize="20" FontWeight="Bold"
                                        Foreground="{DynamicResource TextPrimary}" FontFamily="{StaticResource HeaderFont}"/>
-                            <TextBlock x:Name="ShowAllTracksBtn" Text="Все →" FontSize="13" Foreground="{DynamicResource AccentDark}"
+                            <TextBlock x:Name="ShowAllTracksBtn" Text="Все →" FontSize="13" Foreground="{DynamicResource TextPrimary}"
                                        FontFamily="{StaticResource HeaderFont}"
                                        HorizontalAlignment="Right" VerticalAlignment="Center" Cursor="Hand"
                                        MouseLeftButtonDown="ShowAllTracksBtn_Click"/>
@@ -276,7 +276,7 @@
                                FontFamily="{StaticResource HeaderFont}" Foreground="{DynamicResource TextPrimary}"/>
                                 <TextBlock x:Name="OpacityLabel" Text="100%" FontSize="11"
                                        FontFamily="{StaticResource HeaderFont}"
-                                       Foreground="{DynamicResource AccentDark}"
+                                       Foreground="{DynamicResource TextPrimary}"
                                        HorizontalAlignment="Right" VerticalAlignment="Center"/>
                             </Grid>
                             <Slider x:Name="IslandOpacitySlider"

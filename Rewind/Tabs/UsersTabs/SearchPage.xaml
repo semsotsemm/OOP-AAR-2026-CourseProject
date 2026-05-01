@@ -7,7 +7,7 @@
     <Grid Background="{DynamicResource BgMain}">
         <ScrollViewer VerticalScrollBarVisibility="Auto">
             <StackPanel Margin="32,28,32,120">
-                <TextBlock Text="Поиск" FontSize="28" FontWeight="Bold" Margin="0,0,0,16"/>
+                <TextBlock Foreground="{DynamicResource TextPrimary}" Text="Поиск" FontSize="28" FontWeight="Bold" Margin="0,0,0,16"/>
                 <Border Background="{DynamicResource BgSidebar}" CornerRadius="14" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1.5" Margin="0,0,0,18">
                     <TextBox x:Name="SearchBox"
                              Height="46"
@@ -41,6 +41,70 @@
                                    Foreground="{DynamicResource TextSecondary}" FontFamily="{StaticResource HeaderFont}"/>
                     </Border>
                 </StackPanel>
+
+                <!-- ===== ФИЛЬТРЫ ПО ЖАНРАМ ===== -->
+                <Grid Margin="0,0,0,20">
+                    <Border x:Name="GenreDropdownBtn"
+                            Background="{DynamicResource BgSidebar}"
+                            CornerRadius="16"
+                            BorderBrush="{DynamicResource BorderColor}"
+                            BorderThickness="1.5"
+                            Padding="16,12"
+                            Cursor="Hand"
+                            MouseLeftButtonDown="ToggleGenreDropdown_Click">
+                        <Grid>
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <TextBlock Text="🎛" FontSize="15" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                <StackPanel>
+                                    <TextBlock Text="Жанры" FontSize="13" FontWeight="Bold"
+                                               FontFamily="{StaticResource HeaderFont}"
+                                               Foreground="{DynamicResource TextPrimary}"/>
+                                    <TextBlock x:Name="GenreDropdownLabel"
+                                               Text="Все жанры"
+                                               FontSize="11"
+                                               FontFamily="{StaticResource HeaderFont}"
+                                               Foreground="{DynamicResource TextMuted}"
+                                               Margin="0,2,0,0"/>
+                                </StackPanel>
+                            </StackPanel>
+                            <TextBlock Text="⌄" FontSize="18" FontWeight="Bold"
+                                       Foreground="{DynamicResource AccentColor}"
+                                       HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                        </Grid>
+                    </Border>
+
+                    <Popup x:Name="GenreDropdownPopup"
+                           PlacementTarget="{Binding ElementName=GenreDropdownBtn}"
+                           Placement="Bottom"
+                           StaysOpen="True"
+                           AllowsTransparency="True"
+                           PopupAnimation="Fade">
+                        <Border Width="520"
+                                Background="{DynamicResource BgCard}"
+                                CornerRadius="18"
+                                BorderBrush="{DynamicResource BorderColor}"
+                                BorderThickness="1.5"
+                                Padding="16"
+                                Margin="0,8,0,0">
+                            <Border.Effect>
+                                <DropShadowEffect BlurRadius="24" ShadowDepth="5" Opacity="0.18"/>
+                            </Border.Effect>
+                            <StackPanel>
+                                <Grid Margin="0,0,0,12">
+                                    <TextBlock Text="Выберите один или несколько жанров" FontSize="13" FontWeight="Bold"
+                                               FontFamily="{StaticResource HeaderFont}"
+                                               Foreground="{DynamicResource TextPrimary}"/>
+                                    <TextBlock Text="Сброс" FontSize="12" FontWeight="SemiBold"
+                                               Foreground="{DynamicResource AccentColor}"
+                                               HorizontalAlignment="Right" Cursor="Hand"
+                                               MouseLeftButtonDown="ClearGenreFilters_Click"/>
+                                </Grid>
+                                <WrapPanel x:Name="GenreFilters"/>
+                            </StackPanel>
+                        </Border>
+                    </Popup>
+                </Grid>
+
                 <StackPanel x:Name="ResultsContainer"/>
             </StackPanel>
         </ScrollViewer>

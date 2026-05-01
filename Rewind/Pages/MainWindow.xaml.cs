@@ -46,6 +46,14 @@ namespace Rewind
                 if (_mediaPlayer.Source != null && _mediaPlayer.NaturalDuration.HasTimeSpan)
                     _mediaPlayer.Position = TimeSpan.FromSeconds(seconds);
             };
+            GlobalPlayerBar.VolumeChangeRequested += (_, vol) => Volume = Math.Clamp(vol, 0, 1);
+
+            // Обновляем иконку лайка в плеере при любом переключении
+            Session.LikeChanged += (trackId, _) =>
+            {
+                if (_currentTrackItem?.TrackId == trackId)
+                    Dispatcher.Invoke(() => GlobalPlayerBar.UpdateLikeIcon(trackId));
+            };
 
             StateChanged += MainWindow_StateChanged;
             Closing += MainWindow_Closing;
@@ -86,6 +94,8 @@ namespace Rewind
             GlobalPlayerBar.CurrentSeconds = 0;
             GlobalPlayerBar.PlayPauseIcon = IconAssets.GetAbsolutePath("player_pause.png");
             GlobalPlayerBar.Visibility = Visibility.Visible;
+            GlobalPlayerBar.UpdateCover(selectedTrack.CoverPath);
+            GlobalPlayerBar.UpdateLikeIcon(selectedTrack.TrackId);
 
             if (_island != null)
             {
@@ -306,6 +316,11 @@ namespace Rewind
             if (string.IsNullOrWhiteSpace(nickname)) return;
             var user = UserService.GetUserByNickname(nickname);
             if (user != null) OpenArtistProfile(user.UserId);
+        }
+
+        public void OpenAlbumDetails(Album album)
+        {
+            MainContentArea.Content = new AlbumDetailsPage(album);
         }
 
         public void NavigateBack()

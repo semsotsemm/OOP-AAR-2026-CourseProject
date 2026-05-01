@@ -191,6 +191,13 @@ namespace Rewind.Tabs.UsersTabs
                 });
 
                 card.Child = inner;
+                int albumId = album.AlbumId;
+                card.MouseLeftButtonDown += (_, _) =>
+                {
+                    var full = AlbumService.GetById(albumId) ?? album;
+                    if (Window.GetWindow(this) is MainWindow mw)
+                        mw.OpenAlbumDetails(full);
+                };
                 AlbumsContainer.Children.Add(card);
             }
         }
@@ -284,6 +291,8 @@ namespace Rewind.Tabs.UsersTabs
         // ─────────────────────────────────────────────
         //  Helpers
         // ─────────────────────────────────────────────
+
+        public IReadOnlyList<TrackItem> GetTrackItems() => _trackItems;
 
         private static string FormatDuration(int sec) => $"{sec / 60}:{sec % 60:D2}";
     }

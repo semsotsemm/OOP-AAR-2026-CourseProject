@@ -9,8 +9,9 @@
         mc:Ignorable="d"
         Title="Rewind"
         Icon="{help:Icon rewind_logo.png}"
-        Height="780" Width="1280">
-    <Grid>
+        Height="780" Width="1280"
+        Background="{DynamicResource BgMain}">
+    <Grid Background="{DynamicResource BgMain}">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="240"/>
             <ColumnDefinition Width="*"/>
@@ -21,7 +22,8 @@
         </Grid.RowDefinitions>
 
         <!-- ==================== SIDEBAR ==================== -->
-        <Border Grid.Column="0" Background="{DynamicResource BgSidebar}"
+        <Border Grid.Column="0" Grid.RowSpan="2"
+                Background="{DynamicResource BgSidebar}"
                 BorderBrush="{DynamicResource BorderColor}" BorderThickness="0,0,1,0">
             <DockPanel LastChildFill="False">
 
@@ -164,7 +166,7 @@
         <controls:PlayerBar x:Name="GlobalPlayerBar"
                             Grid.Column="1"
                             Grid.Row="1"
-                            Height="100"
+                            Height="76"
                             Visibility="Collapsed"
                             Panel.ZIndex="50"/>
 

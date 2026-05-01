@@ -10,7 +10,7 @@ namespace Rewind.Tabs.UsersTabs
     {
         private readonly Playlist _playlist;
         private readonly List<TrackItem> _trackItems = new();
-        private bool _listenRegistered;
+        // Каждое нажатие Play в плейлисте считается отдельным прослушиванием
 
         public PlaylistDetailsPage(Playlist playlist)
         {
@@ -56,20 +56,17 @@ namespace Rewind.Tabs.UsersTabs
         private void OnTrackClick(object sender, MouseButtonEventArgs e)
         {
             if (sender is not TrackItem clicked) return;
-
-            if (!_listenRegistered && _playlist.PlaylistID > 0)
-            {
-                _listenRegistered = true;
-                int pid = _playlist.PlaylistID;
-                // Регистрируем прослушивание в фоне, обновляем UI после записи в БД
-                System.Threading.Tasks.Task.Run(() =>
-                    PlaylistListenService.RegisterListen(Session.UserId, pid))
-                    .ContinueWith(_ =>
-                        Dispatcher.BeginInvoke(UpdateStatsText));
-            }
-
+            RegisterPlaylistListen();
             if (Window.GetWindow(this) is MainWindow mainWindow)
                 mainWindow.PlayTrackFromContext(clicked, _trackItems);
+        }
+
+        public void RegisterPlaylistListen()
+        {
+            if (_playlist.PlaylistID <= 0) return;
+            if (!Session.TryEnterPlaybackScope("playlist", _playlist.PlaylistID)) return;
+            PlaylistListenService.RegisterListen(Session.UserId, _playlist.PlaylistID);
+            UpdateStatsText();
         }
 
         private void UpdateStatsText()

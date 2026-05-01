@@ -64,6 +64,19 @@ namespace Rewind.Tabs.UsersTabs
             InitializeComponent();
             LoadPlaylists();
             Render();
+
+            PlaylistListenService.OnPlaylistListenChanged += OnPlaylistStatsChanged;
+            SavedPlaylistService.OnPlaylistSavedChanged += OnPlaylistStatsChanged;
+            Unloaded += (_, _) =>
+            {
+                PlaylistListenService.OnPlaylistListenChanged -= OnPlaylistStatsChanged;
+                SavedPlaylistService.OnPlaylistSavedChanged -= OnPlaylistStatsChanged;
+            };
+        }
+
+        private void OnPlaylistStatsChanged(int playlistId)
+        {
+            Dispatcher.Invoke(() => Render());
         }
 
         // ─────────────────────────────────────────────
@@ -397,8 +410,8 @@ namespace Rewind.Tabs.UsersTabs
             var dlg = new OpenFileDialog { Filter = "Изображения|*.jpg;*.jpeg;*.png;*.webp" };
             if (dlg.ShowDialog() != true) return;
 
-            _pendingCoverPath = dlg.FileName;
-            CoverPicker.Background = new ImageBrush(new BitmapImage(new Uri(_pendingCoverPath)))
+            _pendingCoverPath = FileStorage.CopyPlaylistCover(dlg.FileName);
+            CoverPicker.Background = new ImageBrush(new BitmapImage(new Uri(FileStorage.ResolvePath(_pendingCoverPath))))
             { Stretch = Stretch.UniformToFill };
             if (CoverPicker.Child is StackPanel sp) sp.Visibility = Visibility.Collapsed;
         }

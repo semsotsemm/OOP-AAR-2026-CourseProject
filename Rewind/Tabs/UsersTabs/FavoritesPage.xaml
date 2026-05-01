@@ -26,7 +26,18 @@
                                    FontFamily="{StaticResource HeaderFont}"
                                    Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,6"/>
                         <StackPanel Orientation="Horizontal">
-                            <Image Source="{help:Icon like_filled.png}" Width="26" Height="26" Margin="0,0,10,0"/>
+
+                            <Rectangle Width="26"
+                                       Height="26"
+                                       Fill="{DynamicResource AccentColor}"
+                                       VerticalAlignment="Center"
+                                       Cursor="Hand"
+                                       Margin="0,0,10,0">
+                                <Rectangle.OpacityMask>
+                                    <ImageBrush ImageSource="{help:Icon like_filled.png}" Stretch="Uniform"/>
+                                </Rectangle.OpacityMask>
+                            </Rectangle>
+
                             <TextBlock Text="Любимые треки" FontSize="28" FontWeight="Bold"
                                        FontFamily="{StaticResource HeaderFont}"
                                        Foreground="{DynamicResource TextPrimary}"
@@ -51,13 +62,7 @@
                 </Grid>
 
                 <!-- ===== БАННЕР-СТАТИСТИКА ===== -->
-                <Border CornerRadius="20" Margin="0,0,0,28" Height="120">
-                    <Border.Background>
-                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                            <GradientStop Color="#2AE876" Offset="0"/>
-                            <GradientStop Color="#004D40" Offset="1"/>
-                        </LinearGradientBrush>
-                    </Border.Background>
+                <Border CornerRadius="20" Margin="0,0,0,28" Height="120" Background="{StaticResource GreenGradientStyle}" >
                     <Grid Margin="28,0">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
@@ -70,15 +75,15 @@
                             <TextBlock x:Name="StatTracksCount" Text="128"
                                        FontSize="32" FontWeight="Black"
                                        FontFamily="{StaticResource HeaderFont}"
-                                       Foreground="White"/>
+                                       Foreground = "White"/>
                             <TextBlock Text="треков" FontSize="13"
                                        FontFamily="{StaticResource HeaderFont}"
-                                       Foreground="#FFFFFF99"/>
+                                       Foreground="White"/>
                         </StackPanel>
 
                         <!-- Разделитель -->
                         <Rectangle Grid.Column="0" Width="1" HorizontalAlignment="Right"
-                                   Fill="#FFFFFF33" Margin="0,16"/>
+                                   Fill="White" Margin="0,16"/>
 
                         <!-- Статистика 2 -->
                         <StackPanel Grid.Column="1" VerticalAlignment="Center"
@@ -89,12 +94,12 @@
                                        Foreground="White"/>
                             <TextBlock Text="исполнителей" FontSize="13"
                                        FontFamily="{StaticResource HeaderFont}"
-                                       Foreground="#FFFFFF99"/>
+                                       Foreground="White"/>
                         </StackPanel>
 
                         <!-- Разделитель -->
                         <Rectangle Grid.Column="1" Width="1" HorizontalAlignment="Right"
-                                   Fill="#FFFFFF33" Margin="0,16"/>
+                                   Fill="White" Margin="0,16"/>
 
                         <!-- Статистика 3 -->
                         <StackPanel Grid.Column="2" VerticalAlignment="Center"
@@ -105,7 +110,7 @@
                                        Foreground="White"/>
                             <TextBlock Text="общее время" FontSize="13"
                                        FontFamily="{StaticResource HeaderFont}"
-                                       Foreground="#FFFFFF99"/>
+                                       Foreground="White"/>
                         </StackPanel>
                     </Grid>
                 </Border>
@@ -129,7 +134,7 @@
                             </Grid.ColumnDefinitions>
                             <Image Grid.Column="0" Source="{help:Icon nav_search.png}" Width="15" Height="15" Margin="0,0,10,0"/>
                             <TextBox Grid.Column="1" x:Name="SearchBox"
-                                     Height="46" FontSize="14"
+                                     FontSize="14"
                                      FontFamily="{StaticResource BodyFont}"
                                      Foreground="{DynamicResource TextPrimary}"
                                      Background="Transparent" BorderThickness="0"
@@ -151,18 +156,73 @@
                                        FontSize="13" FontWeight="SemiBold"
                                        FontFamily="{StaticResource HeaderFont}"
                                        Foreground="{DynamicResource TextSecondary}"
-                                       VerticalAlignment="Center" Height="46"
-                                       LineHeight="46" TextAlignment="Center"/>
+                                       VerticalAlignment="Bottom" TextAlignment="Center"/>
                         </StackPanel>
                     </Border>
                 </Grid>
 
-                <!-- ===== ФИЛЬТРЫ ПО ЖАНРУ ===== -->
-                <ScrollViewer HorizontalScrollBarVisibility="Auto"
-                              VerticalScrollBarVisibility="Hidden"
-                              Margin="0,0,0,24" Height="36">
-                    <StackPanel x:Name="GenreFilters" Orientation="Horizontal"/>
-                </ScrollViewer>
+                <!-- ===== ФИЛЬТРЫ ПО ЖАНРАМ ===== -->
+                <Grid Margin="0,0,0,24">
+                    <Border x:Name="GenreDropdownBtn"
+                            Background="{DynamicResource BgSidebar}"
+                            CornerRadius="16"
+                            BorderBrush="{DynamicResource BorderColor}"
+                            BorderThickness="1.5"
+                            Padding="16,12"
+                            Cursor="Hand"
+                            MouseLeftButtonDown="ToggleGenreDropdown_Click">
+                        <Grid>
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <TextBlock Text="🎛" FontSize="15" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                <StackPanel>
+                                    <TextBlock Text="Жанры" FontSize="13" FontWeight="Bold"
+                                               FontFamily="{StaticResource HeaderFont}"
+                                               Foreground="{DynamicResource TextPrimary}"/>
+                                    <TextBlock x:Name="GenreDropdownLabel"
+                                               Text="Все жанры"
+                                               FontSize="11"
+                                               FontFamily="{StaticResource HeaderFont}"
+                                               Foreground="{DynamicResource TextMuted}"
+                                               Margin="0,2,0,0"/>
+                                </StackPanel>
+                            </StackPanel>
+                            <TextBlock Text="⌄" FontSize="18" FontWeight="Bold"
+                                       Foreground="{DynamicResource AccentColor}"
+                                       HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                        </Grid>
+                    </Border>
+
+                    <Popup x:Name="GenreDropdownPopup"
+                           PlacementTarget="{Binding ElementName=GenreDropdownBtn}"
+                           Placement="Bottom"
+                           StaysOpen="True"
+                           AllowsTransparency="True"
+                           PopupAnimation="Fade">
+                        <Border Width="520"
+                                Background="{DynamicResource BgCard}"
+                                CornerRadius="18"
+                                BorderBrush="{DynamicResource BorderColor}"
+                                BorderThickness="1.5"
+                                Padding="16"
+                                Margin="0,8,0,0">
+                            <Border.Effect>
+                                <DropShadowEffect BlurRadius="24" ShadowDepth="5" Opacity="0.18"/>
+                            </Border.Effect>
+                            <StackPanel>
+                                <Grid Margin="0,0,0,12">
+                                    <TextBlock Text="Выберите один или несколько жанров" FontSize="13" FontWeight="Bold"
+                                               FontFamily="{StaticResource HeaderFont}"
+                                               Foreground="{DynamicResource TextPrimary}"/>
+                                    <TextBlock Text="Сброс" FontSize="12" FontWeight="SemiBold"
+                                               Foreground="{DynamicResource AccentColor}"
+                                               HorizontalAlignment="Right" Cursor="Hand"
+                                               MouseLeftButtonDown="ClearGenreFilters_Click"/>
+                                </Grid>
+                                <WrapPanel x:Name="GenreFilters"/>
+                            </StackPanel>
+                        </Border>
+                    </Popup>
+                </Grid>
 
                 <!-- ===== ШАПКА ТАБЛИЦЫ ===== -->
                 <Border Background="{DynamicResource BgSidebar}"
@@ -171,11 +231,9 @@
                         BorderBrush="{DynamicResource BorderColor}" BorderThickness="1">
                     <Grid>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="32"/>
+                            <ColumnDefinition Width="50"/>
                             <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="160"/>
-                            <ColumnDefinition Width="80"/>
-                            <ColumnDefinition Width="60"/>
+                            <ColumnDefinition Width="95"/>
                         </Grid.ColumnDefinitions>
                         <TextBlock Grid.Column="0" Text="#" FontSize="11" FontWeight="Bold"
                                    Foreground="{DynamicResource TextMuted}"
@@ -184,13 +242,9 @@
                         <TextBlock Grid.Column="1" Text="ТРЕК" FontSize="11" FontWeight="Bold"
                                    Foreground="{DynamicResource TextMuted}"
                                    FontFamily="{StaticResource HeaderFont}" Margin="8,0,0,0"/>
-                        <TextBlock Grid.Column="2" Text="АЛЬБОМ" FontSize="11" FontWeight="Bold"
+                        <TextBlock Grid.Column="2" Text="ДЛИТЕЛЬНОСТЬ" FontSize="11" FontWeight="Bold"
                                    Foreground="{DynamicResource TextMuted}"
                                    FontFamily="{StaticResource HeaderFont}"/>
-                        <TextBlock Grid.Column="3" Text="ДАТА" FontSize="11" FontWeight="Bold"
-                                   Foreground="{DynamicResource TextMuted}"
-                                   FontFamily="{StaticResource HeaderFont}"/>
-                        <Image Grid.Column="4" Source="{help:Icon clock.png}" Width="11" Height="11"/>
                     </Grid>
                 </Border>
 

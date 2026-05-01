@@ -51,7 +51,7 @@ namespace Rewind.Helpers
             set { _hidedPassword = value; OnStaticPropertyChanged(); }
         }
 
-        private static string _avatarPath = "";
+        private static string _avatarPath = FileStorage.DefaultAvatar;
         public static string AvatarPath
         {
             get => _avatarPath;
@@ -98,6 +98,27 @@ namespace Rewind.Helpers
 
         public static bool _isPlaing;
 
+        // Текущий контекст прослушивания для подсчёта плейлистов/альбомов.
+        // +1 даётся только один раз, пока пользователь не выйдет из этого контекста.
+        private static string? _playbackScopeType;
+        private static int? _playbackScopeId;
+
+        public static bool TryEnterPlaybackScope(string scopeType, int scopeId)
+        {
+            if (scopeId <= 0) return false;
+            if (_playbackScopeType == scopeType && _playbackScopeId == scopeId)
+                return false;
+            _playbackScopeType = scopeType;
+            _playbackScopeId = scopeId;
+            return true;
+        }
+
+        public static void ResetPlaybackScope()
+        {
+            _playbackScopeType = null;
+            _playbackScopeId = null;
+        }
+
         // Настройки уведомлений (хранятся между переходампо страницам)
         public static bool NotifNewTracksEnabled { get; set; } = true;
         public static bool NotifPushEnabled { get; set; } = true;
@@ -126,6 +147,9 @@ namespace Rewind.Helpers
 
         public static bool IsLiked(int trackId) => _likedTrackIds.Contains(trackId);
 
+        /// <summary>Fires when any track is liked or unliked — trackId + isNowLiked.</summary>
+        public static event Action<int, bool>? LikeChanged;
+
         /// <summary>Переключает лайк и возвращает новое состояние.
         /// Лайк записывается в БД немедленно в фоновом потоке (fire-and-forget).</summary>
         public static bool ToggleLike(int trackId)
@@ -136,8 +160,8 @@ namespace Rewind.Helpers
                 _removedInSession.Add(trackId);
                 _addedInSession.Remove(trackId);
                 Liked = _likedTrackIds.Count;
-                // Записываем сразу, чтобы не терять при краше или выходе без логаута
                 if (UserId > 0) System.Threading.Tasks.Task.Run(() => { try { FavoriteService.RemoveFavorite(UserId, trackId); } catch { } });
+                LikeChanged?.Invoke(trackId, false);
                 return false;
             }
             else
@@ -147,6 +171,7 @@ namespace Rewind.Helpers
                 _removedInSession.Remove(trackId);
                 Liked = _likedTrackIds.Count;
                 if (UserId > 0) System.Threading.Tasks.Task.Run(() => { try { FavoriteService.AddFavorite(UserId, trackId); } catch { } });
+                LikeChanged?.Invoke(trackId, true);
                 return true;
             }
         }
@@ -281,7 +306,7 @@ namespace Rewind.Helpers
                 {
                     userInDb.Nickname = UserName;
                     userInDb.Email = Email;
-                    userInDb.ProfilePhotoPath = AvatarPath;
+                    userInDb.ProfilePhotoPath = string.IsNullOrWhiteSpace(AvatarPath) ? FileStorage.DefaultAvatar : AvatarPath;
                     if (!string.IsNullOrWhiteSpace(Password))
                         userInDb.PasswordHash = PasswordHelper.HashPassword(Password);
                     UserService.UpdateUser(userInDb, userInDb);
@@ -312,6 +337,9 @@ namespace Rewind.Helpers
                                                  .Select(t => t.TrackID)
                                                  .ToList();
                 InitFavorites(favTrackIds);
+
+                if (string.IsNullOrWhiteSpace(AvatarPath))
+                    AvatarPath = FileStorage.DefaultAvatar;
 
                 var playlists = PlaylistService.GetPlaylistsByUser(UserId);
                 InitPlaylists(playlists);
