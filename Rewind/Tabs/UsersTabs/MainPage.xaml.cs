@@ -357,7 +357,7 @@ namespace Rewind.Tabs.UsersTabs
                                 ? $"Новый трек: «{newTracks[0].Title}»"
                                 : $"{newTracks.Count} новых трека от подписок";
                             if (Window.GetWindow(this) is MainWindow mw)
-                                mw.ShowToastNotification("🎵 Новые треки", msg);
+                                mw.ShowToastNotification("Новые треки", msg);
                         }
                         else
                         {

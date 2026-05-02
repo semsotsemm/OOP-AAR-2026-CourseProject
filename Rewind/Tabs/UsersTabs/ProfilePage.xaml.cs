@@ -506,9 +506,10 @@ namespace Rewind.Controls
             }
             else
             {
-                coverBorder.Child = new TextBlock
+                coverBorder.Child = new Image
                 {
-                    Text = "🎵", FontSize = 16,
+                    Source = IconAssets.LoadBitmap("music_note.png"),
+                    Width = 22, Height = 22,
                     HorizontalAlignment = HorizontalAlignment.Center,
                     VerticalAlignment = VerticalAlignment.Center
                 };
@@ -688,17 +689,38 @@ namespace Rewind.Controls
                 Cursor = Cursors.Hand
             };
             var stack = new StackPanel();
-            var cover = new Border { Height = 110, CornerRadius = new CornerRadius(12), Background = new System.Windows.Media.LinearGradientBrush(System.Windows.Media.Color.FromRgb(42,232,118), System.Windows.Media.Color.FromRgb(0,77,64), new Point(0,0), new Point(1,1)) };
+            var cover = new Border
+            {
+                Height = 110,
+                CornerRadius = new CornerRadius(12),
+                ClipToBounds = true,
+                Background = (Brush?)Application.Current.TryFindResource("GreenGradientStyle")
+                             ?? new LinearGradientBrush(Color.FromRgb(42, 232, 118), Color.FromRgb(0, 77, 64), new Point(0, 0), new Point(1, 1))
+            };
+            bool hasCover = false;
             if (!string.IsNullOrWhiteSpace(album.CoverPath))
             {
                 try
                 {
-                    string fp = album.CoverPath.Contains(":") ? album.CoverPath : System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "CoversLibrary", album.CoverPath);
-                    if (System.IO.File.Exists(fp)) cover.Background = new System.Windows.Media.ImageBrush(new BitmapImage(new Uri(fp))) { Stretch = System.Windows.Media.Stretch.UniformToFill };
+                    string fp = FileStorage.ResolveImagePath(album.CoverPath, "AlbumCovers");
+                    if (File.Exists(fp))
+                    {
+                        cover.Background = new ImageBrush(new BitmapImage(new Uri(fp))) { Stretch = Stretch.UniformToFill };
+                        hasCover = true;
+                    }
                 }
                 catch { }
             }
-            cover.Child = new TextBlock { Text = "💿", FontSize = 28, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
+            if (!hasCover)
+            {
+                cover.Child = new Image
+                {
+                    Source = IconAssets.LoadBitmap("music_note.png"),
+                    Width = 44, Height = 44,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Center
+                };
+            }
             stack.Children.Add(cover);
             stack.Children.Add(new TextBlock { Text = album.Title, FontWeight = FontWeights.Bold, FontSize = 13, Margin = new Thickness(0, 10, 0, 2), TextTrimming = TextTrimming.CharacterEllipsis });
             var artist = album.Artist?.Nickname ?? UserService.GetUserById(album.ArtistId)?.Nickname ?? "Исполнитель";
@@ -768,13 +790,13 @@ namespace Rewind.Controls
                             new BitmapImage(new Uri(fp)))
                         { Stretch = System.Windows.Media.Stretch.UniformToFill };
                     else
-                        coverBorder.Child = new TextBlock { Text = "🎵", FontSize = 18, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
+                        coverBorder.Child = new Image { Source = IconAssets.LoadBitmap("music_note.png"), Width = 24, Height = 24, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
                 }
-                catch { coverBorder.Child = new TextBlock { Text = "🎵", FontSize = 18, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center }; }
+                catch { coverBorder.Child = new Image { Source = IconAssets.LoadBitmap("music_note.png"), Width = 24, Height = 24, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center }; }
             }
             else
             {
-                coverBorder.Child = new TextBlock { Text = "🎵", FontSize = 18, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
+                coverBorder.Child = new Image { Source = IconAssets.LoadBitmap("music_note.png"), Width = 24, Height = 24, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
             }
             Grid.SetColumn(coverBorder, 0);
 

@@ -14,8 +14,14 @@
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
 
-                        <Border x:Name="AlbumCover" Width="120" Height="120" CornerRadius="16" ClipToBounds="True" Background="#FFFFFF22" Margin="0,0,22,0">
-                            <TextBlock Text="💿" FontSize="42" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        <Border x:Name="AlbumCover" Width="120" Height="120" CornerRadius="16" ClipToBounds="True"
+                                Background="{DynamicResource GreenGradientStyle}" Margin="0,0,22,0">
+                            <Grid>
+                                <Image x:Name="AlbumCoverPlaceholder" Source="{help:Icon music_note.png}"
+                                       Width="56" Height="56"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                <Image x:Name="AlbumCoverImage" Stretch="UniformToFill"/>
+                            </Grid>
                         </Border>
 
                         <StackPanel Grid.Column="1" VerticalAlignment="Center">

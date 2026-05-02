@@ -1,6 +1,7 @@
 <UserControl x:Class="Rewind.Tabs.AdminTabs.TrackSubmissionsTab"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:help="clr-namespace:Rewind.Helpers">
 
     <Grid Background="{DynamicResource BgMain}">
         <Grid.RowDefinitions>
@@ -26,7 +27,7 @@
                         BorderBrush="{DynamicResource BorderColor}" BorderThickness="1"
                         Padding="40">
                     <StackPanel HorizontalAlignment="Center">
-                        <TextBlock Text="🎵" FontSize="48" HorizontalAlignment="Center" Margin="0,0,0,12"/>
+                        <Image Source="{help:Icon music_note.png}" Width="56" Height="56" HorizontalAlignment="Center" Margin="0,0,0,12" Opacity="0.6"/>
                         <TextBlock Text="Нет треков на проверке" FontSize="18" FontWeight="Bold"
                                    FontFamily="{StaticResource HeaderFont}"
                                    Foreground="{DynamicResource TextPrimary}"

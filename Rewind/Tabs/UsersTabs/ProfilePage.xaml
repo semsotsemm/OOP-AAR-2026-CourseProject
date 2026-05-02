@@ -463,7 +463,7 @@
 
                                         <Separator Margin="0,20" Background="#F5F4F0"/>
 
-                                        <Button Content="📤  Отправить на проверку"
+                                        <Button Content="Отправить на проверку"
                                         Click="UploadTrack_Click"
                                         Height="45"
                                         Background="{DynamicResource AccentColor}"

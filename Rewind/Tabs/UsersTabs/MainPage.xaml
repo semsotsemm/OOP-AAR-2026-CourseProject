@@ -56,6 +56,7 @@
                     </Grid>
 
                     <!-- Трек дня -->
+
                     <Border Background="{StaticResource GreenGradientStyle}" CornerRadius="20"
                             Margin="0,0,0,24" Height="186" Cursor="Hand">
                         <Grid Margin="28,24">
@@ -164,27 +165,27 @@
 
             <Border x:Name="NotificationsPanel" Visibility="Collapsed"
                             Background="{DynamicResource BgCard}"
-                            CornerRadius="20"
+                            CornerRadius="14"
                             BorderBrush="#E8E7E1"
                             BorderThickness="1"
-                            Margin="0,70,24,0"
+                            Margin="0,0,0,0"
                             HorizontalAlignment="Right"
-                            VerticalAlignment="Top"
-                            Width="310"
+                            VerticalAlignment="Bottom"
+                            Width="260"
                             Panel.ZIndex="200">
                 <Border.Effect>
-                    <DropShadowEffect BlurRadius="28" ShadowDepth="6" Direction="270"
+                    <DropShadowEffect BlurRadius="20" ShadowDepth="4" Direction="270"
                                                 Color="#1A1A18" Opacity="0.13"/>
                 </Border.Effect>
                 <StackPanel>
 
                     <!-- Шапка -->
-                    <Border Background="{DynamicResource BgMain}" CornerRadius="20,20,0,0">
-                        <Grid Margin="20,16,20,16">
+                    <Border Background="{DynamicResource BgMain}" CornerRadius="14,14,0,0">
+                        <Grid Margin="14,10,14,10">
                             <StackPanel>
                                 <StackPanel Orientation="Horizontal">
-                                    <Rectangle Width="14"
-                                               Height="14"
+                                    <Rectangle Width="12"
+                                               Height="12"
                                                Margin="0,0,6,0"
                                                Fill="{StaticResource AccentColor}"
                                                Cursor="Hand">
@@ -192,18 +193,18 @@
                                             <ImageBrush ImageSource="{help:Icon bell.png}" Stretch="Uniform"/>
                                         </Rectangle.OpacityMask>
                                     </Rectangle>
-                                    <TextBlock Text="Центр уведомлений" FontSize="14" FontWeight="Bold"
+                                    <TextBlock Text="Центр уведомлений" FontSize="12" FontWeight="Bold"
                                                        FontFamily="{StaticResource HeaderFont}" Foreground="{DynamicResource TextPrimary}"/>
                                 </StackPanel>
-                                <TextBlock Text="Настройки и интерфейс" FontSize="11"
+                                <TextBlock Text="Настройки и интерфейс" FontSize="10"
                                                    FontFamily="{StaticResource HeaderFont}"
-                                                   Foreground="{StaticResource AccentColor}" Margin="0,3,0,0"/>
+                                                   Foreground="{StaticResource AccentColor}" Margin="0,2,0,0"/>
                             </StackPanel>
                         </Grid>
                     </Border>
 
                     <!-- Тело -->
-                    <StackPanel Margin="20,16,20,20">
+                    <StackPanel Margin="14,12,14,14">
 
                         <!-- РАЗДЕЛ: Уведомления -->
                         <TextBlock Text="УВЕДОМЛЕНИЯ" FontSize="10" FontWeight="Bold"
@@ -211,15 +212,15 @@
                                            Foreground="{DynamicResource TextMuted}" Margin="0,0,0,12"/>
 
                         <!-- Новые треки -->
-                        <Grid Margin="0,0,0,14">
+                        <Grid Margin="0,0,0,10">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
                             <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                                <TextBlock Text="Новые треки от авторов" FontSize="13" FontWeight="SemiBold"
+                                <TextBlock Text="Новые треки от авторов" FontSize="11" FontWeight="SemiBold"
                                FontFamily="{StaticResource HeaderFont}" Foreground="{DynamicResource TextPrimary}"/>
-                                <TextBlock Text="Получать оповещения о релизах" FontSize="11"
+                                <TextBlock Text="Получать оповещения о релизах" FontSize="9"
                                FontFamily="{StaticResource HeaderFont}" Foreground="{DynamicResource TextMuted}"/>
                             </StackPanel>
                             <CheckBox x:Name="NotifNewTracks" Grid.Column="1"
@@ -228,15 +229,15 @@
                         </Grid>
 
                         <!-- Push -->
-                        <Grid Margin="0,0,0,14">
+                        <Grid Margin="0,0,0,10">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
                             <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                                <TextBlock Text="Push-уведомления" FontSize="13" FontWeight="SemiBold"
+                                <TextBlock Text="Push-уведомления" FontSize="11" FontWeight="SemiBold"
                                FontFamily="{StaticResource HeaderFont}" Foreground="{DynamicResource TextPrimary}"/>
-                                <TextBlock Text="На устройство в реальном времени" FontSize="11"
+                                <TextBlock Text="На устройство в реальном времени" FontSize="9"
                                FontFamily="{StaticResource HeaderFont}" Foreground="{DynamicResource TextMuted}"/>
                             </StackPanel>
                             <CheckBox x:Name="NotifPush" Grid.Column="1"
@@ -245,23 +246,23 @@
                         </Grid>
 
                         <!-- Разделитель -->
-                        <Border Height="1" Background="{DynamicResource TextMuted}" Margin="0,16,0,16"/>
+                        <Border Height="1" Background="{DynamicResource TextMuted}" Margin="0,10,0,10"/>
 
                         <!-- РАЗДЕЛ: Динамический остров -->
                         <TextBlock Text="ДИНАМИЧЕСКИЙ ОСТРОВ" FontSize="10" FontWeight="Bold"
                        FontFamily="{StaticResource HeaderFont}"
-                       Foreground="{DynamicResource TextMuted}" Margin="0,0,0,12"/>
+                       Foreground="{DynamicResource TextMuted}" Margin="0,0,0,8"/>
 
                         <!-- Включить/выключить -->
-                        <Grid Margin="0,0,0,20">
+                        <Grid Margin="0,0,0,12">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
                             <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                                <TextBlock Text="Показывать остров" FontSize="13" FontWeight="SemiBold"
+                                <TextBlock Text="Показывать остров" FontSize="11" FontWeight="SemiBold"
                                FontFamily="{StaticResource HeaderFont}" Foreground="{DynamicResource TextPrimary}"/>
-                                <TextBlock Text="Мини-плеер поверх экрана" FontSize="11"
+                                <TextBlock Text="Мини-плеер поверх экрана" FontSize="9"
                                FontFamily="{StaticResource HeaderFont}" Foreground="{DynamicResource TextMuted}"/>
                             </StackPanel>
                             <CheckBox x:Name="IslandEnabledToggle" Grid.Column="1"
@@ -273,10 +274,10 @@
 
                         <!-- Прозрачность -->
                         <StackPanel>
-                            <Grid Margin="0,0,0,8">
-                                <TextBlock Text="Непрозрачность острова" FontSize="13" FontWeight="SemiBold"
+                            <Grid Margin="0,0,0,6">
+                                <TextBlock Text="Непрозрачность острова" FontSize="11" FontWeight="SemiBold"
                                FontFamily="{StaticResource HeaderFont}" Foreground="{DynamicResource TextPrimary}"/>
-                                <TextBlock x:Name="OpacityLabel" Text="100%" FontSize="11"
+                                <TextBlock x:Name="OpacityLabel" Text="100%" FontSize="10"
                                        FontFamily="{StaticResource HeaderFont}"
                                        Foreground="{DynamicResource TextPrimary}"
                                        HorizontalAlignment="Right" VerticalAlignment="Center"/>

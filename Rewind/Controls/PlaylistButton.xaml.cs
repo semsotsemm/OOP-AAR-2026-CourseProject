@@ -28,13 +28,6 @@ namespace Rewind.Contols
         public static readonly DependencyProperty SubtitleProperty =
             DependencyProperty.Register("Subtitle", typeof(string), typeof(PlaylistButton), new PropertyMetadata("0 треков"));
 
-        // Свойство для иконки (эмодзи или символ)
-        public string Icon
-        {
-            get { return (string)GetValue(IconProperty); }
-            set { SetValue(IconProperty, value); }
-        }
-        public static readonly DependencyProperty IconProperty =
-            DependencyProperty.Register("Icon", typeof(string), typeof(PlaylistButton), new PropertyMetadata("🎵"));
+
     }
 }

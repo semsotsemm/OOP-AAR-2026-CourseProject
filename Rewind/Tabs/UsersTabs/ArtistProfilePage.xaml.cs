@@ -146,26 +146,40 @@ namespace Rewind.Tabs.UsersTabs
                 {
                     Height = 110,
                     CornerRadius = new CornerRadius(14, 14, 0, 0),
-                    Background = new LinearGradientBrush(
-                        Color.FromRgb(42, 232, 118),
-                        Color.FromRgb(0, 77, 64),
-                        new Point(0, 0), new Point(1, 1))
+                    ClipToBounds = true,
+                    Background = (Brush?)Application.Current.TryFindResource("GreenGradientStyle")
+                                 ?? new LinearGradientBrush(
+                                     Color.FromRgb(42, 232, 118),
+                                     Color.FromRgb(0, 77, 64),
+                                     new Point(0, 0), new Point(1, 1))
                 };
 
+                bool hasCover = false;
                 if (!string.IsNullOrEmpty(album.CoverPath))
                 {
                     try
                     {
-                        string fp = album.CoverPath.Contains(":")
-                            ? album.CoverPath
-                            : Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "CoversLibrary", album.CoverPath);
+                        string fp = FileStorage.ResolveImagePath(album.CoverPath, "AlbumCovers");
                         if (File.Exists(fp))
+                        {
                             coverBorder.Background = new ImageBrush(new BitmapImage(new Uri(fp)))
                             {
                                 Stretch = Stretch.UniformToFill
                             };
+                            hasCover = true;
+                        }
                     }
                     catch { }
+                }
+                if (!hasCover)
+                {
+                    coverBorder.Child = new Image
+                    {
+                        Source = IconAssets.LoadBitmap("music_note.png"),
+                        Width = 44, Height = 44,
+                        HorizontalAlignment = HorizontalAlignment.Center,
+                        VerticalAlignment = VerticalAlignment.Center
+                    };
                 }
 
                 inner.Children.Add(coverBorder);

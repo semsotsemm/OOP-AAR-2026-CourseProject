@@ -12,9 +12,9 @@
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="RowBackground" Value="{DynamicResource BgCard}"/>
             <Setter Property="AlternatingRowBackground" Value="{DynamicResource BgCardHover}"/>
-            <Setter Property="HorizontalGridLinesBrush" Value="{DynamicResource BorderColor}"/>
+            <Setter Property="HorizontalGridLinesBrush" Value="Transparent"/>
             <Setter Property="VerticalGridLinesBrush" Value="Transparent"/>
-            <Setter Property="GridLinesVisibility" Value="Horizontal"/>
+            <Setter Property="GridLinesVisibility" Value="None"/>
             <Setter Property="RowHeight" Value="52"/>
             <Setter Property="CanUserResizeRows" Value="False"/>
             <Setter Property="SelectionMode" Value="Single"/>
@@ -41,6 +41,8 @@
             <Setter Property="Padding" Value="14,0"/>
             <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
             <Style.Triggers>
                 <Trigger Property="IsSelected" Value="True">
                     <Setter Property="Background" Value="{DynamicResource ActiveCardBackground}"/>
@@ -124,8 +126,7 @@
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
-                    <TextBlock Grid.Column="0" Text="🔍" FontSize="14" VerticalAlignment="Center" Margin="0,0,10,0"
-                               Foreground="{DynamicResource TextMuted}"/>
+                    <Image Grid.Column="0" Source="{help:Icon nav_search.png}" Width="16" Height="16" VerticalAlignment="Center" Margin="0,0,10,0"/>
                     <TextBox Grid.Column="1" x:Name="SearchBox"
                              Height="46" FontSize="14"
                              FontFamily="{StaticResource BodyFont}"
@@ -245,11 +246,13 @@
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <StackPanel Orientation="Horizontal" Margin="10,0" VerticalAlignment="Center">
-                                    <Button Content="⛔ Бан/Разбан" Style="{StaticResource ActionBtn}"
+                                    <Button Content="Бан/Разбан" Style="{StaticResource ActionBtn}"
                                             Click="BanUnban_Click"/>
-                                    <Button Content="🗑" Style="{StaticResource DangerBtn}"
+                                    <Button Style="{StaticResource DangerBtn}"
                                             Width="32" Padding="0"
-                                            Click="Delete_Click"/>
+                                            Click="Delete_Click">
+                                        <Image Source="{help:Icon trash.png}" Width="14" Height="14"/>
+                                    </Button>
                                 </StackPanel>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>

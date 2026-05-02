@@ -325,7 +325,7 @@ namespace Rewind.Contols
                     {
                         Header = isFollowing
                             ? $"✓ Отписаться от {artistName}"
-                            : $"⭐ Подписаться на {artistName}"
+                            : $"Подписаться на {artistName}"
                     };
                     subItem.Click += (_, _) => ToggleSubscription(capturedArtistId, capturedName, capturedFollowing);
                     ContextMenu.Items.Add(subItem);
@@ -334,7 +334,7 @@ namespace Rewind.Contols
             }
             catch { /* ignore DB errors during menu open */ }
 
-            var reportItem = new MenuItem { Header = "⚠  Пожаловаться на трек" };
+            var reportItem = new MenuItem { Header = "Пожаловаться на трек" };
             reportItem.Click += ReportTrack_Click;
             ContextMenu.Items.Add(reportItem);
         }

@@ -49,14 +49,22 @@
 
                     <TextBlock x:Name="TrackTitleText" Text="Название трека" FontSize="32" FontWeight="Black"
                                Foreground="White" TextAlignment="Center"/>
-                    <TextBlock x:Name="TrackArtistText" Text="Исполнитель" FontSize="16" Foreground="#2AE876"
-                               TextAlignment="Center" Margin="0,8,0,18"
-                               Cursor="Hand" TextDecorations="Underline"
+                    <TextBlock x:Name="TrackArtistText" 
+                               Text="Исполнитель"
+                               FontSize="16"
+                               Foreground="{DynamicResource AccentColor}"
+                               TextAlignment="Center" 
+                               Margin="0,8,0,18"
+                               Cursor="Hand" 
                                MouseLeftButtonDown="ArtistName_Click"/>
 
                     <Grid Width="700" Margin="0,0,0,6">
-                        <Slider x:Name="ProgressSlider" Minimum="0" Maximum="1" Value="0" ValueChanged="ProgressSlider_ValueChanged"
-                                PreviewMouseDown="ProgressSlider_PreviewMouseDown" PreviewMouseUp="ProgressSlider_PreviewMouseUp"/>
+                        <Slider x:Name="ProgressSlider"
+                                Minimum="0" Maximum="1" Value="0"
+                                Style="{StaticResource GreenSliderStyle}"
+                                PreviewMouseDown="ProgressSlider_PreviewMouseDown"
+                                PreviewMouseUp="ProgressSlider_PreviewMouseUp"
+                                ValueChanged="ProgressSlider_ValueChanged"/>
                     </Grid>
                     <Grid Width="700" Margin="0,0,0,20">
                         <TextBlock x:Name="CurrentTimeText" Text="0:00" Foreground="#E4E4E0"/>
@@ -72,10 +80,16 @@
                     </StackPanel>
 
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                        <Image Source="{help:Icon volume.png}" Width="16" Height="16" Margin="0,0,8,0"/>
-                        <Slider x:Name="VolumeSlider" Width="220" Minimum="0" Maximum="1" ValueChanged="VolumeSlider_ValueChanged"/>
-                        <Border x:Name="LikeBtn" Background="#2A2A28" CornerRadius="16" Margin="18,0,0,0" Padding="10,6" Cursor="Hand" MouseLeftButtonDown="LikeBtn_Click">
-                            <Image x:Name="LikeIcon" Source="{help:Icon like_outline.png}" Width="20" Height="20"/>
+                        <Image Source="{help:Icon volume.png}" Width="26" Height="26" Margin="0,0,8,0"/>
+
+                        <Slider x:Name="VolumeSlider"
+                                Width="220"
+                                VerticalAlignment="Center"
+                                Minimum="0" Maximum="1" Value="0"
+                                Style="{StaticResource GreenSliderStyle}"
+                                ValueChanged="VolumeSlider_ValueChanged"/>
+                        <Border x:Name="LikeBtn" Background="#2A2A28" CornerRadius="16" Margin="18,0,0,0" Padding="8,6" Cursor="Hand" MouseLeftButtonDown="LikeBtn_Click">
+                            <Image x:Name="LikeIcon" Source="{help:Icon like_outline.png}" Width="10" Height="10"/>
                         </Border>
                     </StackPanel>
                 </StackPanel>

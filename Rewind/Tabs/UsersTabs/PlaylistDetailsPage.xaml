@@ -12,15 +12,33 @@
                 <Border Background="{DynamicResource GreenGradientStyle}" CornerRadius="20" Padding="24" Margin="0,0,0,18">
                     <Grid>
                         <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
-                        <StackPanel>
+
+                        <!-- Обложка плейлиста -->
+                        <Border Grid.Column="0" Width="130" Height="130" CornerRadius="14"
+                                ClipToBounds="True" Margin="0,0,20,0"
+                                Background="#2A2A28" VerticalAlignment="Center">
+                            <Grid>
+                                <Image x:Name="PlaylistCoverPlaceholder"
+                                       Source="{help:Icon music_note.png}"
+                                       Width="56" Height="56"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                <Image x:Name="PlaylistCoverImage" Stretch="UniformToFill"/>
+                            </Grid>
+                        </Border>
+
+                        <!-- Информация -->
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
                             <TextBlock x:Name="PlaylistTitleText" FontSize="28" FontWeight="Bold" Foreground="White"/>
                             <TextBlock x:Name="PlaylistMetaText" FontSize="13" Foreground="#FFFFFFCC" Margin="0,6,0,0"/>
                             <TextBlock x:Name="PlaylistStatsText" FontSize="13" Foreground="#FFFFFFCC" Margin="0,2,0,0"/>
                         </StackPanel>
-                        <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Top">
+
+                        <!-- Кнопки справа -->
+                        <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Top">
                             <Border Background="#1A1A18" CornerRadius="16" Margin="0,0,8,0" Cursor="Hand" MouseLeftButtonDown="Back_Click">
                                 <StackPanel Orientation="Horizontal" Margin="14,8">
                                     <Image Source="{help:Icon nav_back.png}" Width="12" Height="12" Margin="0,0,6,0"/>

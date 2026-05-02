@@ -188,10 +188,14 @@
             </Border.Effect>
             <Grid>
                 <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
-                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                <Image Grid.Column="0" Source="{help:Icon music_note.png}"
+                       Width="22" Height="22" VerticalAlignment="Center"
+                       Margin="0,0,10,0"/>
+                <StackPanel Grid.Column="1" VerticalAlignment="Center">
                     <TextBlock x:Name="ToastTitle"
                                FontSize="13" FontWeight="Bold" Foreground="White"
                                FontFamily="{StaticResource HeaderFont}"
@@ -201,7 +205,7 @@
                                FontFamily="{StaticResource HeaderFont}"
                                TextWrapping="Wrap"/>
                 </StackPanel>
-                <Border Grid.Column="1" CornerRadius="10"
+                <Border Grid.Column="2" CornerRadius="10"
                         Background="#2D2D2B" Padding="8,5"
                         Margin="12,0,0,0" VerticalAlignment="Top"
                         Cursor="Hand"

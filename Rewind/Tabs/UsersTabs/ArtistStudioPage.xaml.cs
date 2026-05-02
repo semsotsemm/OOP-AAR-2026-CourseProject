@@ -85,7 +85,7 @@ namespace Rewind.Tabs.UsersTabs
             {
                 var cb = new CheckBox
                 {
-                    Content = $"🎵 {track.Title}",
+                    Content = track.Title,
                     Tag = track.TrackID,
                     Margin = new Thickness(0, 0, 10, 8),
                     Padding = new Thickness(8, 4, 8, 4),
@@ -184,13 +184,27 @@ namespace Rewind.Tabs.UsersTabs
             };
             card.MouseLeftButtonDown += (_, _) => SelectAlbumForEdit(album);
             var stack = new StackPanel();
-            stack.Children.Add(new Border
+
+            var coverBorder = new Border
             {
                 Height = 100,
                 CornerRadius = new CornerRadius(12),
-                Background = new LinearGradientBrush(Color.FromRgb(42, 232, 118), Color.FromRgb(0, 77, 64), new Point(0, 0), new Point(1, 1)),
-                Child = new TextBlock { Text = "💿", FontSize = 32, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center }
-            });
+                ClipToBounds = true,
+                Background = (Brush?)Application.Current.TryFindResource("GreenGradientStyle")
+                             ?? new LinearGradientBrush(Color.FromRgb(42, 232, 118), Color.FromRgb(0, 77, 64), new Point(0, 0), new Point(1, 1))
+            };
+            bool hasCover = TrySetAlbumCoverBackground(coverBorder, album.CoverPath);
+            if (!hasCover)
+            {
+                coverBorder.Child = new Image
+                {
+                    Source = IconAssets.LoadBitmap("music_note.png"),
+                    Width = 42, Height = 42,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Center
+                };
+            }
+            stack.Children.Add(coverBorder);
             stack.Children.Add(new TextBlock { Text = album.Title, FontWeight = FontWeights.Bold, FontSize = 13, Margin = new Thickness(0, 10, 0, 2), TextTrimming = TextTrimming.CharacterEllipsis, Foreground = (Brush)Application.Current.Resources["TextPrimary"] });
             stack.Children.Add(new TextBlock { Text = $"{album.AlbumTracks?.Count ?? 0} треков • {album.Genre}", FontSize = 11, Foreground = (Brush)Application.Current.Resources["TextSecondary"] });
             card.Child = stack;
@@ -201,7 +215,7 @@ namespace Rewind.Tabs.UsersTabs
         {
             _editingAlbumId = album.AlbumId;
             AlbumTitleBox.Text = album.Title;
-            CreateAlbumBtn.Content = "💾  Сохранить изменения";
+            CreateAlbumBtn.Content = "Сохранить изменения";
 
             foreach (ComboBoxItem item in AlbumGenreSelector.Items)
                 item.IsSelected = string.Equals(item.Content?.ToString(), album.Genre, StringComparison.OrdinalIgnoreCase);
@@ -213,7 +227,7 @@ namespace Rewind.Tabs.UsersTabs
             {
                 try
                 {
-                    string fp = album.CoverPath.Contains(":") ? album.CoverPath : Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "CoversLibrary", album.CoverPath);
+                    string fp = FileStorage.ResolveImagePath(album.CoverPath, "AlbumCovers");
                     if (File.Exists(fp))
                     {
                         AlbumCoverPreview.Source = new BitmapImage(new Uri(fp));
@@ -224,6 +238,26 @@ namespace Rewind.Tabs.UsersTabs
             }
         }
 
+        /// <summary>
+        /// Если у альбома задана обложка — подставляет её как ImageBrush в Border.
+        /// Иначе оставляет градиент, который уже установлен в Background.
+        /// </summary>
+        private static bool TrySetAlbumCoverBackground(Border border, string? coverPath)
+        {
+            if (string.IsNullOrWhiteSpace(coverPath)) return false;
+            try
+            {
+                string fp = FileStorage.ResolveImagePath(coverPath, "AlbumCovers");
+                if (File.Exists(fp))
+                {
+                    border.Background = new ImageBrush(new BitmapImage(new Uri(fp))) { Stretch = Stretch.UniformToFill };
+                    return true;
+                }
+            }
+            catch { }
+            return false;
+        }
+
         private void ResetAlbumForm()
         {
             _editingAlbumId = null;
@@ -231,7 +265,7 @@ namespace Rewind.Tabs.UsersTabs
             AlbumCoverPreview.Source = null;
             AlbumCoverPlaceholder.Visibility = Visibility.Visible;
             _selectedAlbumCoverPath = null;
-            CreateAlbumBtn.Content = "💿  Создать альбом";
+            CreateAlbumBtn.Content = "Создать альбом";
             foreach (var cb in AlbumTrackChecks.Children.OfType<CheckBox>()) cb.IsChecked = false;
         }
 
@@ -318,9 +352,9 @@ namespace Rewind.Tabs.UsersTabs
             (Color statusColor, string statusLabel) = track.PublishStatus switch
             {
                 "Published" => (Color.FromRgb(42, 140, 84),   "✓ Опубликован"),
-                "Pending"   => (Color.FromRgb(180, 130, 40),  "⏳ На проверке"),
+                "Pending"   => (Color.FromRgb(180, 130, 40),  "На проверке"),
                 "Rejected"  => (Color.FromRgb(190, 50,  50),  "✗ Отклонён"),
-                "Banned"    => (Color.FromRgb(100, 100, 100), "🚫 Заблокирован"),
+                "Banned"    => (Color.FromRgb(100, 100, 100), "Заблокирован"),
                 _           => (Color.FromRgb(100, 100, 100), track.PublishStatus)
             };
 
@@ -413,9 +447,9 @@ namespace Rewind.Tabs.UsersTabs
             (Color bgC, Color fgC, string stText) = track.PublishStatus switch
             {
                 "Published" => (Color.FromRgb(230, 250, 240), Color.FromRgb(42, 140, 84),   "✓ Опубликован"),
-                "Pending"   => (Color.FromRgb(255, 248, 225), Color.FromRgb(180, 130, 40),  "⏳ На проверке"),
+                "Pending"   => (Color.FromRgb(255, 248, 225), Color.FromRgb(180, 130, 40),  "На проверке"),
                 "Rejected"  => (Color.FromRgb(255, 230, 230), Color.FromRgb(190, 50,  50),  "✗ Отклонён"),
-                "Banned"    => (Color.FromRgb(238, 238, 238), Color.FromRgb(100, 100, 100), "🚫 Заблокирован"),
+                "Banned"    => (Color.FromRgb(238, 238, 238), Color.FromRgb(100, 100, 100), "Заблокирован"),
                 _           => (Color.FromRgb(238, 238, 238), Color.FromRgb(100, 100, 100), track.PublishStatus)
             };
             TrackStatusBadge.Background    = new SolidColorBrush(bgC);

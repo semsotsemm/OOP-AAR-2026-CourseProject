@@ -70,33 +70,6 @@
                             Visibility="Visible">
                         <StackPanel>
 
-                            <!-- Panel header -->
-                            <Border Background="{DynamicResource GreenGradientStyle}"
-                                    CornerRadius="16" Padding="18,16"
-                                    Margin="0,0,0,22">
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto"/>
-                                        <ColumnDefinition Width="*"/>
-                                    </Grid.ColumnDefinitions>
-                                    <Border Width="44" Height="44" CornerRadius="14"
-                                            Background="#FFFFFF22" Margin="0,0,14,0">
-                                        <Image Source="{help:Icon upload.png}"
-                                               Width="20" Height="20"
-                                               VerticalAlignment="Center" HorizontalAlignment="Center"/>
-                                    </Border>
-                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                        <TextBlock Text="Загрузить новый трек"
-                                                   FontWeight="Black" FontSize="18"
-                                                   FontFamily="{StaticResource HeaderFont}"
-                                                   Foreground="White"/>
-                                        <TextBlock Text="Добавьте обложку, аудио и жанр — после проверки трек появится на платформе"
-                                                   FontSize="12" TextWrapping="Wrap"
-                                                   Foreground="#DDFFFFFF" Margin="0,3,0,0"/>
-                                    </StackPanel>
-                                </Grid>
-                            </Border>
-
                             <!-- Track name -->
                             <TextBlock Text="Название трека"
                                        FontSize="12" FontWeight="Bold"
@@ -199,7 +172,7 @@
 
                             <Separator Margin="0,22" Background="{DynamicResource BorderColor}"/>
 
-                            <Button Content="📤  Отправить на проверку"
+                            <Button Content="Отправить на проверку"
                                     Click="UploadTrack_Click"
                                     Height="46"
                                     Background="{DynamicResource AccentColor}"
@@ -246,12 +219,6 @@
                             Visibility="Collapsed">
                         <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                             <StackPanel>
-                                <Border Background="{DynamicResource GreenGradientStyle}" CornerRadius="16" Padding="18,16" Margin="0,0,0,18">
-                                    <StackPanel>
-                                        <TextBlock Text="Создать альбом" FontSize="18" FontWeight="Black" Foreground="White" FontFamily="{StaticResource HeaderFont}"/>
-                                        <TextBlock Text="Альбом можно собрать только из ваших опубликованных треков" FontSize="12" Foreground="#DDFFFFFF" Margin="0,3,0,0"/>
-                                    </StackPanel>
-                                </Border>
 
                                 <Grid Margin="0,0,0,18">
                                     <Grid.ColumnDefinitions>
@@ -261,10 +228,10 @@
                                         <ColumnDefinition Width="12"/>
                                         <ColumnDefinition Width="180"/>
                                     </Grid.ColumnDefinitions>
-                                    <Border x:Name="AlbumCoverPicker" Grid.Column="0" Width="86" Height="86" Background="{DynamicResource BgSidebar}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1.5" CornerRadius="14" Cursor="Hand" MouseLeftButtonDown="PickAlbumCover_Click" ClipToBounds="True">
+                                    <Border x:Name="AlbumCoverPicker" Grid.Column="0" Width="86" Height="86" Background="{DynamicResource GreenGradientStyle}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1.5" CornerRadius="14" Cursor="Hand" MouseLeftButtonDown="PickAlbumCover_Click" ClipToBounds="True">
                                         <Grid>
                                             <Image x:Name="AlbumCoverPreview" Stretch="UniformToFill"/>
-                                            <TextBlock x:Name="AlbumCoverPlaceholder" Text="💿" FontSize="30" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            <Image x:Name="AlbumCoverPlaceholder" Source="{help:Icon music_note.png}" Width="36" Height="36" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                         </Grid>
                                     </Border>
                                     <Border Grid.Column="2" Background="{DynamicResource BgSidebar}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1.5" CornerRadius="12" VerticalAlignment="Top">
@@ -287,13 +254,12 @@
                                     <StackPanel>
                                         <Grid Margin="0,0,0,10">
                                             <TextBlock Text="Выберите треки" FontWeight="Bold" FontSize="13" Foreground="{DynamicResource TextPrimary}"/>
-                                            <TextBlock Text="только ваши опубликованные" FontSize="11" Foreground="{DynamicResource TextMuted}" HorizontalAlignment="Right"/>
                                         </Grid>
                                         <WrapPanel x:Name="AlbumTrackChecks"/>
                                     </StackPanel>
                                 </Border>
 
-                                <Button x:Name="CreateAlbumBtn" Content="💿  Создать альбом" Click="CreateAlbum_Click" Height="44" Background="{DynamicResource AccentColor}" Foreground="White" FontWeight="Bold" BorderThickness="0" Cursor="Hand"/>
+                                <Button x:Name="CreateAlbumBtn" Content="Создать альбом" Click="CreateAlbum_Click" Height="44" Background="{DynamicResource AccentColor}" Foreground="White" FontWeight="Bold" BorderThickness="0" Cursor="Hand"/>
 
                                 <Separator Margin="0,22" Background="{DynamicResource BorderColor}"/>
 
@@ -310,26 +276,6 @@
 
                     <!-- Default panel: tips + stats (visible by default) -->
                     <StackPanel x:Name="PanelRightDefault" Visibility="Visible">
-
-                        <!-- Tips card (green gradient) -->
-                        <Border Background="{StaticResource GreenGradientStyle}"
-                                CornerRadius="16" Padding="20" Margin="0,0,0,16">
-                            <StackPanel>
-                                <TextBlock Text="💡 Советы"
-                                           FontWeight="Bold" FontSize="14"
-                                           Foreground="White" Margin="0,0,0,10"/>
-                                <TextBlock FontSize="12" Foreground="White" Opacity="0.92"
-                                           TextWrapping="Wrap" Margin="0,0,0,8"
-                                           Text="Используйте изображения высокого качества (1000×1000 px) для обложек — это повышает привлекательность трека."/>
-                                <TextBlock FontSize="12" Foreground="White" Opacity="0.92"
-                                           TextWrapping="Wrap" Margin="0,0,0,8"
-                                           Text="Правильный жанр помогает алгоритмам рекомендаций показывать ваш трек нужной аудитории."/>
-                                <TextBlock FontSize="12" Foreground="White" Opacity="0.92"
-                                           TextWrapping="Wrap"
-                                           Text="Регулярно загружайте треки, чтобы удерживать интерес слушателей."/>
-                            </StackPanel>
-                        </Border>
-
                         <!-- Stats card -->
                         <Border Background="White" CornerRadius="16" Padding="20"
                                 BorderBrush="#E0DFD9" BorderThickness="1">
@@ -342,7 +288,7 @@
                                 <Border Background="#F5F4F0" CornerRadius="10"
                                         Padding="14,12" Margin="0,0,0,10">
                                     <Grid>
-                                        <TextBlock Text="🎵 Треков"
+                                        <TextBlock Text="Треков"
                                                    FontSize="12" Foreground="#888880"
                                                    VerticalAlignment="Center"/>
                                         <TextBlock x:Name="StatsTrackCount" Text="0"
@@ -386,7 +332,7 @@
                                 <!-- Subscriber count -->
                                 <Border Background="#F5F4F0" CornerRadius="10" Padding="14,12" Margin="10,0,0,0">
                                     <Grid>
-                                        <TextBlock Text="👥 Подписчиков" FontSize="12" Foreground="#888880" VerticalAlignment="Center"/>
+                                        <TextBlock Text="Подписчиков" FontSize="12" Foreground="#888880" VerticalAlignment="Center"/>
                                         <TextBlock x:Name="StatsSubscriberCount" Text="0" FontSize="18" FontWeight="Bold"
                                                    Foreground="#1A1A18" HorizontalAlignment="Right" VerticalAlignment="Center"/>
                                     </Grid>

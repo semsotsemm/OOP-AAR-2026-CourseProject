@@ -96,7 +96,7 @@ namespace Rewind.Tabs.AdminTabs
                 var nicknameRow = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 0, 0, 4) };
                 var nicknameText = new TextBlock
                 {
-                    Text = "🎵  " + req.Nickname,
+                    Text = req.Nickname,
                     FontSize = 18, FontWeight = FontWeights.Bold,
                     Foreground = textPrimary, VerticalAlignment = VerticalAlignment.Center
                 };
@@ -107,7 +107,7 @@ namespace Rewind.Tabs.AdminTabs
                 {
                     "Approved" => (Color.FromRgb(220, 252, 231), Color.FromRgb(21, 128, 61), "✓ Одобрено"),
                     "Rejected" => (Color.FromRgb(254, 226, 226), Color.FromRgb(185, 28, 28), "✕ Отклонено"),
-                    _ => (Color.FromRgb(254, 243, 199), Color.FromRgb(146, 64, 14), "⏳ Ожидает")
+                    _ => (Color.FromRgb(254, 243, 199), Color.FromRgb(146, 64, 14), "Ожидает")
                 };
                 var badge = new Border
                 {

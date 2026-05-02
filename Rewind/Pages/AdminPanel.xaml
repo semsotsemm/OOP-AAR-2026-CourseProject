@@ -59,8 +59,13 @@
                         <StackPanel Orientation="Horizontal">
                             <Border Width="30" Height="30" CornerRadius="7"
                                     Background="{DynamicResource AccentColor}" Margin="0,0,10,0">
-                                <TextBlock Text="📊" FontSize="14"
-                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                <Rectangle Width="16" Height="16"
+                                           Fill="{DynamicResource BgMain}"
+                                           VerticalAlignment="Center" HorizontalAlignment="Center">
+                                    <Rectangle.OpacityMask>
+                                        <ImageBrush ImageSource="{help:Icon chart.png}" Stretch="Uniform"/>
+                                    </Rectangle.OpacityMask>
+                                </Rectangle>
                             </Border>
                             <TextBlock Text="Обзор" FontSize="13" FontWeight="Bold"
                                        Foreground="{DynamicResource AccentColor}"
@@ -74,8 +79,13 @@
                         <StackPanel Orientation="Horizontal">
                             <Border Width="30" Height="30" CornerRadius="7"
                                     Background="{DynamicResource BgMain}" Margin="0,0,10,0">
-                                <TextBlock Text="👥" FontSize="14"
-                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                <Rectangle Width="16" Height="16"
+                                           Fill="{DynamicResource AccentColor}"
+                                           VerticalAlignment="Center" HorizontalAlignment="Center">
+                                    <Rectangle.OpacityMask>
+                                        <ImageBrush ImageSource="{help:Icon users.png}" Stretch="Uniform"/>
+                                    </Rectangle.OpacityMask>
+                                </Rectangle>
                             </Border>
                             <TextBlock Text="Пользователи" FontSize="13"
                                        Foreground="{DynamicResource TextPrimary}"
@@ -89,8 +99,13 @@
                         <StackPanel Orientation="Horizontal">
                             <Border Width="30" Height="30" CornerRadius="7"
                                     Background="{DynamicResource BgMain}" Margin="0,0,10,0">
-                                <TextBlock Text="🎵" FontSize="14"
-                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                <Rectangle Width="16" Height="16"
+                                           Fill="{DynamicResource AccentColor}"
+                                           VerticalAlignment="Center" HorizontalAlignment="Center">
+                                    <Rectangle.OpacityMask>
+                                        <ImageBrush ImageSource="{help:Icon music_note.png}" Stretch="Uniform"/>
+                                    </Rectangle.OpacityMask>
+                                </Rectangle>
                             </Border>
                             <TextBlock Text="Треки" FontSize="13"
                                        Foreground="{DynamicResource TextPrimary}"
@@ -105,8 +120,13 @@
                             <StackPanel Orientation="Horizontal">
                                 <Border Width="30" Height="30" CornerRadius="7"
                                         Background="{DynamicResource BgMain}" Margin="0,0,10,0">
-                                    <TextBlock Text="🎶" FontSize="14"
-                                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    <Rectangle Width="16" Height="16"
+                                               Fill="{DynamicResource AccentColor}"
+                                               VerticalAlignment="Center" HorizontalAlignment="Center">
+                                        <Rectangle.OpacityMask>
+                                            <ImageBrush ImageSource="{help:Icon music_notes.png}" Stretch="Uniform"/>
+                                        </Rectangle.OpacityMask>
+                                    </Rectangle>
                                 </Border>
                                 <TextBlock Text="На проверке" FontSize="13"
                                            Foreground="{DynamicResource TextPrimary}"
@@ -131,8 +151,13 @@
                             <StackPanel Orientation="Horizontal">
                                 <Border Width="30" Height="30" CornerRadius="7"
                                         Background="{DynamicResource BgMain}" Margin="0,0,10,0">
-                                    <TextBlock Text="📩" FontSize="14"
-                                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    <Rectangle Width="16" Height="16"
+                                               Fill="{DynamicResource AccentColor}"
+                                               VerticalAlignment="Center" HorizontalAlignment="Center">
+                                        <Rectangle.OpacityMask>
+                                            <ImageBrush ImageSource="{help:Icon mail.png}" Stretch="Uniform"/>
+                                        </Rectangle.OpacityMask>
+                                    </Rectangle>
                                 </Border>
                                 <TextBlock Text="Заявки" FontSize="13"
                                            Foreground="{DynamicResource TextPrimary}"
@@ -163,8 +188,13 @@
                             <StackPanel Orientation="Horizontal">
                                 <Border Width="30" Height="30" CornerRadius="7"
                                         Background="{DynamicResource BgMain}" Margin="0,0,10,0">
-                                    <TextBlock Text="⚠" FontSize="14"
-                                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    <Rectangle Width="16" Height="16"
+                                               Fill="{DynamicResource AccentColor}"
+                                               VerticalAlignment="Center" HorizontalAlignment="Center">
+                                        <Rectangle.OpacityMask>
+                                            <ImageBrush ImageSource="{help:Icon warning.png}" Stretch="Uniform"/>
+                                        </Rectangle.OpacityMask>
+                                    </Rectangle>
                                 </Border>
                                 <TextBlock Text="Жалобы" FontSize="13"
                                            Foreground="{DynamicResource TextPrimary}"

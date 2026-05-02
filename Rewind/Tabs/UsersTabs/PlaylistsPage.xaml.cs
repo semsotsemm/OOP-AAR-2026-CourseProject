@@ -30,9 +30,6 @@ namespace Rewind.Tabs.UsersTabs
             }
             public bool IsPrivate => Source.IsPrivate;
             public bool IsOwned { get; set; }
-            public string GradStart { get; set; } = "#2AE876";
-            public string GradEnd { get; set; } = "#004D40";
-            public string Emoji { get; set; } = "🎵";
             public string? CoverPath => Source.CoverPath;
         }
 
@@ -44,17 +41,6 @@ namespace Rewind.Tabs.UsersTabs
         private bool _isGridView = true;
         private string _activeFilter = "all";
         private string? _pendingCoverPath;
-
-        private readonly (string Start, string End, string Emoji)[] _colorSchemes =
-        {
-            ("#2AE876", "#004D40", "🎵"),
-            ("#667EEA", "#764BA2", "🎶"),
-            ("#F093FB", "#F5576C", "🎸"),
-            ("#11998e", "#38ef7d", "🎹"),
-            ("#E8462A", "#FF8C42", "🔥"),
-            ("#43C6AC", "#191654", "🌊"),
-            ("#FFB347", "#FF6B6B", "⚡"),
-        };
 
         // ─────────────────────────────────────────────
         //  Конструктор
@@ -100,14 +86,10 @@ namespace Rewind.Tabs.UsersTabs
 
         private PlaylistVM MakeVM(Playlist pl, bool owned)
         {
-            var scheme = _colorSchemes[Math.Abs(pl.PlaylistID) % _colorSchemes.Length];
             return new PlaylistVM
             {
                 Source = pl,
-                IsOwned = owned,
-                GradStart = scheme.Start,
-                GradEnd = scheme.End,
-                Emoji = scheme.Emoji
+                IsOwned = owned
             };
         }
 
@@ -140,81 +122,103 @@ namespace Rewind.Tabs.UsersTabs
         // ─────────────────────────────────────────────
         private UIElement BuildGridCard(PlaylistVM vm)
         {
+            // Внешний контейнер с тенью и фоновой плашкой
             var card = new Border
             {
-                Width = 175,
-                Height = 200, 
-                CornerRadius = new CornerRadius(18),
+                Width = 188,
+                CornerRadius = new CornerRadius(16),
                 Cursor = Cursors.Hand,
                 Background = (Brush)Application.Current.Resources["BgCard"],
-                ClipToBounds = true
+                Margin = new Thickness(0, 0, 14, 18),
+                Padding = new Thickness(10, 10, 10, 14),
+                Effect = new System.Windows.Media.Effects.DropShadowEffect
+                {
+                    Color = Color.FromArgb(38, 0, 0, 0),
+                    BlurRadius = 14,
+                    ShadowDepth = 2,
+                    Direction = 270,
+                    Opacity = 0.45
+                }
             };
             card.MouseLeftButtonDown += (_, _) => OpenPlaylist(vm);
 
-            var inner = new Grid();
+            var stack = new StackPanel();
 
-            // Обложка
+            // Квадратная обложка
+            var coverWrap = new Grid { Height = 164, Margin = new Thickness(0, 0, 0, 12) };
             var coverBorder = new Border
             {
-                Height = 130,
-                CornerRadius = new CornerRadius(14), // Скругляем все углы или только верхние
-                Margin = new Thickness(8, 8, 8, 20),   // Добавляем небольшой отступ сверху и по бокам
-                VerticalAlignment = VerticalAlignment.Top,
+                CornerRadius = new CornerRadius(12),
                 ClipToBounds = true
             };
 
-            if (!string.IsNullOrEmpty(vm.CoverPath) && File.Exists(vm.CoverPath))
-                coverBorder.Background = new ImageBrush(new BitmapImage(new Uri(vm.CoverPath))) { Stretch = Stretch.UniformToFill };
+            string coverFp = string.IsNullOrEmpty(vm.CoverPath) ? "" : FileStorage.ResolveImagePath(vm.CoverPath, "PlaylistCovers");
+            if (!string.IsNullOrEmpty(coverFp) && File.Exists(coverFp))
+                coverBorder.Background = new ImageBrush(new BitmapImage(new Uri(coverFp))) { Stretch = Stretch.UniformToFill };
             else
             {
-                coverBorder.Background = GradBrush(vm.GradStart, vm.GradEnd);
-                coverBorder.Child = new TextBlock
+                coverBorder.Background = (Brush?)Application.Current.TryFindResource("GreenGradientStyle") ?? GradBrush("#2AE876", "#004D40");
+                coverBorder.Child = new Image
                 {
-                    Text = vm.Emoji,
-                    FontSize = 44,
+                    Source = IconAssets.LoadBitmap("music_note.png"),
+                    Width = 56,
+                    Height = 56,
                     HorizontalAlignment = HorizontalAlignment.Center,
                     VerticalAlignment = VerticalAlignment.Center
                 };
             }
+            coverWrap.Children.Add(coverBorder);
 
-            inner.Children.Add(coverBorder);
-
-            // Значок приватности
+            // Маркер приватного плейлиста (замок в правом верхнем углу)
             if (vm.IsPrivate)
-                inner.Children.Add(MakeBadge("🔒", HorizontalAlignment.Right, VerticalAlignment.Top, new Thickness(0, 8, 8, 0)));
-            if (!vm.IsOwned)
-                inner.Children.Add(MakeBadge("👤", HorizontalAlignment.Left, VerticalAlignment.Top, new Thickness(8, 8, 0, 0)));
+                coverWrap.Children.Add(MakeIconBadge("lock.png",
+                    HorizontalAlignment.Right, VerticalAlignment.Top,
+                    new Thickness(0, 8, 8, 0)));
 
-            // Текст внизу
-            var info = new StackPanel
-            {
-                Margin = new Thickness(12, 0, 12, 20),
-                VerticalAlignment = VerticalAlignment.Top
-            };
-            info.Children.Add(new TextBlock
+            stack.Children.Add(coverWrap);
+
+            // Название
+            stack.Children.Add(new TextBlock
             {
                 Text = vm.Title,
-                FontSize = 13,
+                FontSize = 14,
                 FontWeight = FontWeights.Bold,
                 FontFamily = (FontFamily)Application.Current.Resources["HeaderFont"],
                 Foreground = (Brush)Application.Current.Resources["TextPrimary"],
-                TextTrimming = TextTrimming.CharacterEllipsis
+                TextTrimming = TextTrimming.CharacterEllipsis,
+                Margin = new Thickness(2, 0, 2, 3)
             });
-            info.Children.Add(new TextBlock
+
+            // Подпись: только количество треков (+ "сохранён" если чужой)
+            string subtitle = $"{vm.TrackCount} {Pluralize(vm.TrackCount, "трек", "трека", "треков")}";
+            if (!vm.IsOwned) subtitle += "  ·  сохранён";
+
+            stack.Children.Add(new TextBlock
             {
-                Text = $"{vm.TrackCount} треков  •  ♥ {vm.LikesCount}  •  ▶ {vm.ListensCount}",
+                Text = subtitle,
                 FontSize = 11,
                 FontFamily = (FontFamily)Application.Current.Resources["HeaderFont"],
                 Foreground = (Brush)Application.Current.Resources["TextSecondary"],
-                Margin = new Thickness(0, 3, 0, 0)
+                Margin = new Thickness(2, 0, 2, 0)
             });
-            inner.Children.Add(new Border { VerticalAlignment = VerticalAlignment.Bottom, Child = info });
 
-            card.Child = inner;
+            card.Child = stack;
             return card;
         }
 
-        private static Border MakeBadge(string emoji, HorizontalAlignment ha, VerticalAlignment va, Thickness margin)
+        private static string Pluralize(int n, string one, string few, string many)
+        {
+            int mod100 = n % 100;
+            if (mod100 is >= 11 and <= 19) return many;
+            return (n % 10) switch
+            {
+                1 => one,
+                2 or 3 or 4 => few,
+                _ => many
+            };
+        }
+
+        private static Border MakeIconBadge(string iconFile, HorizontalAlignment ha, VerticalAlignment va, Thickness margin)
         {
             var b = new Border
             {
@@ -226,10 +230,11 @@ namespace Rewind.Tabs.UsersTabs
                 VerticalAlignment = va,
                 Margin = margin
             };
-            b.Child = new TextBlock
+            b.Child = new Image
             {
-                Text = emoji,
-                FontSize = 11,
+                Source = IconAssets.LoadBitmap(iconFile),
+                Width = 14,
+                Height = 14,
                 HorizontalAlignment = HorizontalAlignment.Center,
                 VerticalAlignment = VerticalAlignment.Center
             };
@@ -263,15 +268,17 @@ namespace Rewind.Tabs.UsersTabs
             };
             Grid.SetColumn(thumb, 0);
 
-            if (!string.IsNullOrEmpty(vm.CoverPath) && File.Exists(vm.CoverPath))
-                thumb.Background = new ImageBrush(new BitmapImage(new Uri(vm.CoverPath))) { Stretch = Stretch.UniformToFill };
+            string thumbFp = string.IsNullOrEmpty(vm.CoverPath) ? "" : FileStorage.ResolveImagePath(vm.CoverPath, "PlaylistCovers");
+            if (!string.IsNullOrEmpty(thumbFp) && File.Exists(thumbFp))
+                thumb.Background = new ImageBrush(new BitmapImage(new Uri(thumbFp))) { Stretch = Stretch.UniformToFill };
             else
             {
-                thumb.Background = GradBrush(vm.GradStart, vm.GradEnd);
-                thumb.Child = new TextBlock
+                thumb.Background = (Brush?)Application.Current.TryFindResource("GreenGradientStyle") ?? GradBrush("#2AE876", "#004D40");
+                thumb.Child = new Image
                 {
-                    Text = vm.Emoji,
-                    FontSize = 22,
+                    Source = IconAssets.LoadBitmap("music_note.png"),
+                    Width = 26,
+                    Height = 26,
                     HorizontalAlignment = HorizontalAlignment.Center,
                     VerticalAlignment = VerticalAlignment.Center
                 };
@@ -287,8 +294,8 @@ namespace Rewind.Tabs.UsersTabs
                 FontFamily = (FontFamily)Application.Current.Resources["HeaderFont"],
                 Foreground = (Brush)Application.Current.Resources["TextPrimary"]
             });
-            var meta = $"{vm.TrackCount} треков  •  {(vm.IsPrivate ? "🔒 Приватный" : "Публичный")}  •  ♥ {vm.LikesCount}  •  ▶ {vm.ListensCount}";
-            if (!vm.IsOwned) meta += "  •  👤";
+            var meta = $"{vm.TrackCount} треков  •  {(vm.IsPrivate ? "Приватный" : "Публичный")}  •  ♥ {vm.LikesCount}  •  ▶ {vm.ListensCount}";
+            if (!vm.IsOwned) meta += "  •  Чужой";
             info.Children.Add(new TextBlock
             {
                 Text = meta,
@@ -303,7 +310,7 @@ namespace Rewind.Tabs.UsersTabs
                 Width = 36,
                 Height = 36,
                 CornerRadius = new CornerRadius(18),
-                Background = GradBrush(vm.GradStart, vm.GradEnd),
+                Background = (Brush?)Application.Current.TryFindResource("GreenGradientStyle") ?? GradBrush("#2AE876", "#004D40"),
                 Cursor = Cursors.Hand,
                 VerticalAlignment = VerticalAlignment.Center
             };
@@ -432,14 +439,10 @@ namespace Rewind.Tabs.UsersTabs
             // Создаём в кеше сессии — в БД уйдёт при FlushToDatabase()
             var newPl = Session.CreatePlaylist(name, _pendingCoverPath, isPrivate);
 
-            var scheme = _colorSchemes[_all.Count % _colorSchemes.Length];
             _all.Insert(0, new PlaylistVM
             {
                 Source = newPl,
-                IsOwned = true,
-                GradStart = scheme.Start,
-                GradEnd = scheme.End,
-                Emoji = scheme.Emoji
+                IsOwned = true
             });
 
             CreatePlaylistModal.Visibility = Visibility.Collapsed;

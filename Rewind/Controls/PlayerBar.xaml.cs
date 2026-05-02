@@ -12,8 +12,12 @@ namespace Rewind.Contols
         public event RoutedEventHandler PlayPauseClicked;
         public event RoutedEventHandler PreviousClicked;
         public event RoutedEventHandler NextClicked;
+        public event RoutedEventHandler ShuffleClicked;
+        public event RoutedEventHandler RepeatClicked;
         public event EventHandler<double> SeekRequested;
         public event EventHandler<double> VolumeChangeRequested;
+
+        private bool _suppressVolumeEvent;
 
         public PlayerBar()
         {
@@ -125,7 +129,36 @@ namespace Rewind.Contols
 
         private void VolumeSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
+            if (_suppressVolumeEvent) return;
             if (IsLoaded) VolumeChangeRequested?.Invoke(this, e.NewValue);
+        }
+
+        /// <summary>Устанавливает значение слайдера громкости без генерации события (для синхронизации).</summary>
+        public void SetVolumeExternal(double volume)
+        {
+            _suppressVolumeEvent = true;
+            try { VolumeSlider.Value = Math.Clamp(volume, 0, 1); }
+            finally { _suppressVolumeEvent = false; }
+        }
+
+        private void ShuffleButton_Click(object sender, RoutedEventArgs e)
+        {
+            ShuffleClicked?.Invoke(this, e);
+        }
+
+        private void RepeatButton_Click(object sender, RoutedEventArgs e)
+        {
+            RepeatClicked?.Invoke(this, e);
+        }
+
+        public void SetShuffleActive(bool active)
+        {
+            ShuffleIcon.Opacity = active ? 1.0 : 0.55;
+        }
+
+        public void SetRepeatActive(bool active)
+        {
+            RepeatIcon.Opacity = active ? 1.0 : 0.55;
         }
 
         /// <summary>Клик по обложке или названию — открывает страницу «Сейчас играет».</summary>

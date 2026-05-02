@@ -46,31 +46,25 @@
                     </Border>
                 </Grid>
 
-                <Border Background="{DynamicResource BgSidebar}" CornerRadius="14" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1.5" Margin="0,0,0,18">
-                    <Grid Margin="10,0,0,0">
+                <Border Background="{DynamicResource BgCard}" CornerRadius="12"
+                        BorderBrush="{DynamicResource BorderColor}" BorderThickness="1"
+                        Margin="0,0,0,20">
+                    <Grid Margin="16,0">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
-                        <Rectangle Grid.Column="0" 
-                                   Width="18"
-                                   Height="18"
-                                   Fill="{StaticResource TextSecondary}"
-                                   VerticalAlignment="Center"
-                                   Cursor="Hand">
-                            <Rectangle.OpacityMask>
-                                <ImageBrush ImageSource="{help:Icon nav_search.png}" Stretch="Uniform"/>
-                            </Rectangle.OpacityMask>
-                        </Rectangle>
+                        <Image Grid.Column="0" Source="{help:Icon nav_search.png}"
+                               Width="16" Height="16" Opacity="0.55"
+                               VerticalAlignment="Center" Margin="0,0,10,0"/>
                         <TextBox Grid.Column="1" x:Name="SearchBox"
-                                 Height="46"
-                                 FontSize="14"
-                                 Padding="6,0"
+                                 Height="44"
+                                 FontSize="13"
                                  FontFamily="{StaticResource BodyFont}"
                                  Foreground="{DynamicResource TextPrimary}"
                                  Background="Transparent" BorderThickness="0"
                                  VerticalContentAlignment="Center"
-                                 Tag="Поиск в любимых..."
+                                 Tag="Поиск по плейлистам"
                                  TextChanged="SearchBox_TextChanged"
                                  Style="{StaticResource SearchBoxStyle}"/>
                     </Grid>

@@ -14,8 +14,7 @@ namespace Rewind.Pages
         private readonly MainWindow _host;
         private string _sourcePage;
         private bool _sliderDragging;
-        private bool _shuffleEnabled;
-        private bool _repeatEnabled;
+        private bool _suppressVolumeEvent;
 
         public NowPlaying(MainWindow host, string sourcePage)
         {
@@ -25,10 +24,36 @@ namespace Rewind.Pages
             BackText.Text = $"Назад: {_sourcePage}";
 
             _host.PlaybackStateChanged += Host_PlaybackStateChanged;
-            Closed += (_, _) => _host.PlaybackStateChanged -= Host_PlaybackStateChanged;
+            _host.VolumeChanged += Host_VolumeChanged;
+            Closed += (_, _) =>
+            {
+                _host.PlaybackStateChanged -= Host_PlaybackStateChanged;
+                _host.VolumeChanged -= Host_VolumeChanged;
+            };
 
-            VolumeSlider.Value = _host.Volume;
+            SetVolumeSliderSilently(_host.Volume);
+            UpdateShuffleRepeatVisuals();
             RefreshFromHost();
+        }
+
+        private void Host_VolumeChanged(double vol)
+        {
+            Dispatcher.Invoke(() => SetVolumeSliderSilently(vol));
+        }
+
+        private void SetVolumeSliderSilently(double vol)
+        {
+            _suppressVolumeEvent = true;
+            try { VolumeSlider.Value = Math.Clamp(vol, 0, 1); }
+            finally { _suppressVolumeEvent = false; }
+        }
+
+        private void UpdateShuffleRepeatVisuals()
+        {
+            ShuffleBtn.Background = new SolidColorBrush(_host.ShuffleActive
+                ? Color.FromRgb(42, 232, 118) : Color.FromRgb(42, 42, 40));
+            RepeatBtn.Background = new SolidColorBrush(_host.RepeatEnabled
+                ? Color.FromRgb(42, 232, 118) : Color.FromRgb(42, 42, 40));
         }
 
         public void UpdateSourcePage(string sourcePage)
@@ -61,6 +86,7 @@ namespace Rewind.Pages
 
             LikeIcon.Source = IconAssets.LoadBitmap(Session.IsLiked(track.TrackId) ? "like_filled.png" : "like_outline.png");
             ApplyCover(track.CoverPath);
+            UpdateShuffleRepeatVisuals();
             RenderQueue();
         }
 
@@ -68,12 +94,13 @@ namespace Rewind.Pages
         {
             QueuePanel.Children.Clear();
             var context = _host.CurrentContext.ToList();
-            int currentId = _host.CurrentTrack?.TrackId ?? -1;
+            int currentIdx = _host.CurrentIndex;
 
             for (int i = 0; i < context.Count; i++)
             {
                 var item = context[i];
-                bool isCurrent = item.TrackId == currentId;
+                bool isCurrent = i == currentIdx;
+                int rowIndex = i;
 
                 var row = new Border
                 {
@@ -133,19 +160,17 @@ namespace Rewind.Pages
                         HorizontalAlignment = HorizontalAlignment.Center,
                         VerticalAlignment = VerticalAlignment.Center
                     };
-                    int capturedId = item.TrackId;
                     removeBtn.MouseLeftButtonDown += (_, ev) =>
                     {
                         ev.Handled = true;
-                        _host.RemoveFromQueue(capturedId);
+                        _host.RemoveFromQueueAt(rowIndex);
                     };
                     btnPanel.Children.Add(removeBtn);
 
                     // Right-click context menu on the row
                     var ctxMenu = new ContextMenu();
                     var removeMenuItem = new MenuItem { Header = "×  Удалить из очереди" };
-                    int rid = item.TrackId;
-                    removeMenuItem.Click += (_, __) => _host.RemoveFromQueue(rid);
+                    removeMenuItem.Click += (_, __) => _host.RemoveFromQueueAt(rowIndex);
                     ctxMenu.Items.Add(removeMenuItem);
 
                     var playNextMenuItem = new MenuItem { Header = "⇥  Играть следующим" };
@@ -162,11 +187,10 @@ namespace Rewind.Pages
                 rowGrid.Children.Add(btnPanel);
                 row.Child = rowGrid;
 
-                var capturedItem = item;
                 row.MouseLeftButtonDown += (_, _) =>
                 {
                     if (!isCurrent)
-                        _host.PlayTrackFromContext(capturedItem, _host.CurrentContext.ToList());
+                        _host.PlayQueueIndex(rowIndex);
                 };
 
                 QueuePanel.Children.Add(row);
@@ -283,16 +307,14 @@ namespace Rewind.Pages
 
         private void ShuffleBtn_Click(object sender, RoutedEventArgs e)
         {
-            _shuffleEnabled = !_shuffleEnabled;
-            ShuffleBtn.Background = new SolidColorBrush(_shuffleEnabled ? Color.FromRgb(42, 232, 118) : Color.FromRgb(42, 42, 40));
-            ShuffleBtn.Foreground = Brushes.White;
+            _host.ShuffleQueue();
+            UpdateShuffleRepeatVisuals();
         }
 
         private void RepeatBtn_Click(object sender, RoutedEventArgs e)
         {
-            _repeatEnabled = !_repeatEnabled;
-            RepeatBtn.Background = new SolidColorBrush(_repeatEnabled ? Color.FromRgb(42, 232, 118) : Color.FromRgb(42, 42, 40));
-            RepeatBtn.Foreground = Brushes.White;
+            _host.ToggleRepeat();
+            UpdateShuffleRepeatVisuals();
         }
 
         private void LikeBtn_Click(object sender, MouseButtonEventArgs e)
@@ -305,7 +327,7 @@ namespace Rewind.Pages
 
         private void VolumeSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
-            if (!IsLoaded) return;
+            if (!IsLoaded || _suppressVolumeEvent) return;
             _host.Volume = VolumeSlider.Value;
         }
 

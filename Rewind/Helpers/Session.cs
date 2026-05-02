@@ -237,15 +237,24 @@ namespace Rewind.Helpers
             playlist.PlaylistTracks ??= new List<PlaylistTrack>();
             if (playlist.PlaylistTracks.Any(pt => pt.TrackID == trackId)) return false;
 
+            // Подгружаем сам Track, чтобы PlaylistDetailsPage сразу его видел
+            // (иначе он появится только после рестарта, когда EF подтянет навигацию).
+            var track = TrackService.GetTrackById(trackId);
+
             playlist.PlaylistTracks.Add(new PlaylistTrack
             {
                 PlaylistID = playlist.PlaylistID,
-                TrackID = trackId
+                TrackID = trackId,
+                Track = track!
             });
 
             _playlistTracksToAdd.Add((playlist, trackId));
+            PlaylistChanged?.Invoke(playlist.PlaylistID);
             return true;
         }
+
+        /// <summary>Срабатывает при изменении состава плейлиста (добавлении/удалении треков).</summary>
+        public static event Action<int>? PlaylistChanged;
         public static void AddListenedTrack(int trackId, double durationSeconds)
         {
             TracksListened++;

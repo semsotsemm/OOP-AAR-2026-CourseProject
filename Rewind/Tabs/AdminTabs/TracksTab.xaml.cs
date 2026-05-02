@@ -172,7 +172,7 @@ namespace Rewind.Tabs.AdminTabs
                 // Ban button
                 var banBtn = new Button
                 {
-                    Content = track.PublishStatus == "Banned" ? "🔓 Разбан" : "🔒 Бан",
+                    Content = track.PublishStatus == "Banned" ? "Разбан" : "Бан",
                     Tag = track.TrackId,
                     FontSize = 11, FontWeight = FontWeights.SemiBold,
                     Padding = new Thickness(10, 5, 10, 5),

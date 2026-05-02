@@ -61,8 +61,8 @@
                 <!-- Transport buttons -->
                 <StackPanel Grid.Row="0" Orientation="Horizontal"
                             HorizontalAlignment="Center" Margin="0,0,0,6">
-                    <Button Style="{StaticResource PlayerControlBtnStyle}">
-                        <Image Source="{help:Icon player_shuffle.png}" Width="14" Height="14"/>
+                    <Button x:Name="ShuffleBtn" Style="{StaticResource PlayerControlBtnStyle}" Click="ShuffleButton_Click">
+                        <Image x:Name="ShuffleIcon" Source="{help:Icon player_shuffle.png}" Width="14" Height="14"/>
                     </Button>
                     <Button Style="{StaticResource PlayerControlBtnStyle}" Click="PreviousButton_Click">
                         <Image Source="{help:Icon player_prev.png}" Width="14" Height="14"/>
@@ -90,8 +90,8 @@
                     <Button Style="{StaticResource PlayerControlBtnStyle}" Click="NextButton_Click">
                         <Image Source="{help:Icon player_next.png}" Width="14" Height="14"/>
                     </Button>
-                    <Button Style="{StaticResource PlayerControlBtnStyle}">
-                        <Image Source="{help:Icon player_repeat.png}" Width="14" Height="14"/>
+                    <Button x:Name="RepeatBtn" Style="{StaticResource PlayerControlBtnStyle}" Click="RepeatButton_Click">
+                        <Image x:Name="RepeatIcon" Source="{help:Icon player_repeat.png}" Width="14" Height="14"/>
                     </Button>
                 </StackPanel>
 

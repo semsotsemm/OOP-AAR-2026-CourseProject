@@ -140,7 +140,13 @@ namespace Rewind.Pages
                 if (contentSp != null)
                 {
                     if (contentSp.Children.Count > 0 && contentSp.Children[0] is Border iconBorder)
+                    {
                         iconBorder.Background = isActive ? accentBrush : bgMainBrush;
+
+                        // Инвертируем заливку иконки: активный — белая, неактивный — зелёная
+                        if (iconBorder.Child is System.Windows.Shapes.Rectangle iconRect)
+                            iconRect.Fill = isActive ? bgMainBrush : accentBrush;
+                    }
 
                     if (contentSp.Children.Count > 1 && contentSp.Children[1] is TextBlock tb)
                     {

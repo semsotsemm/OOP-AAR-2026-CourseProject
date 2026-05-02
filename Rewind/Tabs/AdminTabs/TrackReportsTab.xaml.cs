@@ -77,7 +77,7 @@ namespace Rewind.Tabs.AdminTabs
                 var titleRow = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 0, 0, 4) };
                 titleRow.Children.Add(new TextBlock
                 {
-                    Text              = "🎵  " + (report.Track?.Title ?? "Неизвестный трек"),
+                    Text              = report.Track?.Title ?? "Неизвестный трек",
                     FontSize          = 16,
                     FontWeight        = FontWeights.Bold,
                     Foreground        = textPrimary,
@@ -86,9 +86,9 @@ namespace Rewind.Tabs.AdminTabs
 
                 var (bgC, fgC, lbl) = report.Status switch
                 {
-                    "Banned"    => (Color.FromRgb(254, 226, 226), Color.FromRgb(185, 28,  28),  "⛔ Забанен"),
+                    "Banned"    => (Color.FromRgb(254, 226, 226), Color.FromRgb(185, 28,  28),  "Забанен"),
                     "Dismissed" => (Color.FromRgb(240, 239, 235), Color.FromRgb(136, 136, 128), "✓ Отклонена"),
-                    _           => (Color.FromRgb(254, 243, 199), Color.FromRgb(146, 64,  14),  "⏳ Активна")
+                    _           => (Color.FromRgb(254, 243, 199), Color.FromRgb(146, 64,  14),  "Активна")
                 };
 
                 var badge = new Border
@@ -184,7 +184,7 @@ namespace Rewind.Tabs.AdminTabs
 
                     var banBtn = new Button
                     {
-                        Content         = "⛔  Забанить трек",
+                        Content         = "Забанить трек",
                         Tag             = report.ReportId,
                         Background      = new SolidColorBrush(Color.FromRgb(254, 226, 226)),
                         Foreground      = new SolidColorBrush(Color.FromRgb(185, 28, 28)),

@@ -105,9 +105,12 @@ namespace Rewind.Tabs.UsersTabs
             if (string.IsNullOrWhiteSpace(coverPath)) return;
             try
             {
-                string fp = coverPath.Contains(":") ? coverPath : Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "CoversLibrary", coverPath);
+                string fp = FileStorage.ResolveImagePath(coverPath, "AlbumCovers");
                 if (File.Exists(fp))
-                    AlbumCover.Background = new ImageBrush(new BitmapImage(new Uri(fp))) { Stretch = Stretch.UniformToFill };
+                {
+                    AlbumCoverImage.Source = new BitmapImage(new Uri(fp));
+                    AlbumCoverPlaceholder.Visibility = Visibility.Collapsed;
+                }
             }
             catch { }
         }

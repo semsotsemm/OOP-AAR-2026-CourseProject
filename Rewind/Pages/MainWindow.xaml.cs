@@ -20,9 +20,13 @@ namespace Rewind
         private readonly List<TrackItem> _playContext = new();
 
         private TrackItem? _currentTrackItem;
+        private int _currentIndex = -1;
         private IslandWindow? _island;
         private NowPlaying? _nowPlayingWindow;
         private bool _isPlaying;
+        private bool _repeatEnabled = true;   // по умолчанию включён: очередь играет по кругу
+        private bool _shuffleActive;
+        private readonly Random _shuffleRandom = new();
         private bool _islandEnabled = true;
         private double _islandScale = 1.0;
         private double _islandOpacity = 1.0;
@@ -47,6 +51,12 @@ namespace Rewind
                     _mediaPlayer.Position = TimeSpan.FromSeconds(seconds);
             };
             GlobalPlayerBar.VolumeChangeRequested += (_, vol) => Volume = Math.Clamp(vol, 0, 1);
+            GlobalPlayerBar.ShuffleClicked += (_, _) => ShuffleQueue();
+            GlobalPlayerBar.RepeatClicked += (_, _) => ToggleRepeat();
+            GlobalPlayerBar.SetRepeatActive(_repeatEnabled);
+            GlobalPlayerBar.SetShuffleActive(_shuffleActive);
+            GlobalPlayerBar.SetVolumeExternal(_mediaPlayer.Volume);
+            VolumeChanged += vol => Dispatcher.Invoke(() => GlobalPlayerBar.SetVolumeExternal(vol));
 
             // Обновляем иконку лайка в плеере при любом переключении
             Session.LikeChanged += (trackId, _) =>
@@ -69,6 +79,43 @@ namespace Rewind
         }
 
         public event Action? PlaybackStateChanged;
+        public event Action<double>? VolumeChanged;
+
+        public bool RepeatEnabled => _repeatEnabled;
+        public bool ShuffleActive => _shuffleActive;
+
+        public void ToggleRepeat()
+        {
+            _repeatEnabled = !_repeatEnabled;
+            GlobalPlayerBar.SetRepeatActive(_repeatEnabled);
+            PlaybackStateChanged?.Invoke();
+        }
+
+        /// <summary>
+        /// Случайно перемешивает текущую очередь. Текущий трек остаётся на своём месте,
+        /// остальные перемешиваются. Каждое нажатие даёт новый порядок.
+        /// </summary>
+        public void ShuffleQueue()
+        {
+            if (_playContext.Count <= 1) return;
+
+            var current = _currentTrackItem;
+            // Все элементы кроме экземпляра текущего трека (по ссылке) — перемешиваем.
+            var others = _playContext.Where(t => !ReferenceEquals(t, current))
+                                     .OrderBy(_ => _shuffleRandom.Next())
+                                     .ToList();
+            _playContext.Clear();
+            if (current != null)
+            {
+                _playContext.Add(current);
+                _currentIndex = 0;
+            }
+            _playContext.AddRange(others);
+
+            _shuffleActive = true;
+            GlobalPlayerBar.SetShuffleActive(true);
+            PlaybackStateChanged?.Invoke();
+        }
 
         public void PlayTrackFromContext(TrackItem selectedTrack, IReadOnlyList<TrackItem> contextTracks)
         {
@@ -80,26 +127,48 @@ namespace Rewind
             _playContext.Clear();
             _playContext.AddRange(contextTracks);
 
-            _currentTrackItem = selectedTrack;
+            // Берём первое совпадение — по умолчанию пользователь кликнул конкретный экземпляр,
+            // а в новом контексте дубликаты редкость.
+            int idx = _playContext.IndexOf(selectedTrack);
+            if (idx < 0) idx = _playContext.FindIndex(t => t.TrackId == selectedTrack.TrackId);
+            if (idx < 0) idx = 0;
+
+            PlayTrackAtIndexCore(idx);
+        }
+
+        /// <summary>
+        /// Воспроизвести трек по точному индексу в текущей очереди — не меняет состав очереди.
+        /// Используется при Next/Prev/клике в очереди, чтобы корректно работать с дубликатами.
+        /// </summary>
+        private void PlayTrackAtIndexCore(int index)
+        {
+            if (index < 0 || index >= _playContext.Count) return;
+
+            _currentIndex = index;
+            _currentTrackItem = _playContext[index];
+
+            // Сбрасываем индикаторы у всех остальных экземпляров и подсвечиваем текущий
+            foreach (var item in _playContext)
+                item.SetPlaying(false);
             _currentTrackItem.SetPlaying(true);
 
-            _mediaPlayer.Open(new Uri(selectedTrack.FilePath));
+            _mediaPlayer.Open(new Uri(_currentTrackItem.FilePath));
             _mediaPlayer.Play();
             _isPlaying = true;
             _timer.Start();
 
-            GlobalPlayerBar.CurrentTrack = selectedTrack.TrackName;
-            GlobalPlayerBar.CurrentArtist = selectedTrack.ArtistName;
-            GlobalPlayerBar.TotalSeconds = selectedTrack.DurationSeconds > 0 ? selectedTrack.DurationSeconds : 0;
+            GlobalPlayerBar.CurrentTrack = _currentTrackItem.TrackName;
+            GlobalPlayerBar.CurrentArtist = _currentTrackItem.ArtistName;
+            GlobalPlayerBar.TotalSeconds = _currentTrackItem.DurationSeconds > 0 ? _currentTrackItem.DurationSeconds : 0;
             GlobalPlayerBar.CurrentSeconds = 0;
             GlobalPlayerBar.PlayPauseIcon = IconAssets.GetAbsolutePath("player_pause.png");
             GlobalPlayerBar.Visibility = Visibility.Visible;
-            GlobalPlayerBar.UpdateCover(selectedTrack.CoverPath);
-            GlobalPlayerBar.UpdateLikeIcon(selectedTrack.TrackId);
+            GlobalPlayerBar.UpdateCover(_currentTrackItem.CoverPath);
+            GlobalPlayerBar.UpdateLikeIcon(_currentTrackItem.TrackId);
 
             if (_island != null)
             {
-                _island.UpdateTrackInfo(selectedTrack.TrackName, selectedTrack.ArtistName, selectedTrack.CoverPath);
+                _island.UpdateTrackInfo(_currentTrackItem.TrackName, _currentTrackItem.ArtistName, _currentTrackItem.CoverPath);
                 _island.SetPlayPauseIcon(true);
             }
             UpdateIslandVisibility();
@@ -130,34 +199,70 @@ namespace Rewind
             PlaybackStateChanged?.Invoke();
         }
 
-        public void NextTrack()
+        public void NextTrack() => AdvanceTrack(fromUser: true);
+
+        /// <summary>
+        /// Воспроизвести трек в текущей очереди по индексу (надёжно для дубликатов).
+        /// </summary>
+        public void PlayQueueIndex(int index) => PlayTrackAtIndexCore(index);
+
+        private void AdvanceTrack(bool fromUser)
         {
             if (_playContext.Count == 0) return;
-            var snapshot = _playContext.ToList(); // make a copy first!
-            int idx = _currentTrackItem == null ? 0 : (snapshot.FindIndex(t => t.TrackId == _currentTrackItem.TrackId) + 1) % snapshot.Count;
-            if (idx < 0) idx = 0;
-            PlayTrackFromContext(snapshot[idx], snapshot);
-            PlaybackStateChanged?.Invoke();
+
+            int nextIdx;
+            if (_currentIndex < 0) nextIdx = 0;
+            else if (_currentIndex >= _playContext.Count - 1)
+            {
+                // Достигли конца очереди
+                if (!_repeatEnabled && !fromUser)
+                {
+                    // Репит выключен и трек закончился сам — останавливаемся
+                    _mediaPlayer.Pause();
+                    _isPlaying = false;
+                    GlobalPlayerBar.PlayPauseIcon = IconAssets.GetAbsolutePath("player_play.png");
+                    _currentTrackItem?.SetPlayPauseIcon(false);
+                    _island?.SetPlayPauseIcon(false);
+                    PlaybackStateChanged?.Invoke();
+                    return;
+                }
+                nextIdx = 0;
+            }
+            else nextIdx = _currentIndex + 1;
+
+            PlayTrackAtIndexCore(nextIdx);
         }
 
         public void PreviousTrack()
         {
             if (_playContext.Count == 0) return;
-            var snapshot = _playContext.ToList();
-            int idx = _currentTrackItem == null ? 0 : (snapshot.FindIndex(t => t.TrackId == _currentTrackItem.TrackId) - 1 + snapshot.Count) % snapshot.Count;
-            if (idx < 0) idx = 0;
-            PlayTrackFromContext(snapshot[idx], snapshot);
-            PlaybackStateChanged?.Invoke();
+            int prevIdx = _currentIndex < 0
+                ? 0
+                : (_currentIndex - 1 + _playContext.Count) % _playContext.Count;
+            PlayTrackAtIndexCore(prevIdx);
         }
 
         public void RemoveFromQueue(int trackId)
         {
-            var item = _playContext.FirstOrDefault(t => t.TrackId == trackId);
-            if (item != null && item != _currentTrackItem)
-            {
-                _playContext.Remove(item);
-                PlaybackStateChanged?.Invoke();
-            }
+            // Удаляем первый трек с таким TrackId, который не является сейчас играющим (по ссылке).
+            int removeIdx = _playContext.FindIndex(t => t.TrackId == trackId && !ReferenceEquals(t, _currentTrackItem));
+            if (removeIdx < 0) return;
+            RemoveAtCore(removeIdx);
+        }
+
+        /// <summary>Удалить элемент очереди по конкретному индексу (надёжно для дубликатов).</summary>
+        public void RemoveFromQueueAt(int index)
+        {
+            if (index < 0 || index >= _playContext.Count) return;
+            if (index == _currentIndex) return; // нельзя удалить играющий
+            RemoveAtCore(index);
+        }
+
+        private void RemoveAtCore(int index)
+        {
+            _playContext.RemoveAt(index);
+            if (index < _currentIndex) _currentIndex--;
+            PlaybackStateChanged?.Invoke();
         }
 
         /// <summary>
@@ -174,13 +279,12 @@ namespace Rewind
                 return;
             }
 
-            // Remove duplicate (skip if it IS the currently playing track)
-            var dup = _playContext.FirstOrDefault(t => t.TrackId == item.TrackId && t != _currentTrackItem);
-            if (dup != null) _playContext.Remove(dup);
-
-            int curIdx = _playContext.FindIndex(t => t.TrackId == _currentTrackItem.TrackId);
-            int insertAt = (curIdx >= 0 && curIdx < _playContext.Count - 1) ? curIdx + 1 : _playContext.Count;
+            int insertAt = (_currentIndex >= 0 && _currentIndex < _playContext.Count - 1)
+                ? _currentIndex + 1
+                : _playContext.Count;
             _playContext.Insert(insertAt, item);
+            // Если вставили перед текущим — сместим индекс (на самом деле никогда, но на всякий случай)
+            if (insertAt <= _currentIndex) _currentIndex++;
             PlaybackStateChanged?.Invoke();
         }
 
@@ -212,7 +316,7 @@ namespace Rewind
             {
                 _isPlaying = false;
                 GlobalPlayerBar.PlayPauseIcon = IconAssets.GetAbsolutePath("player_play.png");
-                NextTrack();
+                AdvanceTrack(fromUser: false);
                 UpdateIslandVisibility();
                 PlaybackStateChanged?.Invoke();
             });
@@ -220,6 +324,7 @@ namespace Rewind
 
         public TrackItem? CurrentTrack => _currentTrackItem;
         public IReadOnlyList<TrackItem> CurrentContext => _playContext;
+        public int CurrentIndex => _currentIndex;
         public bool IsPlaying => _isPlaying;
         public bool IslandEnabled => _islandEnabled;
         public double IslandScale => _islandScale;
@@ -229,7 +334,13 @@ namespace Rewind
         public double Volume
         {
             get => _mediaPlayer.Volume;
-            set => _mediaPlayer.Volume = Math.Clamp(value, 0, 1);
+            set
+            {
+                double v = Math.Clamp(value, 0, 1);
+                if (Math.Abs(_mediaPlayer.Volume - v) < 0.0001) return;
+                _mediaPlayer.Volume = v;
+                VolumeChanged?.Invoke(v);
+            }
         }
 
         private void MyUserControl_ThemeChanged(object sender, EventArgs e)
@@ -470,7 +581,7 @@ namespace Rewind
                         string word = PluralFollowers(followers.Count);
                         Dispatcher.Invoke(() =>
                             ShowToastNotification(
-                                "🎵 Трек отправлен!",
+                                "Трек отправлен!",
                                 $"Ваши {followers.Count} {word} получат уведомление после одобрения."));
                     }
                 }

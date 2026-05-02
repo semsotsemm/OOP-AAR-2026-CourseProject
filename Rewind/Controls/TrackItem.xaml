@@ -42,23 +42,21 @@
 
 
             <!-- Длительность и плей -->
-            <StackPanel Grid.Column="4" Orientation="Horizontal" VerticalAlignment="Center">
-                
-                <!-- Кнопка в плейлист -->
-                <Border Grid.Column="3" Width="36" Height="36" CornerRadius="18"
-                        Background="{DynamicResource BgCardHover}" Cursor="Hand" Margin="0,0,8,0"
-                        MouseLeftButtonDown="AddToPlaylist_Click"
-                        ToolTip="Добавить в плейлист">
-                    <TextBlock Text="+" FontSize="16" FontWeight="Black"
+            <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Center">
+                <Border x:Name="PlayNextBtn" Width="36" Height="36" CornerRadius="18"
+                                Background="{DynamicResource BgCardHover}" Cursor="Hand" Margin="0,0,8,0"
+                                MouseLeftButtonDown="PlayNext_Click"
+                                ToolTip="Играть следующим">
+                    <TextBlock Text="+" FontSize="18" FontWeight="Black"
                                Foreground="{DynamicResource TextSecondary}"
                                HorizontalAlignment="Center" VerticalAlignment="Center"/>
                 </Border>
 
-                <!-- Играть следующим -->
-                <Border x:Name="PlayNextBtn" Width="36" Height="36" CornerRadius="18"
+                <!-- Кнопка в плейлист -->
+                <Border Grid.Column="4" Width="36" Height="36" CornerRadius="18"
                         Background="{DynamicResource BgCardHover}" Cursor="Hand" Margin="0,0,8,0"
-                        MouseLeftButtonDown="PlayNext_Click"
-                        ToolTip="Играть следующим">
+                        MouseLeftButtonDown="AddToPlaylist_Click"
+                        ToolTip="Добавить в плейлист">
                     <Rectangle Width="16"
                                 Height="16"
                                 Fill="{StaticResource TextSecondary}"
@@ -70,6 +68,8 @@
                         </Rectangle.OpacityMask>
                     </Rectangle>
                 </Border>
+
+                <!-- Играть следующим -->
                 <Button x:Name="PlayBtn" Style="{StaticResource PlayButtonStyle}" Click="Play_Click"
                         Width="36" Height="36">
                     <Button.Template>
@@ -86,6 +86,7 @@
                         </ControlTemplate>
                     </Button.Template>
                 </Button>
+                
                 <Rectangle x:Name="LikeBtn"
                            Grid.Column="2"
                            Width="20"

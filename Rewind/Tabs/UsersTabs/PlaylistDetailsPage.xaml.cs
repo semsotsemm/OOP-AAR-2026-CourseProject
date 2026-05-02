@@ -1,8 +1,10 @@
 using Rewind.Contols;
 using Rewind.Helpers;
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media.Imaging;
 
 namespace Rewind.Tabs.UsersTabs
 {
@@ -17,6 +19,15 @@ namespace Rewind.Tabs.UsersTabs
             InitializeComponent();
             _playlist = playlist;
             LoadPlaylist();
+
+            Session.PlaylistChanged += OnPlaylistChanged;
+            Unloaded += (_, _) => Session.PlaylistChanged -= OnPlaylistChanged;
+        }
+
+        private void OnPlaylistChanged(int playlistId)
+        {
+            if (playlistId != _playlist.PlaylistID) return;
+            Dispatcher.Invoke(LoadPlaylist);
         }
 
         public IReadOnlyList<TrackItem> GetTrackItems() => _trackItems;
@@ -26,6 +37,7 @@ namespace Rewind.Tabs.UsersTabs
             PlaylistTitleText.Text = _playlist.Title;
             PlaylistMetaText.Text = $"{_playlist.PlaylistTracks?.Count ?? 0} треков";
             UpdateStatsText();
+            TrySetCover(_playlist.CoverPath);
 
             bool canSave = _playlist.OwnerID != Session.UserId;
             SaveBtn.Visibility = canSave ? Visibility.Visible : Visibility.Collapsed;
@@ -85,6 +97,21 @@ namespace Rewind.Tabs.UsersTabs
         }
 
         private static string FormatDuration(int sec) => $"{sec / 60}:{sec % 60:D2}";
+
+        private void TrySetCover(string? coverPath)
+        {
+            if (string.IsNullOrWhiteSpace(coverPath)) return;
+            try
+            {
+                string fp = FileStorage.ResolveImagePath(coverPath, "PlaylistCovers");
+                if (File.Exists(fp))
+                {
+                    PlaylistCoverImage.Source = new BitmapImage(new System.Uri(fp));
+                    PlaylistCoverPlaceholder.Visibility = Visibility.Collapsed;
+                }
+            }
+            catch { }
+        }
 
         private void SaveToMe_Click(object sender, MouseButtonEventArgs e)
         {
