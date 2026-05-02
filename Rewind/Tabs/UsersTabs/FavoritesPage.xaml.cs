@@ -189,14 +189,14 @@ namespace Rewind.Tabs.UsersTabs
                 .OrderBy(g => g)
                 .ToList();
 
-            GenreFilters.Children.Add(BuildGenreChip("Все", "✦", _selectedGenres.Count == 0));
+            GenreFilters.Children.Add(BuildGenreChip("Все", _selectedGenres.Count == 0));
             foreach (var genre in genres)
-                GenreFilters.Children.Add(BuildGenreChip(genre, GenreEmoji(genre), _selectedGenres.Contains(genre)));
+                GenreFilters.Children.Add(BuildGenreChip(genre, _selectedGenres.Contains(genre)));
 
             UpdateGenreDropdownLabel();
         }
 
-        private UIElement BuildGenreChip(string genre, string emoji, bool active)
+        private UIElement BuildGenreChip(string genre, bool active)
         {
             var border = new Border
             {
@@ -217,9 +217,8 @@ namespace Rewind.Tabs.UsersTabs
             var stack = new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center };
             stack.Children.Add(new TextBlock
             {
-                Text = emoji,
                 FontSize = 12,
-                Margin = new Thickness(0, 0, 6, 0),
+                Margin = new Thickness(0, 0, 0, 0),
                 VerticalAlignment = VerticalAlignment.Center
             });
             stack.Children.Add(new TextBlock
@@ -277,25 +276,6 @@ namespace Rewind.Tabs.UsersTabs
 
         private static string NormalizeGenre(string? genre)
             => string.IsNullOrWhiteSpace(genre) ? "Other" : genre.Trim();
-
-        private static string GenreEmoji(string genre) => genre.ToLower() switch
-        {
-            "pop" => "✨",
-            "rock" => "🎸",
-            "hip-hop" => "🎤",
-            "electronic" => "⚡",
-            "r&b" => "💜",
-            "jazz" => "🎷",
-            "classical" => "🎻",
-            "metal" => "🔥",
-            "folk" => "🌿",
-            "indie" => "🌙",
-            "alternative" => "🌀",
-            "dance" => "💃",
-            "reggae" => "🌴",
-            "latin" => "☀",
-            _ => "🎵"
-        };
 
         private string FormatDuration(int sec) => $"{sec / 60}:{sec % 60:D2}";
         private void SearchBox_TextChanged(object sender, TextChangedEventArgs e) => Render();

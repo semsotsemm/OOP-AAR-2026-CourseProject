@@ -14,7 +14,11 @@ namespace Rewind.Tabs.UsersTabs
     {
         private readonly List<TrackItem> _trackItems = new();
         private readonly HashSet<string> _selectedGenres = new(StringComparer.OrdinalIgnoreCase);
-        private string _sortMode = "title"; // title / artist / duration
+
+        // Переменные для циклической сортировки
+        private string _sortMode = "title";
+        private static readonly string[] SortModes = { "title", "artist", "duration" };
+        private static readonly string[] SortLabels = { "Название", "Исполнитель", "Длительность" };
 
         public SearchPage()
         {
@@ -23,29 +27,24 @@ namespace Rewind.Tabs.UsersTabs
             Render(string.Empty);
         }
 
+        // Обработчик изменения текста в поиске
         private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
             => Render(SearchBox.Text.Trim().ToLower());
 
-        private void SortTitle_Click(object sender, MouseButtonEventArgs e) { _sortMode = "title"; UpdateSortUI(); Render(SearchBox.Text.Trim().ToLower()); }
-        private void SortArtist_Click(object sender, MouseButtonEventArgs e) { _sortMode = "artist"; UpdateSortUI(); Render(SearchBox.Text.Trim().ToLower()); }
-        private void SortDuration_Click(object sender, MouseButtonEventArgs e) { _sortMode = "duration"; UpdateSortUI(); Render(SearchBox.Text.Trim().ToLower()); }
-
-        private void UpdateSortUI()
+        // ЦИКЛИЧЕСКАЯ СОРТИРОВКА (как в примере)
+        private void ToggleSort_Click(object sender, MouseButtonEventArgs e)
         {
-            var dark = new SolidColorBrush(Color.FromRgb(26, 26, 24));
-            var card = (Application.Current.TryFindResource("BgCard") as Brush) ?? new SolidColorBrush(Colors.White);
-            var border = (Application.Current.TryFindResource("BorderColor") as Brush) ?? new SolidColorBrush(Color.FromRgb(235, 235, 231));
-            var sec = (Application.Current.TryFindResource("TextSecondary") as Brush) ?? new SolidColorBrush(Color.FromRgb(136, 136, 128));
+            // Определяем следующий индекс сортировки
+            int next = (Array.IndexOf(SortModes, _sortMode) + 1) % SortModes.Length;
+            _sortMode = SortModes[next];
 
-            var map = new[] { (SortTitle, "title"), (SortArtist, "artist"), (SortDuration, "duration") };
-            foreach (var (b, key) in map)
+            // Обновляем текст в XAML (SortLabel)
+            if (SortLabel != null)
             {
-                bool a = _sortMode == key;
-                b.Background = a ? dark : card;
-                b.BorderBrush = a ? System.Windows.Media.Brushes.Transparent : border;
-                b.BorderThickness = a ? new Thickness(0) : new Thickness(1.5);
-                if (b.Child is TextBlock tb) tb.Foreground = a ? System.Windows.Media.Brushes.White : sec;
+                SortLabel.Text = SortLabels[next];
             }
+
+            Render(SearchBox.Text.Trim().ToLower());
         }
 
         private void Render(string query)
@@ -53,6 +52,7 @@ namespace Rewind.Tabs.UsersTabs
             ResultsContainer.Children.Clear();
             _trackItems.Clear();
 
+            // Получаем треки и фильтруем по жанрам и поисковому запросу
             var tracks = TrackService.GetPublishedTracks()
                 .Where(t => _selectedGenres.Count == 0 || _selectedGenres.Contains(NormalizeGenre(t.Genre)))
                 .Where(t => string.IsNullOrEmpty(query)
@@ -61,6 +61,7 @@ namespace Rewind.Tabs.UsersTabs
                             || NormalizeGenre(t.Genre).ToLower().Contains(query))
                 .ToList();
 
+            // Применяем выбранную сортировку
             tracks = _sortMode switch
             {
                 "artist" => tracks.OrderBy(t => t.Artist?.Nickname).ToList(),
@@ -68,16 +69,37 @@ namespace Rewind.Tabs.UsersTabs
                 _ => tracks.OrderBy(t => t.Title).ToList()
             };
 
-            tracks = tracks.Take(40).ToList();
+            // Ограничиваем количество для производительности
+            var finalTracks = tracks.Take(40).ToList();
 
-            foreach (var track in tracks)
+            foreach (var track in finalTracks)
             {
                 var fullPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "MusicLibrary", track.FilePath);
-                var item = new TrackItem(track.TrackID, track.Title, track.Artist?.Nickname ?? "—", FormatDuration(track.Duration), fullPath, track.CoverPath, track.Duration);
+
+                // Создаем элемент трека
+                var item = new TrackItem(
+                    track.TrackID,
+                    track.Title,
+                    track.Artist?.Nickname ?? "—",
+                    FormatDuration(track.Duration),
+                    fullPath,
+                    track.CoverPath,
+                    track.Duration
+                );
+
+                // Добавляем логику клика для воспроизведения
+                item.MouseLeftButtonDown += (s, e) => {
+                    var it = (TrackItem)s;
+                    if (Window.GetWindow(this) is MainWindow mainWindow)
+                        mainWindow.PlayTrackFromContext(it, _trackItems);
+                };
+
                 _trackItems.Add(item);
                 ResultsContainer.Children.Add(item);
             }
         }
+
+        #region Жанры и Фильтры
 
         private void BuildGenreFilters()
         {
@@ -89,36 +111,39 @@ namespace Rewind.Tabs.UsersTabs
                 .OrderBy(g => g)
                 .ToList();
 
-            GenreFilters.Children.Add(BuildGenreChip("Все", "✦", _selectedGenres.Count == 0));
+            GenreFilters.Children.Add(BuildGenreChip("Все", _selectedGenres.Count == 0));
             foreach (var genre in genres)
-                GenreFilters.Children.Add(BuildGenreChip(genre, GenreEmoji(genre), _selectedGenres.Contains(genre)));
+                GenreFilters.Children.Add(BuildGenreChip(genre, _selectedGenres.Contains(genre)));
 
             UpdateGenreDropdownLabel();
         }
 
-        private UIElement BuildGenreChip(string genre, string emoji, bool active)
+        private UIElement BuildGenreChip(string genre, bool active)
         {
             var border = new Border
             {
                 CornerRadius = new CornerRadius(18),
                 Padding = new Thickness(14, 8, 14, 8),
-                Margin = new Thickness(0, 0, 8, 8),
+                Margin = new Thickness(0, 0, 8, 0),
                 Cursor = Cursors.Hand,
                 Background = active ? (Brush)Application.Current.Resources["AccentColor"] : (Brush)Application.Current.Resources["BgSidebar"],
                 BorderBrush = active ? Brushes.Transparent : (Brush)Application.Current.Resources["BorderColor"],
                 BorderThickness = new Thickness(active ? 0 : 1.5),
                 Tag = genre
             };
+
             var stack = new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center };
-            stack.Children.Add(new TextBlock { Text = emoji, FontSize = 12, Margin = new Thickness(0, 0, 6, 0), VerticalAlignment = VerticalAlignment.Center });
             stack.Children.Add(new TextBlock
             {
-                Text = genre, FontSize = 12, FontWeight = FontWeights.SemiBold,
+                Text = genre,
+                FontSize = 12,
+                FontWeight = FontWeights.SemiBold,
                 FontFamily = (FontFamily)Application.Current.Resources["HeaderFont"],
                 Foreground = active ? Brushes.White : (Brush)Application.Current.Resources["TextSecondary"],
                 VerticalAlignment = VerticalAlignment.Center
             });
             border.Child = stack;
+
             border.MouseLeftButtonDown += (_, _) =>
             {
                 if (genre == "Все") _selectedGenres.Clear();
@@ -150,15 +175,9 @@ namespace Rewind.Tabs.UsersTabs
                     : $"Выбрано жанров: {_selectedGenres.Count}";
         }
 
+        #endregion
+
         private static string NormalizeGenre(string? genre) => string.IsNullOrWhiteSpace(genre) ? "Other" : genre.Trim();
-
-        private static string GenreEmoji(string genre) => genre.ToLower() switch
-        {
-            "pop" => "✨", "rock" => "🎸", "hip-hop" => "🎤", "electronic" => "⚡", "r&b" => "💜",
-            "jazz" => "🎷", "classical" => "🎻", "metal" => "🔥", "folk" => "🌿", "indie" => "🌙",
-            "alternative" => "🌀", "dance" => "💃", "reggae" => "🌴", "latin" => "☀", _ => "🎵"
-        };
-
         private static string FormatDuration(int sec) => $"{sec / 60}:{sec % 60:D2}";
         public IReadOnlyList<TrackItem> GetTrackItems() => _trackItems;
     }

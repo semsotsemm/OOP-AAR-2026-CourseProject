@@ -117,22 +117,24 @@
 
                 <!-- ===== ПОИСК + СОРТИРОВКА ===== -->
                 <Grid Margin="0,0,0,20">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="12"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-
                     <!-- Поиск -->
                     <Border Grid.Column="0" Background="{DynamicResource BgSidebar}"
-                            CornerRadius="14" BorderBrush="{DynamicResource BorderColor}"
-                            BorderThickness="1.5">
-                        <Grid Margin="14,0">
+                            CornerRadius="14" BorderBrush="{DynamicResource BorderColor}">
+                        <Grid Margin="16,0">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
-                            <Image Grid.Column="0" Source="{help:Icon nav_search.png}" Width="15" Height="15" Margin="0,0,10,0"/>
+                            <Rectangle Grid.Column="0" 
+                                       Width="18"
+                                       Height="18"
+                                       Fill="{StaticResource TextSecondary}"
+                                       VerticalAlignment="Center"
+                                       Cursor="Hand">
+                                <Rectangle.OpacityMask>
+                                    <ImageBrush ImageSource="{help:Icon nav_search.png}" Stretch="Uniform"/>
+                                </Rectangle.OpacityMask>
+                            </Rectangle>
                             <TextBox Grid.Column="1" x:Name="SearchBox"
                                      FontSize="14"
                                      FontFamily="{StaticResource BodyFont}"
@@ -144,26 +146,17 @@
                                      Style="{StaticResource SearchBoxStyle}"/>
                         </Grid>
                     </Border>
-
-                    <!-- Сортировка -->
-                    <Border Grid.Column="2" Background="{DynamicResource BgSidebar}"
-                            CornerRadius="14" BorderBrush="{DynamicResource BorderColor}"
-                            BorderThickness="1.5" Cursor="Hand"
-                            MouseLeftButtonDown="ToggleSort_Click">
-                        <StackPanel Orientation="Horizontal" Margin="16,0" VerticalAlignment="Center">
-                            <Image x:Name="SortIcon" Source="{help:Icon sort.png}" Width="15" Height="15" Margin="0,0,8,0"/>
-                            <TextBlock x:Name="SortLabel" Text="Недавние"
-                                       FontSize="13" FontWeight="SemiBold"
-                                       FontFamily="{StaticResource HeaderFont}"
-                                       Foreground="{DynamicResource TextSecondary}"
-                                       VerticalAlignment="Bottom" TextAlignment="Center"/>
-                        </StackPanel>
-                    </Border>
                 </Grid>
 
                 <!-- ===== ФИЛЬТРЫ ПО ЖАНРАМ ===== -->
                 <Grid Margin="0,0,0,24">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="12"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
                     <Border x:Name="GenreDropdownBtn"
+                            Grid.Column="0"
                             Background="{DynamicResource BgSidebar}"
                             CornerRadius="16"
                             BorderBrush="{DynamicResource BorderColor}"
@@ -173,7 +166,6 @@
                             MouseLeftButtonDown="ToggleGenreDropdown_Click">
                         <Grid>
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                <TextBlock Text="🎛" FontSize="15" Margin="0,0,8,0" VerticalAlignment="Center"/>
                                 <StackPanel>
                                     <TextBlock Text="Жанры" FontSize="13" FontWeight="Bold"
                                                FontFamily="{StaticResource HeaderFont}"
@@ -198,7 +190,7 @@
                            StaysOpen="True"
                            AllowsTransparency="True"
                            PopupAnimation="Fade">
-                        <Border Width="520"
+                        <Border Width="{Binding ActualWidth, ElementName=GenreDropdownBtn}"
                                 Background="{DynamicResource BgCard}"
                                 CornerRadius="18"
                                 BorderBrush="{DynamicResource BorderColor}"
@@ -222,8 +214,32 @@
                             </StackPanel>
                         </Border>
                     </Popup>
-                </Grid>
 
+                    <!-- Сортировка -->
+                    <Border Grid.Column="2" Background="{DynamicResource BgSidebar}"
+                            CornerRadius="14" BorderBrush="{DynamicResource BorderColor}"
+                            BorderThickness="1.5" Cursor="Hand"
+                            MouseLeftButtonDown="ToggleSort_Click">
+                        <StackPanel Orientation="Horizontal" Margin="16,0" VerticalAlignment="Center">
+                            <Rectangle x:Name="SortIcon"
+                                       Width="18"
+                                       Height="18"
+                                       Margin="0,0,8,0"
+                                       Fill="{StaticResource TextSecondary}"
+                                       VerticalAlignment="Center"
+                                       Cursor="Hand">
+                                <Rectangle.OpacityMask>
+                                    <ImageBrush ImageSource="{help:Icon sort.png}" Stretch="Uniform"/>
+                                </Rectangle.OpacityMask>
+                            </Rectangle>
+                            <TextBlock x:Name="SortLabel" Text="Недавние"
+                                       FontSize="13" FontWeight="SemiBold"
+                                       FontFamily="{StaticResource HeaderFont}"
+                                       Foreground="{DynamicResource TextSecondary}"
+                                       VerticalAlignment="Center" TextAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
                 <!-- ===== ШАПКА ТАБЛИЦЫ ===== -->
                 <Border Background="{DynamicResource BgSidebar}"
                         CornerRadius="12" Padding="14,10"
