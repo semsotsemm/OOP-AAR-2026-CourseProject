@@ -1,12 +1,13 @@
-﻿using System.IO;
+﻿using Microsoft.Win32;
+using Rewind.Helpers;
 using Rewind.Pages;
+using System.IO;
+using System.Linq;
 using System.Windows;
-using Microsoft.Win32;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using Rewind.Helpers;
-using System.Linq;
 
 namespace Rewind.Controls
 {
@@ -466,9 +467,9 @@ namespace Rewind.Controls
         {
             var card = new Border
             {
-                Background = new System.Windows.Media.SolidColorBrush(
-                    System.Windows.Media.Color.FromRgb(245, 244, 240)),
-                CornerRadius = new CornerRadius(12),
+
+                Background = (Brush)Application.Current.TryFindResource("BgCard") ?? new SolidColorBrush(Color.FromRgb(245, 244, 240)),
+                CornerRadius = new CornerRadius(12),    
                 Padding = new Thickness(10),
                 Margin = new Thickness(0, 0, 0, 8),
                 Cursor = Cursors.Hand
@@ -645,7 +646,6 @@ namespace Rewind.Controls
                 .ToList();
             if (uniqueSaved.Count > 0)
             {
-                ProfilePlaylistsContainer.Children.Add(MakeSectionHeader("Сохранённые плейлисты"));
                 foreach (var playlist in uniqueSaved)
                 {
                     var trackCount = playlist.PlaylistTracks?.Count ?? 0;
@@ -723,7 +723,6 @@ namespace Rewind.Controls
         {
             if (Window.GetWindow(this) is not MainWindow mainWindow) return;
             IslandEnabledProfileToggle.IsChecked = mainWindow.IslandEnabled;
-            IslandSizeProfileSlider.Value = mainWindow.IslandScale;
             IslandOpacityProfileSlider.Value = mainWindow.IslandOpacity;
         }
 
@@ -739,7 +738,7 @@ namespace Rewind.Controls
         {
             var card = new Border
             {
-                Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(245, 244, 240)),
+                Background = (Brush)Application.Current.TryFindResource("BgCard") ?? new SolidColorBrush(Color.FromRgb(245, 244, 240)),
                 CornerRadius = new CornerRadius(12),
                 Padding = new Thickness(10),
                 Margin = new Thickness(0, 0, 0, 8),
@@ -784,7 +783,7 @@ namespace Rewind.Controls
             {
                 Text = playlist.Title,
                 FontSize = 13, FontWeight = FontWeights.SemiBold,
-                Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(26, 26, 24)),
+                Foreground = (Brush)Application.Current.TryFindResource("TextPrimary") ?? new SolidColorBrush(Color.FromRgb(245, 244, 240)),
                 TextTrimming = TextTrimming.CharacterEllipsis
             });
             info.Children.Add(new TextBlock
@@ -822,7 +821,9 @@ namespace Rewind.Controls
             return new TextBlock
             {
                 Text = text,
-                FontSize = 14, FontWeight = FontWeights.Bold,
+                VerticalAlignment = VerticalAlignment.Center,
+                FontSize = 14, 
+                FontWeight = FontWeights.Bold,
                 Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(26, 26, 24)),
                 Margin = new Thickness(0, 10, 0, 8)
             };
@@ -863,14 +864,15 @@ namespace Rewind.Controls
         {
             return new Border
             {
-                Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(245, 244, 240)),
+
+                Background = (Brush)Application.Current.TryFindResource("BgCard") ?? new SolidColorBrush(Color.FromRgb(245, 244, 240)),
                 CornerRadius = new CornerRadius(12),
                 Padding = new Thickness(12),
                 Child = new TextBlock
                 {
                     Text = text,
                     FontSize = 12,
-                    Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(136, 136, 128))
+                    Foreground = (Brush)Application.Current.TryFindResource("TextPrimary") ?? new SolidColorBrush(Color.FromRgb(245, 244, 240))
                 }
             };
         }

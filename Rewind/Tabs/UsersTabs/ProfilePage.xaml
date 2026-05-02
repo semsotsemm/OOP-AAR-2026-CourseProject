@@ -79,10 +79,10 @@
                 </Grid.RowDefinitions>
 
                 <!-- Табы -->
-                <Border Grid.Row="0" Background="{DynamicResource BgCard}" BorderBrush="#E0DFD9" BorderThickness="0,0,0,1"
+                <Border Grid.Row="0" Background="{DynamicResource BgMain}" BorderBrush="{DynamicResource BgMain}" BorderThickness="0,0,0,1"
                 Padding="28,12">
                     <StackPanel Orientation="Horizontal">
-                        <Border Background="#F5F4F0" CornerRadius="12" Padding="4">
+                        <Border Background="{DynamicResource BgCard}" CornerRadius="12" Padding="4">
                             <StackPanel Orientation="Horizontal">
                                 <Button x:Name="TabOverview" Content="Обзор"
                                 Click="TabOverview_Click"
@@ -131,8 +131,8 @@
                                 <StackPanel Grid.Column="0">
                                     <Grid Margin="0,0,0,14">
                                         <TextBlock Text="Мои плейлисты" FontSize="16" FontWeight="Black"
-                                                    Foreground="#1A1A18" FontFamily="{StaticResource HeaderFont}"/>
-                                        <TextBlock Text="Все →" FontSize="13" Foreground="{StaticResource AccentColor}"
+                                                    Foreground="{DynamicResource TextPrimary}" FontFamily="{StaticResource HeaderFont}"/>
+                                        <TextBlock Text="Все →" FontSize="13" Foreground="{DynamicResource AccentColor}"
                                                     HorizontalAlignment="Right" VerticalAlignment="Center" Cursor="Hand"/>
                                     </Grid>
                                     <StackPanel x:Name="OverviewPlaylistsContainer"/>
@@ -140,7 +140,7 @@
 
                                 <StackPanel Grid.Column="2">
                                     <TextBlock Text="Недавно лайкнутые" FontSize="16" FontWeight="Black"
-                                               Foreground="#1A1A18" Margin="0,0,0,14"
+                                               Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,14"
                                                FontFamily="{StaticResource HeaderFont}"/>
                                     <StackPanel x:Name="OverviewLikedContainer"/>
                                 </StackPanel>
@@ -151,7 +151,7 @@
                         <StackPanel x:Name="PanelLiked" Visibility="Collapsed">
                             <Grid Margin="0,0,0,16">
                                 <TextBlock FontSize="16" FontWeight="Black"
-                                   Foreground="#1A1A18"
+                                   Foreground="{DynamicResource TextPrimary}"
                                    FontFamily="{StaticResource HeaderFont}">
                                     <TextBlock.Text>
                                         <Binding Source="{x:Static help:Session.Liked}"
@@ -168,7 +168,7 @@
                         <StackPanel x:Name="PanelPlaylists" Visibility="Collapsed">
                             <Grid Margin="0,0,0,16">
                                 <TextBlock FontSize="16" FontWeight="Black"
-                                   Foreground="#1A1A18"
+                                   Foreground="{DynamicResource TextPrimary}"
                                    FontFamily="{StaticResource HeaderFont}">
                                     <TextBlock.Text>
                                         <Binding Source="{x:Static help:Session.Playlists}"
@@ -178,7 +178,7 @@
                                 <Border Background="{DynamicResource AccentColor}" CornerRadius="8" Padding="14,8"
                                 HorizontalAlignment="Right" Cursor="Hand" MouseDown="OpenPlaylistsPage_MouseDown">
                                     <TextBlock Text="+ Новый плейлист" FontSize="13" FontWeight="Bold"
-                                       Foreground="White"/>
+                                       Foreground="{DynamicResource BgMain}"/>
                                 </Border>
                             </Grid>
                             <StackPanel x:Name="ProfilePlaylistsContainer"/>
@@ -188,7 +188,7 @@
                         <StackPanel x:Name="PanelAlbums" Visibility="Collapsed">
                             <Grid Margin="0,0,0,16">
                                 <TextBlock Text="Сохранённые альбомы" FontSize="16" FontWeight="Black"
-                                   Foreground="#1A1A18"
+                                   Foreground="{DynamicResource TextPrimary}"
                                    FontFamily="{StaticResource HeaderFont}"/>
                             </Grid>
                             <WrapPanel x:Name="ProfileAlbumsContainer"/>
@@ -199,33 +199,34 @@
 
                             <!-- Данные профиля -->
                             <TextBlock Text="Данные профиля" FontSize="16" FontWeight="Black"
-                               Foreground="#1A1A18" Margin="0,0,0,12"
+                               Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,12"
                                FontFamily="{StaticResource HeaderFont}"/>
-                            <Border Background="#FFFFFF" CornerRadius="16" BorderBrush="#E0DFD9"
-                            BorderThickness="1" Margin="0,0,0,20" ClipToBounds="True">
+                            <Border Background="{DynamicResource BgCard}" CornerRadius="16" BorderThickness="1" Margin="0,0,0,20" ClipToBounds="True">
                                 <StackPanel>
-                                    <Border Style="{StaticResource SettingsRow}">
+                                    <Border Style="{StaticResource SettingsRow}" BorderBrush ="{DynamicResource TextMuted}">
                                         <Grid>
-                                            <TextBlock Text="Имя пользователя" FontSize="14" FontWeight="SemiBold" Foreground="#1A1A18"/>
-                                            <TextBlock Text="{Binding Path=(help:Session.UserName), UpdateSourceTrigger=PropertyChanged}" FontSize="13" Foreground="#888880" HorizontalAlignment="Right"/>
+                                            <TextBlock Text="Имя пользователя" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                                            <TextBlock Text="{Binding Path=(help:Session.UserName), UpdateSourceTrigger=PropertyChanged}" FontSize="13" Foreground="{DynamicResource TextSecondary}" HorizontalAlignment="Right"/>
                                         </Grid>
                                     </Border>
-                                    <Border Style="{StaticResource SettingsRow}">
+
+                                    <Border Style="{StaticResource SettingsRow}" BorderBrush ="{DynamicResource TextMuted}">
                                         <Grid>
-                                            <TextBlock Text="Email" FontSize="14" FontWeight="SemiBold" Foreground="#1A1A18"/>
-                                            <TextBlock Text="{Binding Path=(help:Session.Email), UpdateSourceTrigger=PropertyChanged}" FontSize="13" Foreground="#888880" HorizontalAlignment="Right"/>
+                                            <TextBlock Text="Email" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                                            <TextBlock Text="{Binding Path=(help:Session.Email), UpdateSourceTrigger=PropertyChanged}" FontSize="13" Foreground="{DynamicResource TextSecondary}" HorizontalAlignment="Right"/>
                                         </Grid>
                                     </Border>
-                                    <Border Style="{StaticResource SettingsRow}">
+
+                                    <Border Style="{StaticResource SettingsRow}" BorderBrush ="{DynamicResource TextMuted}">
                                         <Grid>
-                                            <TextBlock Text="Пароль" FontSize="14" FontWeight="SemiBold" Foreground="#1A1A18"/>
+                                            <TextBlock Text="Пароль" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
                                             <TextBlock Text="{Binding Path=(help:Session.Password), UpdateSourceTrigger=PropertyChanged}"
-                                               FontSize="13" Foreground="#888880" HorizontalAlignment="Right" Cursor="Hand"/>
+                                               FontSize="13" Foreground="{DynamicResource TextSecondary}" HorizontalAlignment="Right" Cursor="Hand"/>
                                         </Grid>
                                     </Border>
                                     <Border Style="{StaticResource SettingsRow}">
                                         <Grid>
-                                            <TextBlock Text="Роль" FontSize="14" FontWeight="SemiBold" Foreground="#1A1A18"/>
+                                            <TextBlock Text="Роль" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
                                             <TextBlock Text="{Binding Source={x:Static help:Session.UserRole}}" FontSize="13" Foreground="{DynamicResource AccentColor}" FontWeight="Bold" HorizontalAlignment="Right"/>
                                         </Grid>
                                     </Border>
@@ -234,7 +235,7 @@
 
                             <!-- Тема оформления -->
                             <TextBlock Text="Тема оформления" FontSize="16" FontWeight="Black"
-                               Foreground="#1A1A18" Margin="0,0,0,14"
+                               Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,14"
                                FontFamily="{StaticResource HeaderFont}"/>
                             <Grid Margin="0,0,0,24">
                                 <Grid.ColumnDefinitions>
@@ -252,14 +253,14 @@
                                 Style="{StaticResource ThemeCardActive}"
                                 MouseDown="ThemeClassic_MouseDown">
                                     <StackPanel>
-                                        <Border Height="60" CornerRadius="10,10,0,0" Background="#F5F4F0">
+                                        <Border Height="60" CornerRadius="10,10,0,0" Background="#FFFFFF">
                                             <Ellipse Width="10" Height="10" Fill="#2AE876"
                                              HorizontalAlignment="Left" VerticalAlignment="Bottom"
                                              Margin="10,0,0,10"/>
                                         </Border>
-                                        <Border Background="#FFFFFF" Padding="10,9" CornerRadius="0,0,10,10"
+                                        <Border Background="{DynamicResource BgCard}" Padding="10,9" CornerRadius="0,0,10,10"
                                         BorderBrush="#E0DFD9" BorderThickness="0,1,0,0">
-                                            <TextBlock Text="Классик" FontSize="12" FontWeight="Bold" Foreground="#1A1A18"/>
+                                            <TextBlock Text="Классик" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
                                         </Border>
                                     </StackPanel>
                                 </Border>
@@ -269,14 +270,14 @@
                                 Style="{StaticResource ThemeCard}"
                                 MouseDown="ThemeClassic_MouseDown">
                                     <StackPanel>
-                                        <Border Height="60" CornerRadius="10,10,0,0" Background="#F5F4F0">
+                                        <Border Height="60" CornerRadius="10,10,0,0" Background="#FFFFFF">
                                             <Ellipse Width="10" Height="10" Fill="#FF6B95"
                                              HorizontalAlignment="Left" VerticalAlignment="Bottom"
                                              Margin="10,0,0,10" Opacity="0.6"/>
                                         </Border>
-                                        <Border Background="#FFFFFF" Padding="10,9" CornerRadius="0,0,10,10"
+                                        <Border Background="{DynamicResource BgCard}" Padding="10,9" CornerRadius="0,0,10,10"
                                         BorderBrush="#E0DFD9" BorderThickness="0,1,0,0">
-                                            <TextBlock Text="Сакура" FontSize="12" FontWeight="Bold" Foreground="#1A1A18"/>
+                                            <TextBlock Text="Сакура" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
                                         </Border>
                                     </StackPanel>
                                 </Border>
@@ -291,9 +292,9 @@
                                              HorizontalAlignment="Left" VerticalAlignment="Bottom"
                                              Margin="10,0,0,10"/>
                                         </Border>
-                                        <Border Background="#FFFFFF" Padding="10,9" CornerRadius="0,0,10,10"
+                                        <Border Background="{DynamicResource BgCard}" Padding="10,9" CornerRadius="0,0,10,10"
                                         BorderBrush="#E0DFD9" BorderThickness="0,1,0,0">
-                                            <TextBlock Text="Полночь" FontSize="12" FontWeight="Bold" Foreground="#1A1A18"/>
+                                            <TextBlock Text="Полночь" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
                                         </Border>
                                     </StackPanel>
                                 </Border>
@@ -309,9 +310,9 @@
                                              HorizontalAlignment="Left" VerticalAlignment="Bottom"
                                              Margin="10,0,0,10"/>
                                         </Border>
-                                        <Border Background="#FFFFFF" Padding="10,9" CornerRadius="0,0,10,10"
+                                        <Border Background="{DynamicResource BgCard}" Padding="10,9" CornerRadius="0,0,10,10"
                                         BorderBrush="#E0DFD9" BorderThickness="0,1,0,0">
-                                            <TextBlock Text="Лаванда" FontSize="12" FontWeight="Bold" Foreground="#1A1A18"/>
+                                            <TextBlock Text="Лаванда" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
                                         </Border>
                                     </StackPanel>
                                 </Border>
@@ -319,14 +320,14 @@
 
                             <!-- Уведомления -->
                             <TextBlock Text="Уведомления" FontSize="16" FontWeight="Black"
-                               Foreground="#1A1A18" Margin="0,0,0,12"
+                               Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,12"
                                FontFamily="{StaticResource HeaderFont}"/>
-                            <Border Background="#FFFFFF" CornerRadius="16" BorderBrush="#E0DFD9"
+                            <Border Background="{DynamicResource BgCard}" CornerRadius="16" 
                             BorderThickness="1" Margin="0,0,0,20" ClipToBounds="True">
                                 <StackPanel>
-                                    <Border Style="{StaticResource SettingsRow}">
+                                    <Border Style="{StaticResource SettingsRow}" BorderBrush ="{DynamicResource TextMuted}">
                                         <Grid>
-                                            <TextBlock Text="Новые треки от авторов" FontSize="14" FontWeight="SemiBold" Foreground="#1A1A18" VerticalAlignment="Center"/>
+                                            <TextBlock Text="Новые треки от авторов" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
                                             <CheckBox x:Name="Tog1"
                                               Style="{StaticResource ModernToggleStyle}"
                                               HorizontalAlignment="Right"
@@ -335,26 +336,8 @@
                                     </Border>
                                     <Border Style="{StaticResource SettingsRow}">
                                         <Grid>
-                                            <TextBlock Text="Push-уведомления" FontSize="14" FontWeight="SemiBold" Foreground="#1A1A18" VerticalAlignment="Center"/>
+                                            <TextBlock Text="Push-уведомления" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
                                             <CheckBox x:Name="Tog2"
-                                             Style="{StaticResource ModernToggleStyle}"
-                                             HorizontalAlignment="Right"
-                                             IsChecked="True" />
-                                        </Grid>
-                                    </Border>
-                                    <Border Style="{StaticResource SettingsRow}">
-                                        <Grid>
-                                            <TextBlock Text="Email-рассылка" FontSize="14" FontWeight="SemiBold" Foreground="#1A1A18" VerticalAlignment="Center"/>
-                                            <CheckBox x:Name="Tog3"
-                                             Style="{StaticResource ModernToggleStyle}"
-                                             HorizontalAlignment="Right"
-                                             IsChecked="True" />
-                                        </Grid>
-                                    </Border>
-                                    <Border Padding="18,14">
-                                        <Grid>
-                                            <TextBlock Text="Рекомендации" FontSize="14" FontWeight="SemiBold" Foreground="#1A1A18" VerticalAlignment="Center"/>
-                                            <CheckBox x:Name="Tog4"
                                              Style="{StaticResource ModernToggleStyle}"
                                              HorizontalAlignment="Right"
                                              IsChecked="True" />
@@ -364,14 +347,14 @@
                             </Border>
 
                             <TextBlock Text="Динамический остров" FontSize="16" FontWeight="Black"
-                               Foreground="#1A1A18" Margin="0,0,0,12"
+                               Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,12"
                                FontFamily="{StaticResource HeaderFont}"/>
-                            <Border Background="#FFFFFF" CornerRadius="16" BorderBrush="#E0DFD9"
+                            <Border Background="{DynamicResource BgCard}" CornerRadius="16"
                             BorderThickness="1" Margin="0,0,0,20" ClipToBounds="True">
                                 <StackPanel>
-                                    <Border Style="{StaticResource SettingsRow}">
+                                    <Border Style="{StaticResource SettingsRow}" BorderBrush ="{DynamicResource TextMuted}">
                                         <Grid>
-                                            <TextBlock Text="Показывать динамический остров" FontSize="14" FontWeight="SemiBold" Foreground="#1A1A18" VerticalAlignment="Center"/>
+                                            <TextBlock Text="Показывать динамический остров" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
                                             <CheckBox x:Name="IslandEnabledProfileToggle"
                                               Style="{StaticResource ModernToggleStyle}"
                                               HorizontalAlignment="Right"
@@ -379,25 +362,20 @@
                                               Unchecked="IslandProfileSettings_Changed"/>
                                         </Grid>
                                     </Border>
-                                    <Border Style="{StaticResource SettingsRow}">
-                                        <StackPanel>
-                                            <TextBlock Text="Размер острова" FontSize="14" FontWeight="SemiBold" Foreground="#1A1A18" Margin="0,0,0,8"/>
-                                            <Slider x:Name="IslandSizeProfileSlider" Minimum="0.8" Maximum="1.5"
-                                            ValueChanged="IslandProfileSettings_Changed"/>
-                                        </StackPanel>
-                                    </Border>
                                     <Border Padding="18,14">
                                         <StackPanel>
-                                            <TextBlock Text="Прозрачность острова" FontSize="14" FontWeight="SemiBold" Foreground="#1A1A18" Margin="0,0,0,8"/>
-                                            <Slider x:Name="IslandOpacityProfileSlider" Minimum="0.25" Maximum="1.0"
-                                            ValueChanged="IslandProfileSettings_Changed"/>
+                                            <TextBlock Text="Непрозрачность острова" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,8"/>
+                                            <Slider x:Name="IslandOpacityProfileSlider"
+                                                    Minimum="0.25" Maximum="1.0" Value="1.0"
+                                                    Style="{StaticResource GreenSliderStyle}"
+                                                    ValueChanged="IslandProfileSettings_Changed"/>
                                         </StackPanel>
                                     </Border>
                                 </StackPanel>
                             </Border>
 
                             <!-- Выход -->
-                            <Border Background="#FFFFFF" BorderBrush="#FFD5CC"
+                            <Border Background="{DynamicResource BgCard}"
                             MouseDown="LogOut_MouseDown"
                             BorderThickness="1.5"
                             CornerRadius="14" Cursor="Hand" Padding="0,16"

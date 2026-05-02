@@ -177,7 +177,6 @@
     <!-- Строка настроек -->
     <Style x:Key="SettingsRow" TargetType="Border">
         <Setter Property="Padding" Value="18,14"/>
-        <Setter Property="BorderBrush" Value="#E0DFD9"/>
         <Setter Property="BorderThickness" Value="0,0,0,1"/>
         <Setter Property="Cursor" Value="Hand"/>
         <Setter Property="Background" Value="Transparent"/>
