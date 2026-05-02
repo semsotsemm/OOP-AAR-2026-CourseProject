@@ -96,8 +96,6 @@ namespace Rewind.Tabs.UsersTabs
                     _all.Add(MakeVM(pl, owned: false));
             }
             catch { /* нет соединения — пропускаем */ }
-
-            FavoritesCountText.Text = $"{Session.Liked} треков";
         }
 
         private PlaylistVM MakeVM(Playlist pl, bool owned)
@@ -127,16 +125,13 @@ namespace Rewind.Tabs.UsersTabs
                 .ToList();
 
             PlaylistsGridPanel.Children.Clear();
-            PlaylistsListPanel.Children.Clear();
 
             EmptyState.Visibility = _shown.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
             PlaylistsGridPanel.Visibility = _isGridView && _shown.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
-            PlaylistsListPanel.Visibility = !_isGridView && _shown.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
 
             foreach (var vm in _shown)
             {
-                if (_isGridView) PlaylistsGridPanel.Children.Add(BuildGridCard(vm));
-                else PlaylistsListPanel.Children.Add(BuildListRow(vm));
+                PlaylistsGridPanel.Children.Add(BuildGridCard(vm));
             }
         }
 
@@ -148,11 +143,10 @@ namespace Rewind.Tabs.UsersTabs
             var card = new Border
             {
                 Width = 175,
-                Height = 210,
+                Height = 200, 
                 CornerRadius = new CornerRadius(18),
-                Margin = new Thickness(0, 0, 14, 14),
                 Cursor = Cursors.Hand,
-                Background = new SolidColorBrush(Colors.White),
+                Background = (Brush)Application.Current.Resources["BgCard"],
                 ClipToBounds = true
             };
             card.MouseLeftButtonDown += (_, _) => OpenPlaylist(vm);
@@ -162,8 +156,9 @@ namespace Rewind.Tabs.UsersTabs
             // Обложка
             var coverBorder = new Border
             {
-                Height = 140,
-                CornerRadius = new CornerRadius(14, 14, 0, 0),
+                Height = 130,
+                CornerRadius = new CornerRadius(14), // Скругляем все углы или только верхние
+                Margin = new Thickness(8, 8, 8, 20),   // Добавляем небольшой отступ сверху и по бокам
                 VerticalAlignment = VerticalAlignment.Top,
                 ClipToBounds = true
             };
@@ -193,8 +188,8 @@ namespace Rewind.Tabs.UsersTabs
             // Текст внизу
             var info = new StackPanel
             {
-                Margin = new Thickness(12, 8, 12, 10),
-                VerticalAlignment = VerticalAlignment.Bottom
+                Margin = new Thickness(12, 0, 12, 20),
+                VerticalAlignment = VerticalAlignment.Top
             };
             info.Children.Add(new TextBlock
             {
@@ -348,10 +343,6 @@ namespace Rewind.Tabs.UsersTabs
         {
             var accent = Color.FromRgb(42, 232, 118);
             var neutral = Color.FromRgb(240, 239, 235);
-            ViewGrid.Background = new SolidColorBrush(_isGridView ? accent : neutral);
-            ViewList.Background = new SolidColorBrush(_isGridView ? neutral : accent);
-            ((TextBlock)ViewGrid.Child).Foreground = _isGridView ? Brushes.White : (Brush)Application.Current.Resources["TextSecondary"];
-            ((TextBlock)ViewList.Child).Foreground = _isGridView ? (Brush)Application.Current.Resources["TextSecondary"] : Brushes.White;
         }
 
         // ─────────────────────────────────────────────
@@ -364,14 +355,19 @@ namespace Rewind.Tabs.UsersTabs
         private void SetFilter(string f)
         {
             _activeFilter = f;
-            var dark = Color.FromRgb(26, 26, 24);
-            var neutral = Color.FromRgb(240, 239, 235);
-            FilterAll.Background = new SolidColorBrush(f == "all" ? dark : neutral);
-            FilterOwn.Background = new SolidColorBrush(f == "own" ? dark : neutral);
-            FilterSaved.Background = new SolidColorBrush(f == "saved" ? dark : neutral);
+
+            var dark = (Brush)Application.Current.TryFindResource("TextPrimary") ?? new SolidColorBrush(Color.FromRgb(26, 26, 24));
+
+            var neutral = (Brush)Application.Current.TryFindResource("BgCard") ?? new SolidColorBrush(Color.FromRgb(240, 239, 235));
+
+            FilterAll.Background = f == "all" ? dark : neutral;
+            FilterOwn.Background = f == "own" ? dark : neutral;
+            FilterSaved.Background = f == "saved" ? dark : neutral;
+
             PillFg(FilterAll, f == "all");
             PillFg(FilterOwn, f == "own");
             PillFg(FilterSaved, f == "saved");
+
             Render();
         }
 

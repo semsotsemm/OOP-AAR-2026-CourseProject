@@ -155,7 +155,7 @@
                                        Foreground="{DynamicResource TextPrimary}" FontFamily="{StaticResource HeaderFont}"/>
                         </Grid>
                         <ScrollViewer HorizontalScrollBarVisibility="Auto"
-                                      VerticalScrollBarVisibility="Hidden" Height="210">
+                                      VerticalScrollBarVisibility="Hidden" Height="auto">
                             <StackPanel x:Name="PopularPlaylistsContainer" Orientation="Horizontal"/>
                         </ScrollViewer>
                     </StackPanel>

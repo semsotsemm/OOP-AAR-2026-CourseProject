@@ -34,10 +34,8 @@
                     <!-- Кнопка создать плейлист -->
                     <Border Grid.Column="1" CornerRadius="20" Cursor="Hand"
                             VerticalAlignment="Center"
+                            Background="{DynamicResource AccentColor}"
                             MouseLeftButtonDown="CreatePlaylist_Click">
-                        <Border.Background>
-                            <SolidColorBrush Color="#2AE876"/>
-                        </Border.Background>
                         <StackPanel Orientation="Horizontal" Margin="18,10">
                             <TextBlock Text="+" FontSize="18" FontWeight="Bold" Foreground="White"
                                        VerticalAlignment="Center" Margin="0,0,6,0"/>
@@ -48,156 +46,54 @@
                     </Border>
                 </Grid>
 
-                <!-- ===== СТРОКА ПОИСКА ===== -->
-                <Border Background="{DynamicResource BgSidebar}" CornerRadius="14"
-                        BorderBrush="{DynamicResource BorderColor}" BorderThickness="1.5"
-                        Margin="0,0,0,28">
-                    <Grid Margin="14,0">
+                <Border Background="{DynamicResource BgSidebar}" CornerRadius="14" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1.5" Margin="0,0,0,18">
+                    <Grid Margin="10,0,0,0">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
-                        <Image Grid.Column="0" Source="{help:Icon nav_search.png}" Width="15" Height="15" Margin="0,0,10,0"/>
+                        <Rectangle Grid.Column="0" 
+                                   Width="18"
+                                   Height="18"
+                                   Fill="{StaticResource TextSecondary}"
+                                   VerticalAlignment="Center"
+                                   Cursor="Hand">
+                            <Rectangle.OpacityMask>
+                                <ImageBrush ImageSource="{help:Icon nav_search.png}" Stretch="Uniform"/>
+                            </Rectangle.OpacityMask>
+                        </Rectangle>
                         <TextBox Grid.Column="1" x:Name="SearchBox"
-                                 Height="46" FontSize="14"
+                                 Height="46"
+                                 FontSize="14"
+                                 Padding="6,0"
                                  FontFamily="{StaticResource BodyFont}"
                                  Foreground="{DynamicResource TextPrimary}"
                                  Background="Transparent" BorderThickness="0"
                                  VerticalContentAlignment="Center"
-                                 Tag="Поиск плейлистов..."
+                                 Tag="Поиск в любимых..."
                                  TextChanged="SearchBox_TextChanged"
                                  Style="{StaticResource SearchBoxStyle}"/>
                     </Grid>
                 </Border>
 
-                <!-- ===== ЗАКРЕПЛЁННЫЕ ПЛЕЙЛИСТЫ ===== -->
-                <StackPanel Margin="0,0,0,32">
-                    <TextBlock Text="Закреплённые" FontSize="16" FontWeight="Bold"
-                               FontFamily="{StaticResource HeaderFont}"
-                               Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,16"/>
-
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="12"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-
-                        <!-- Любимые треки -->
-                        <Border Grid.Column="0" CornerRadius="20" Height="110" Cursor="Hand"
-                                MouseLeftButtonDown="FavoritesPlaylist_Click">
-                            <Border.Background>
-                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                                    <GradientStop Color="#2AE876" Offset="0"/>
-                                    <GradientStop Color="#004D40" Offset="1"/>
-                                </LinearGradientBrush>
-                            </Border.Background>
-                            <Grid Margin="22,18">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
-                                <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                                    <StackPanel Orientation="Horizontal">
-                                        <Image Source="{help:Icon like_filled.png}" Width="16" Height="16" Margin="0,0,6,0"/>
-                                        <TextBlock Text="Любимые треки" FontSize="16" FontWeight="Bold"
-                                                   FontFamily="{StaticResource HeaderFont}" Foreground="White"/>
-                                    </StackPanel>
-                                    <TextBlock x:Name="FavoritesCountText" Text="0 треков" FontSize="12"
-                                               FontFamily="{StaticResource HeaderFont}"
-                                               Foreground="#FFFFFF99" Margin="0,5,0,0"/>
-                                </StackPanel>
-                                <Border Grid.Column="1" Width="54" Height="54" CornerRadius="27"
-                                        Background="#FFFFFF22" VerticalAlignment="Center">
-                                    <Image Source="{help:Icon player_play.png}" Width="18" Height="18"/>
-                                </Border>
-                            </Grid>
-                        </Border>
-
-                        <!-- Недавно прослушанные -->
-                        <Border Grid.Column="2" CornerRadius="20" Height="110" Cursor="Hand">
-                            <Border.Background>
-                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                                    <GradientStop Color="#667EEA" Offset="0"/>
-                                    <GradientStop Color="#764BA2" Offset="1"/>
-                                </LinearGradientBrush>
-                            </Border.Background>
-                            <Grid Margin="22,18">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
-                                <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                                    <StackPanel Orientation="Horizontal">
-                                        <Image Source="{help:Icon clock.png}" Width="16" Height="16" Margin="0,0,6,0"/>
-                                        <TextBlock Text="Недавно слушали" FontSize="16" FontWeight="Bold"
-                                                   FontFamily="{StaticResource HeaderFont}" Foreground="White"/>
-                                    </StackPanel>
-                                    <TextBlock Text="История воспроизведения" FontSize="12"
-                                               FontFamily="{StaticResource HeaderFont}"
-                                               Foreground="#FFFFFF99" Margin="0,5,0,0"/>
-                                </StackPanel>
-                                <Border Grid.Column="1" Width="54" Height="54" CornerRadius="27"
-                                        Background="#FFFFFF22" VerticalAlignment="Center">
-                                    <Image Source="{help:Icon player_play.png}" Width="18" Height="18"/>
-                                </Border>
-                            </Grid>
-                        </Border>
-                    </Grid>
-                </StackPanel>
-
-                <!-- ===== МОИ ПЛЕЙЛИСТЫ ===== -->
                 <StackPanel>
-                    <Grid Margin="0,0,0,16">
-                        <TextBlock Text="Мои плейлисты" FontSize="20" FontWeight="Bold"
-                                   Foreground="{DynamicResource TextPrimary}"
-                                   FontFamily="{StaticResource HeaderFont}"/>
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right"
-                                    VerticalAlignment="Center">
-                            <!-- Переключатель вид: сетка / список -->
-                            <Border x:Name="ViewGrid" Width="34" Height="34" CornerRadius="10"
-                                    Cursor="Hand" Margin="0,0,6,0"
-                                    MouseLeftButtonDown="SwitchToGrid_Click">
-                                <Border.Background>
-                                    <SolidColorBrush x:Name="GridViewBg" Color="#2AE876"/>
-                                </Border.Background>
-                                <Image Source="{help:Icon view_grid.png}" Width="16" Height="16"/>
-                            </Border>
-                            <Border x:Name="ViewList" Width="34" Height="34" CornerRadius="10"
-                                    Cursor="Hand"
-                                    MouseLeftButtonDown="SwitchToList_Click">
-                                <Border.Background>
-                                    <SolidColorBrush x:Name="ListViewBg" Color="#F0EFEB"/>
-                                </Border.Background>
-                                <Image Source="{help:Icon view_list.png}" Width="16" Height="16"/>
-                            </Border>
-                        </StackPanel>
-                    </Grid>
-
-                    <!-- Фильтры -->
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,20">
                         <Border x:Name="FilterAll" CornerRadius="20" Padding="16,8" Cursor="Hand"
+                                Background="{DynamicResource TextPrimary}"
                                 Margin="0,0,8,0" MouseLeftButtonDown="FilterAll_Click">
-                            <Border.Background>
-                                <SolidColorBrush Color="#1A1A18"/>
-                            </Border.Background>
                             <TextBlock Text="Все" FontSize="13" FontWeight="SemiBold"
                                        FontFamily="{StaticResource HeaderFont}" Foreground="White"/>
                         </Border>
                         <Border x:Name="FilterOwn" CornerRadius="20" Padding="16,8" Cursor="Hand"
+                                Background="{DynamicResource BgCard}"
                                 Margin="0,0,8,0" MouseLeftButtonDown="FilterOwn_Click">
-                            <Border.Background>
-                                <SolidColorBrush Color="#F0EFEB"/>
-                            </Border.Background>
                             <TextBlock Text="Мои" FontSize="13" FontWeight="SemiBold"
                                        FontFamily="{StaticResource HeaderFont}"
                                        Foreground="{DynamicResource TextSecondary}"/>
                         </Border>
                         <Border x:Name="FilterSaved" CornerRadius="20" Padding="16,8" Cursor="Hand"
+                                Background="{DynamicResource BgCard}"
                                 MouseLeftButtonDown="FilterSaved_Click">
-                            <Border.Background>
-                                <SolidColorBrush Color="#F0EFEB"/>
-                            </Border.Background>
                             <TextBlock Text="Сохранённые" FontSize="13" FontWeight="SemiBold"
                                        FontFamily="{StaticResource HeaderFont}"
                                        Foreground="{DynamicResource TextSecondary}"/>
@@ -206,9 +102,6 @@
 
                     <!-- Сетка плейлистов (по умолчанию) -->
                     <WrapPanel x:Name="PlaylistsGridPanel" Orientation="Horizontal"/>
-
-                    <!-- Список плейлистов (альтернативный вид) -->
-                    <StackPanel x:Name="PlaylistsListPanel" Visibility="Collapsed"/>
 
                     <!-- Пустое состояние -->
                     <Border x:Name="EmptyState" Visibility="Collapsed"
