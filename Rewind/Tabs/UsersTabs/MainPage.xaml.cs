@@ -119,13 +119,25 @@ namespace Rewind.Tabs.UsersTabs
 
                 if (!string.IsNullOrWhiteSpace(_featuredTrack.CoverPath))
                 {
-                    var cover = IconAssets.LoadBitmap(_featuredTrack.CoverPath);
-                    if (cover != null)
+                    try
                     {
-                        FeaturedTrackCover.Source = cover;
-                        FeaturedTrackCover.Width = 120;
-                        FeaturedTrackCover.Height = 120;
+                        string fullPath = FileStorage.ResolveImagePath(_featuredTrack.CoverPath);
+                        if (System.IO.File.Exists(fullPath))
+                        {
+                            var bitmap = new System.Windows.Media.Imaging.BitmapImage();
+                            bitmap.BeginInit();
+                            bitmap.CacheOption = System.Windows.Media.Imaging.BitmapCacheOption.OnLoad;
+                            bitmap.CreateOptions = System.Windows.Media.Imaging.BitmapCreateOptions.IgnoreImageCache;
+                            bitmap.UriSource = new Uri(fullPath);
+                            bitmap.EndInit();
+                            bitmap.Freeze();
+
+                            FeaturedTrackCover.Source = bitmap;
+                            FeaturedTrackCover.Width = 120;
+                            FeaturedTrackCover.Height = 120;
+                        }
                     }
+                    catch { }
                 }
             }
             catch { }
@@ -236,10 +248,8 @@ namespace Rewind.Tabs.UsersTabs
                 {
                     try
                     {
-                        string coverPath = playlist.CoverPath.Contains(":")
-                            ? playlist.CoverPath
-                            : System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "CoversLibrary", playlist.CoverPath);
-                        if (System.IO.File.Exists(coverPath))
+                        string coverPath = FileStorage.ResolveImagePath(playlist.CoverPath, "PlaylistCovers");
+                        if (!string.IsNullOrEmpty(coverPath) && System.IO.File.Exists(coverPath))
                             card.CoverImageSource = new System.Windows.Media.Imaging.BitmapImage(new Uri(coverPath));
                     }
                     catch { card.CoverImageSource = null; }

@@ -187,6 +187,7 @@ namespace Rewind.Helpers
         private static readonly List<Playlist> _playlistsToAdd = new();
         private static readonly List<int> _playlistsToDel = new();
         private static readonly List<(Playlist Playlist, int TrackId)> _playlistTracksToAdd = new();
+        private static readonly List<(int PlaylistId, int TrackId)> _playlistTracksToDel = new();
 
         public static IReadOnlyList<Playlist> CachedPlaylists => _cachedPlaylists;
 
@@ -196,6 +197,7 @@ namespace Rewind.Helpers
             _playlistsToAdd.Clear();
             _playlistsToDel.Clear();
             _playlistTracksToAdd.Clear();
+            _playlistTracksToDel.Clear();
             _cachedPlaylists.AddRange(playlistsFromDb);
             Playlists = _cachedPlaylists.Count;
         }
@@ -226,6 +228,7 @@ namespace Rewind.Helpers
                 _playlistsToDel.Add(pl.PlaylistID);
 
             _playlistTracksToAdd.RemoveAll(x => x.Playlist == pl || x.Playlist.PlaylistID == pl.PlaylistID);
+            _playlistTracksToDel.RemoveAll(x => x.PlaylistId == pl.PlaylistID);
             Playlists = _cachedPlaylists.Count;
         }
 
@@ -249,6 +252,33 @@ namespace Rewind.Helpers
             });
 
             _playlistTracksToAdd.Add((playlist, trackId));
+            PlaylistChanged?.Invoke(playlist.PlaylistID);
+            return true;
+        }
+
+        /// <summary>Удаляет трек из плейлиста в кеше (в БД уйдёт при Flush).</summary>
+        public static bool RemoveTrackFromPlaylist(Playlist playlist, int trackId)
+        {
+            if (playlist == null || trackId <= 0) return false;
+            if (playlist.PlaylistTracks == null) return false;
+
+            var entry = playlist.PlaylistTracks.FirstOrDefault(pt => pt.TrackID == trackId);
+            if (entry == null) return false;
+
+            playlist.PlaylistTracks.Remove(entry);
+
+            // Если добавление ещё не дошло до БД — просто отменяем его
+            int pendingIdx = _playlistTracksToAdd.FindIndex(x =>
+                (x.Playlist == playlist || x.Playlist.PlaylistID == playlist.PlaylistID) && x.TrackId == trackId);
+            if (pendingIdx >= 0)
+            {
+                _playlistTracksToAdd.RemoveAt(pendingIdx);
+            }
+            else if (playlist.PlaylistID > 0)
+            {
+                _playlistTracksToDel.Add((playlist.PlaylistID, trackId));
+            }
+
             PlaylistChanged?.Invoke(playlist.PlaylistID);
             return true;
         }
@@ -309,6 +339,13 @@ namespace Rewind.Helpers
                     PlaylistService.AddTrackToPlaylist(playlistId, item.TrackId);
                 }
 
+                // 5b. Связи треков с плейлистами: удаления
+                foreach (var item in _playlistTracksToDel.ToList())
+                {
+                    if (_playlistsToDel.Contains(item.PlaylistId)) continue;
+                    PlaylistService.RemoveTrackFromPlaylist(item.PlaylistId, item.TrackId);
+                }
+
                 // 6. Обновляем данные пользователя
                 var userInDb = UserService.GetUserById(UserId);
                 if (userInDb != null)
@@ -326,6 +363,7 @@ namespace Rewind.Helpers
                 _playlistsToAdd.Clear();
                 _playlistsToDel.Clear();
                 _playlistTracksToAdd.Clear();
+                _playlistTracksToDel.Clear();
             }
             catch (Exception ex)
             {

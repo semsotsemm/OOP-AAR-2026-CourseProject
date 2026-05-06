@@ -59,6 +59,7 @@ namespace Rewind.Tabs.UsersTabs
                 var artist = UserService.GetUserById(track.ArtistID)?.Nickname ?? "Неизвестный артист";
                 var fullPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "MusicLibrary", track.FilePath);
                 var item = new TrackItem(track.TrackID, track.Title, artist, FormatDuration(track.Duration), fullPath, track.CoverPath, track.Duration);
+                item.PlaylistContext = _playlist;
                 item.MouseLeftButtonDown += OnTrackClick;
                 _trackItems.Add(item);
                 TracksContainer.Children.Add(item);

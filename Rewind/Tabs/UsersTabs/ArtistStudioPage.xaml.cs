@@ -721,10 +721,8 @@ namespace Rewind.Tabs.UsersTabs
             if (string.IsNullOrEmpty(coverPath)) return;
             try
             {
-                string fp = coverPath.Contains(':')
-                    ? coverPath
-                    : Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "CoversLibrary", coverPath);
-                if (File.Exists(fp))
+                string fp = FileStorage.ResolveImagePath(coverPath, "TrackCovers");
+                if (!string.IsNullOrEmpty(fp) && File.Exists(fp))
                     border.Background = new ImageBrush(new BitmapImage(new Uri(fp)))
                     {
                         Stretch = Stretch.UniformToFill
@@ -739,10 +737,8 @@ namespace Rewind.Tabs.UsersTabs
             if (string.IsNullOrEmpty(coverPath)) return;
             try
             {
-                string fp = coverPath.Contains(':')
-                    ? coverPath
-                    : Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "CoversLibrary", coverPath);
-                if (File.Exists(fp))
+                string fp = FileStorage.ResolveImagePath(coverPath, "TrackCovers");
+                if (!string.IsNullOrEmpty(fp) && File.Exists(fp))
                     border.Background = new ImageBrush(new BitmapImage(new Uri(fp)))
                     {
                         Stretch = Stretch.UniformToFill

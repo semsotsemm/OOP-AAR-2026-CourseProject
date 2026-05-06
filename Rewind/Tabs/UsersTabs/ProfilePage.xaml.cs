@@ -488,23 +488,23 @@ namespace Rewind.Controls
                     System.Windows.Media.Color.FromRgb(200, 200, 195)),
                 Margin = new Thickness(0, 0, 10, 0)
             };
+            bool trackHasCover = false;
             if (!string.IsNullOrEmpty(track.CoverPath))
             {
                 try
                 {
-                    string fp = track.CoverPath.Contains(":")
-                        ? track.CoverPath
-                        : System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "CoversLibrary", track.CoverPath);
-                    if (System.IO.File.Exists(fp))
+                    string fp = FileStorage.ResolveImagePath(track.CoverPath, "TrackCovers");
+                    if (!string.IsNullOrEmpty(fp) && System.IO.File.Exists(fp))
                     {
                         coverBorder.Background = new System.Windows.Media.ImageBrush(
                             new System.Windows.Media.Imaging.BitmapImage(new Uri(fp)))
                         { Stretch = System.Windows.Media.Stretch.UniformToFill };
+                        trackHasCover = true;
                     }
                 }
                 catch { }
             }
-            else
+            if (!trackHasCover)
             {
                 coverBorder.Child = new Image
                 {
@@ -778,23 +778,23 @@ namespace Rewind.Controls
                 Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(180, 200, 185)),
                 Margin = new Thickness(0, 0, 8, 0)
             };
+            bool plHasCover = false;
             if (!string.IsNullOrEmpty(playlist.CoverPath))
             {
                 try
                 {
-                    string fp = playlist.CoverPath.Contains(":")
-                        ? playlist.CoverPath
-                        : System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "CoversLibrary", playlist.CoverPath);
-                    if (System.IO.File.Exists(fp))
+                    string fp = FileStorage.ResolveImagePath(playlist.CoverPath, "PlaylistCovers");
+                    if (!string.IsNullOrEmpty(fp) && System.IO.File.Exists(fp))
+                    {
                         coverBorder.Background = new System.Windows.Media.ImageBrush(
                             new BitmapImage(new Uri(fp)))
                         { Stretch = System.Windows.Media.Stretch.UniformToFill };
-                    else
-                        coverBorder.Child = new Image { Source = IconAssets.LoadBitmap("music_note.png"), Width = 24, Height = 24, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
+                        plHasCover = true;
+                    }
                 }
-                catch { coverBorder.Child = new Image { Source = IconAssets.LoadBitmap("music_note.png"), Width = 24, Height = 24, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center }; }
+                catch { }
             }
-            else
+            if (!plHasCover)
             {
                 coverBorder.Child = new Image { Source = IconAssets.LoadBitmap("music_note.png"), Width = 24, Height = 24, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
             }

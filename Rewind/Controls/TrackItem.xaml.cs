@@ -25,6 +25,12 @@ namespace Rewind.Contols
         public string ArtistName { get; private set; }
         public double DurationSeconds { get; private set; }
 
+        /// <summary>
+        /// Если установлен — контекстное меню покажет пункт
+        /// «Удалить из плейлиста» (только для владельца плейлиста).
+        /// </summary>
+        public Playlist? PlaylistContext { get; set; }
+
         public event RoutedEventHandler PlayClicked;
 
         private MainWindow? _playerHost;
@@ -288,6 +294,18 @@ namespace Rewind.Contols
 
             ContextMenu.Items.Add(new Separator());
 
+            // Удаление из текущего плейлиста (только если открыт из плейлиста владельца)
+            if (PlaylistContext != null && PlaylistContext.OwnerID == Session.UserId)
+            {
+                var removeItem = new MenuItem
+                {
+                    Header = $"✕  Удалить из «{PlaylistContext.Title}»"
+                };
+                removeItem.Click += RemoveFromPlaylist_Click;
+                ContextMenu.Items.Add(removeItem);
+                ContextMenu.Items.Add(new Separator());
+            }
+
             var ownPlaylists = Session.CachedPlaylists.Where(p => p.OwnerID == Session.UserId).ToList();
             if (ownPlaylists.Count == 0)
             {
@@ -396,6 +414,25 @@ namespace Rewind.Contols
                 MessageBox.Show($"Ошибка подписки: {ex.Message}", "Rewind",
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
+        }
+
+        private void RemoveFromPlaylist_Click(object sender, RoutedEventArgs e)
+        {
+            if (PlaylistContext == null) return;
+            if (PlaylistContext.OwnerID != Session.UserId) return;
+
+            var confirm = MessageBox.Show(
+                $"Удалить трек «{TrackName}» из плейлиста «{PlaylistContext.Title}»?",
+                "Rewind",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Question);
+
+            if (confirm != MessageBoxResult.Yes) return;
+
+            bool removed = Session.RemoveTrackFromPlaylist(PlaylistContext, TrackId);
+            if (!removed)
+                MessageBox.Show("Не удалось удалить трек из плейлиста.", "Rewind",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
         }
 
         private void AddTrackToPlaylist_Click(object sender, RoutedEventArgs e)
