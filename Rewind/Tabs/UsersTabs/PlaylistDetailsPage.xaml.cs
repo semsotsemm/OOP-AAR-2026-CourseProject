@@ -1,5 +1,7 @@
 using Rewind.Contols;
 using Rewind.Helpers;
+using Rewind.MVVM.Services;
+using Rewind.MVVM.ViewModels.Pages;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
@@ -8,96 +10,77 @@ using System.Windows.Media.Imaging;
 
 namespace Rewind.Tabs.UsersTabs
 {
+    /// <summary>
+    /// View поверх <see cref="PlaylistDetailsViewModel"/>.
+    /// Бизнес-логика (сохранение/прослушивание/перезагрузка) в VM.
+    /// </summary>
     public partial class PlaylistDetailsPage : UserControl
     {
-        private readonly Playlist _playlist;
+        private readonly PlaylistDetailsViewModel _vm;
         private readonly List<TrackItem> _trackItems = new();
-        // Каждое нажатие Play в плейлисте считается отдельным прослушиванием
 
         public PlaylistDetailsPage(Playlist playlist)
         {
             InitializeComponent();
-            _playlist = playlist;
-            LoadPlaylist();
+            _vm = new PlaylistDetailsViewModel(
+                playlist,
+                ServiceLocator.Resolve<INavigationService>(),
+                ServiceLocator.Resolve<IDialogService>());
+            DataContext = _vm;
+            _vm.PropertyChanged += (_, _) => RefreshUi();
 
-            Session.PlaylistChanged += OnPlaylistChanged;
-            Unloaded += (_, _) => Session.PlaylistChanged -= OnPlaylistChanged;
-        }
+            RenderTracks();
+            RefreshUi();
 
-        private void OnPlaylistChanged(int playlistId)
-        {
-            if (playlistId != _playlist.PlaylistID) return;
-            Dispatcher.Invoke(LoadPlaylist);
+            Unloaded += (_, _) => _vm.Dispose();
         }
 
         public IReadOnlyList<TrackItem> GetTrackItems() => _trackItems;
+        public void RegisterPlaylistListen() => _vm.RegisterListenOnce();
 
-        private void LoadPlaylist()
+        private void RenderTracks()
         {
-            PlaylistTitleText.Text = _playlist.Title;
-            PlaylistMetaText.Text = $"{_playlist.PlaylistTracks?.Count ?? 0} треков";
-            UpdateStatsText();
-            TrySetCover(_playlist.CoverPath);
-
-            bool canSave = _playlist.OwnerID != Session.UserId;
-            SaveBtn.Visibility = canSave ? Visibility.Visible : Visibility.Collapsed;
-            RefreshSaveButton();
-
             TracksContainer.Children.Clear();
             _trackItems.Clear();
 
-            var tracks = _playlist.PlaylistTracks?.Select(pt => pt.Track).Where(t => t != null).Cast<Track>().ToList() ?? new List<Track>();
-            if (tracks.Count == 0)
+            if (_vm.Tracks.Count == 0)
             {
                 EmptyText.Visibility = Visibility.Visible;
                 return;
             }
-
             EmptyText.Visibility = Visibility.Collapsed;
-            foreach (var track in tracks)
+
+            foreach (var track in _vm.Tracks)
             {
                 var artist = UserService.GetUserById(track.ArtistID)?.Nickname ?? "Неизвестный артист";
-                var fullPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "MusicLibrary", track.FilePath);
-                var item = new TrackItem(track.TrackID, track.Title, artist, FormatDuration(track.Duration), fullPath, track.CoverPath, track.Duration);
-                item.PlaylistContext = _playlist;
-                item.MouseLeftButtonDown += OnTrackClick;
+                var fullPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "MusicLibrary", track.FilePath);
+                var item = new TrackItem(track.TrackID, track.Title, artist,
+                    $"{track.Duration / 60}:{track.Duration % 60:D2}",
+                    fullPath, track.CoverPath, track.Duration);
+                item.PlaylistContext = _vm.Playlist;
+                item.MouseLeftButtonDown += (s, _) =>
+                {
+                    if (s is not TrackItem clicked) return;
+                    _vm.RegisterListenOnce();
+                    if (Window.GetWindow(this) is MainWindow mw)
+                        mw.PlayTrackFromContext(clicked, _trackItems);
+                };
                 _trackItems.Add(item);
                 TracksContainer.Children.Add(item);
             }
         }
 
-        private void OnTrackClick(object sender, MouseButtonEventArgs e)
+        private void RefreshUi()
         {
-            if (sender is not TrackItem clicked) return;
-            RegisterPlaylistListen();
-            if (Window.GetWindow(this) is MainWindow mainWindow)
-                mainWindow.PlayTrackFromContext(clicked, _trackItems);
+            PlaylistTitleText.Text = _vm.Title;
+            PlaylistMetaText.Text = _vm.MetaText;
+            PlaylistStatsText.Text = _vm.StatsText;
+            SaveBtn.Visibility = _vm.CanSave ? Visibility.Visible : Visibility.Collapsed;
+            SaveBtnText.Text = _vm.SaveButtonText;
+            TrySetCover(_vm.CoverPath);
+            // Перерисовываем список только если меняется число треков (Reload)
+            if (TracksContainer.Children.Count != _vm.Tracks.Count) RenderTracks();
         }
-
-        public void RegisterPlaylistListen()
-        {
-            if (_playlist.PlaylistID <= 0) return;
-            if (!Session.TryEnterPlaybackScope("playlist", _playlist.PlaylistID)) return;
-            PlaylistListenService.RegisterListen(Session.UserId, _playlist.PlaylistID);
-            UpdateStatsText();
-        }
-
-        private void UpdateStatsText()
-        {
-            // Используем БД-счётчики (не кеш в памяти)
-            var saved = SavedPlaylistService.GetSavedCount(_playlist.PlaylistID);
-            var listens = PlaylistListenService.GetListenerCount(_playlist.PlaylistID);
-            PlaylistStatsText.Text = $"♥ {saved} сохранили  •  ► {listens} прослушали";
-        }
-
-        private void RefreshSaveButton()
-        {
-            if (_playlist.OwnerID == Session.UserId) return;
-            bool saved = SavedPlaylistService.IsSaved(Session.UserId, _playlist.PlaylistID);
-            SaveBtnText.Text = saved ? "♥ Сохранён" : "♥ Сохранить";
-        }
-
-        private static string FormatDuration(int sec) => $"{sec / 60}:{sec % 60:D2}";
 
         private void TrySetCover(string? coverPath)
         {
@@ -107,31 +90,14 @@ namespace Rewind.Tabs.UsersTabs
                 string fp = FileStorage.ResolveImagePath(coverPath, "PlaylistCovers");
                 if (File.Exists(fp))
                 {
-                    PlaylistCoverImage.Source = new BitmapImage(new System.Uri(fp));
+                    PlaylistCoverImage.Source = new BitmapImage(new Uri(fp));
                     PlaylistCoverPlaceholder.Visibility = Visibility.Collapsed;
                 }
             }
             catch { }
         }
 
-        private void SaveToMe_Click(object sender, MouseButtonEventArgs e)
-        {
-            if (_playlist.PlaylistID <= 0)
-            {
-                MessageBox.Show("Нельзя сохранить неопубликованный плейлист.");
-                return;
-            }
-
-            bool isSaved = SavedPlaylistService.Toggle(Session.UserId, _playlist.PlaylistID);
-            RefreshSaveButton();
-            UpdateStatsText();
-            MessageBox.Show(isSaved ? "Плейлист сохранён — он появится в вашем профиле." : "Плейлист удалён из сохранённых.");
-        }
-
-        private void Back_Click(object sender, MouseButtonEventArgs e)
-        {
-            if (Window.GetWindow(this) is MainWindow mainWindow)
-                mainWindow.ShowPlaylistsPage();
-        }
+        private void SaveToMe_Click(object sender, MouseButtonEventArgs e) => _vm.ToggleSaveCommand.Execute(null);
+        private void Back_Click(object sender, MouseButtonEventArgs e) => _vm.BackCommand.Execute(null);
     }
 }

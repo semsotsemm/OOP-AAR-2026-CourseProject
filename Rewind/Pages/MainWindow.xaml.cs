@@ -406,11 +406,7 @@ namespace Rewind
             UpdateIslandVisibility();
         }
 
-        private void ShowStudio_Click(object sender, RoutedEventArgs e)
-        {
-            MainContentArea.Content = new ArtistStudioPage();
-            HighlightActiveButton(BtnStudio);
-        }
+        private void ShowStudio_Click(object sender, RoutedEventArgs e) => ShowArtistStudioPage();
 
         // ────────────────────────────────────────────────
         //  Навигация на страницу исполнителя
@@ -441,21 +437,8 @@ namespace Rewind
             HighlightActiveButton(BtnHome);
         }
 
-        private void ShowProfile_Click(object sender, RoutedEventArgs e)
-        {
-            var profilePage = new ProfilePage();
-
-            profilePage.ThemeChanged += MyUserControl_ThemeChanged;
-
-            MainContentArea.Content = profilePage;
-            HighlightActiveButton(BtnProfile);
-        }
-
-        private void ShowPlaylists_Click(object sender, RoutedEventArgs e)
-        {
-            MainContentArea.Content = new PlaylistsPage();
-            HighlightActiveButton(BtnPlaylists);
-        }
+        private void ShowProfile_Click(object sender, RoutedEventArgs e) => ShowProfilePage();
+        private void ShowPlaylists_Click(object sender, RoutedEventArgs e) => ShowPlaylistsPage();
 
         public void ShowPlaylistsPage()
         {
@@ -469,22 +452,41 @@ namespace Rewind
             HighlightActiveButton(BtnPlaylists);
         }
 
-        private void ShowHome_Click(object sender, RoutedEventArgs e)
+        private void ShowHome_Click(object sender, RoutedEventArgs e) => ShowMainPage();
+        private void ShowLiked_Click(object sender, RoutedEventArgs e) => ShowFavoritesPage();
+        private void ShowSearch_Click(object sender, RoutedEventArgs e) => ShowSearchPage();
+
+        // Публичные версии навигации — вызываются из INavigationService / ViewModel.
+        public void ShowMainPage()
         {
             MainContentArea.Content = new MainPage();
             HighlightActiveButton(BtnHome);
         }
 
-        private void ShowLiked_Click(object sender, RoutedEventArgs e)
+        public void ShowFavoritesPage()
         {
             MainContentArea.Content = new FavoritesPage();
             HighlightActiveButton(BtnFavorites);
         }
 
-        private void ShowSearch_Click(object sender, RoutedEventArgs e)
+        public void ShowSearchPage()
         {
             MainContentArea.Content = new SearchPage();
             HighlightActiveButton(BtnSearch);
+        }
+
+        public void ShowProfilePage()
+        {
+            var profilePage = new ProfilePage();
+            profilePage.ThemeChanged += MyUserControl_ThemeChanged;
+            MainContentArea.Content = profilePage;
+            HighlightActiveButton(BtnProfile);
+        }
+
+        public void ShowArtistStudioPage()
+        {
+            MainContentArea.Content = new ArtistStudioPage();
+            HighlightActiveButton(BtnStudio);
         }
 
         public void UpdateIslandSettings(bool enabled, double opacity)

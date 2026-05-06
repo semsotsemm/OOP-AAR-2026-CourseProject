@@ -1,104 +1,85 @@
 using Rewind.Contols;
 using Rewind.Helpers;
+using Rewind.MVVM.Services;
+using Rewind.MVVM.ViewModels.Pages;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
 namespace Rewind.Tabs.UsersTabs
 {
+    /// <summary>
+    /// View поверх <see cref="AlbumDetailsViewModel"/>. Логика сохранения/
+    /// прослушивания — в VM. Code-behind только отрисовывает треки и обложку.
+    /// </summary>
     public partial class AlbumDetailsPage : UserControl
     {
-        private readonly Album _album;
+        private readonly AlbumDetailsViewModel _vm;
         private readonly List<TrackItem> _trackItems = new();
 
         public AlbumDetailsPage(Album album)
         {
             InitializeComponent();
-            _album = album;
-            Loaded += (_, _) => LoadAlbum();
+            _vm = new AlbumDetailsViewModel(
+                album,
+                ServiceLocator.Resolve<INavigationService>(),
+                ServiceLocator.Resolve<IDialogService>());
+            DataContext = _vm;
+            _vm.PropertyChanged += (_, _) => RefreshUi();
+            Loaded += (_, _) => { RenderTracks(); RefreshUi(); };
         }
 
         public IReadOnlyList<TrackItem> GetTrackItems() => _trackItems;
 
-        private void LoadAlbum()
+        private void RenderTracks()
         {
-            AlbumTitleText.Text = _album.Title;
-            AlbumArtistText.Text = _album.Artist?.Nickname ?? UserService.GetUserById(_album.ArtistId)?.Nickname ?? "Исполнитель";
-            UpdateStats();
-            RefreshSaveButton();
-            TrySetCover(_album.CoverPath);
-
             TracksContainer.Children.Clear();
             _trackItems.Clear();
-            var tracks = _album.AlbumTracks?.Select(at => at.Track).Where(t => t != null).Cast<Track>().ToList() ?? new List<Track>();
-            if (tracks.Count == 0)
+
+            if (_vm.Tracks.Count == 0)
             {
                 EmptyText.Visibility = Visibility.Visible;
                 return;
             }
             EmptyText.Visibility = Visibility.Collapsed;
 
-            foreach (var track in tracks)
+            foreach (var track in _vm.Tracks)
             {
                 var artist = UserService.GetUserById(track.ArtistID)?.Nickname ?? "Неизвестный";
                 var fullPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "MusicLibrary", track.FilePath);
-                var item = new TrackItem(track.TrackID, track.Title, artist, FormatDuration(track.Duration), fullPath, track.CoverPath, track.Duration);
-                item.MouseLeftButtonDown += OnTrackClick;
+                var item = new TrackItem(track.TrackID, track.Title, artist,
+                    $"{track.Duration / 60}:{track.Duration % 60:D2}",
+                    fullPath, track.CoverPath, track.Duration);
+
+                item.MouseLeftButtonDown += (s, _) =>
+                {
+                    if (s is not TrackItem clicked) return;
+                    _vm.RegisterListenOnce();
+                    if (Window.GetWindow(this) is MainWindow mw)
+                        mw.PlayTrackFromContext(clicked, _trackItems);
+                };
+
                 _trackItems.Add(item);
                 TracksContainer.Children.Add(item);
             }
         }
 
-        private void OnTrackClick(object sender, MouseButtonEventArgs e)
+        private void RefreshUi()
         {
-            if (sender is not TrackItem clicked) return;
-            RegisterAlbumListen();
-            if (Window.GetWindow(this) is MainWindow mw)
-                mw.PlayTrackFromContext(clicked, _trackItems);
+            AlbumTitleText.Text = _vm.Title;
+            AlbumArtistText.Text = _vm.ArtistName;
+            AlbumStatsText.Text = _vm.StatsText;
+            SaveAlbumText.Text = _vm.SaveButtonText;
+            SaveAlbumBtn.Background = _vm.IsSaved
+                ? new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(42, 140, 84))
+                : new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(26, 26, 24));
+            TrySetCover(_vm.CoverPath);
         }
 
-        public void RegisterAlbumListen()
-        {
-            if (_album.AlbumId <= 0) return;
-            if (!Session.TryEnterPlaybackScope("album", _album.AlbumId)) return;
-            AlbumService.RegisterListen(Session.UserId, _album.AlbumId);
-            UpdateStats();
-        }
-
-        private void UpdateStats()
-        {
-            int tracks = _album.AlbumTracks?.Count ?? 0;
-            int saves = 0, listens = 0;
-            try { saves = AlbumService.GetSavedCount(_album.AlbumId); } catch { }
-            try { listens = AlbumService.GetListenCount(_album.AlbumId); } catch { }
-            AlbumStatsText.Text = $"{tracks} треков  •  ♥ {saves} сохранили  •  ► {listens} прослушали";
-        }
-
-        private void RefreshSaveButton()
-        {
-            bool saved = false;
-            try { saved = AlbumService.IsSaved(Session.UserId, _album.AlbumId); } catch { }
-            SaveAlbumText.Text = saved ? "✓ Сохранён" : "♥ Сохранить";
-            SaveAlbumBtn.Background = saved
-                ? new SolidColorBrush(Color.FromRgb(42, 140, 84))
-                : new SolidColorBrush(Color.FromRgb(26, 26, 24));
-        }
-
-        private void SaveAlbum_Click(object sender, MouseButtonEventArgs e)
-        {
-            bool saved = AlbumService.ToggleSave(Session.UserId, _album.AlbumId);
-            RefreshSaveButton();
-            UpdateStats();
-            MessageBox.Show(saved ? "Альбом сохранён в профиль." : "Альбом удалён из сохранённых.", "Rewind");
-        }
-
-        private void Back_Click(object sender, MouseButtonEventArgs e)
-        {
-            if (Window.GetWindow(this) is MainWindow mw) mw.NavigateBack();
-        }
+        private void SaveAlbum_Click(object sender, MouseButtonEventArgs e) => _vm.ToggleSaveCommand.Execute(null);
+        private void Back_Click(object sender, MouseButtonEventArgs e) => _vm.BackCommand.Execute(null);
 
         private void TrySetCover(string? coverPath)
         {
@@ -115,6 +96,6 @@ namespace Rewind.Tabs.UsersTabs
             catch { }
         }
 
-        private static string FormatDuration(int sec) => $"{sec / 60}:{sec % 60:D2}";
+        public void RegisterAlbumListen() => _vm.RegisterListenOnce();
     }
 }

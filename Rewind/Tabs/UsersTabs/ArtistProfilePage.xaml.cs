@@ -1,5 +1,7 @@
 using Rewind.Helpers;
 using Rewind.Contols;
+using Rewind.MVVM.Services;
+using Rewind.MVVM.ViewModels.Pages;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -12,8 +14,14 @@ using System.Windows.Media.Imaging;
 
 namespace Rewind.Tabs.UsersTabs
 {
+    /// <summary>
+    /// View поверх <see cref="ArtistProfileViewModel"/>.
+    /// VM хранит данные исполнителя, его треки и состояние подписки.
+    /// View — императивно рендерит TrackItem и карточки альбомов.
+    /// </summary>
     public partial class ArtistProfilePage : UserControl
     {
+        private readonly ArtistProfileViewModel _vm;
         private readonly int _artistId;
         private User? _artist;
         private List<Track> _publishedTracks = new();
@@ -24,6 +32,12 @@ namespace Rewind.Tabs.UsersTabs
         {
             InitializeComponent();
             _artistId = artistId;
+            _vm = new ArtistProfileViewModel(
+                artistId,
+                ServiceLocator.Resolve<INavigationService>(),
+                ServiceLocator.Resolve<IDialogService>());
+            DataContext = _vm;
+            _vm.Loaded += () => Dispatcher.Invoke(LoadPage);
             Loaded += (_, _) => LoadPage();
         }
 
@@ -40,18 +54,16 @@ namespace Rewind.Tabs.UsersTabs
             ArtistNameText.Text = _artist.Nickname;
 
             // Avatar
-            if (!string.IsNullOrEmpty(_artist.ProfilePhotoPath))
+            try
             {
-                try
-                {
-                    string fp = _artist.ProfilePhotoPath.Contains(":")
-                        ? _artist.ProfilePhotoPath
-                        : Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "AvatarsLibrary", _artist.ProfilePhotoPath);
-                    if (File.Exists(fp))
-                        HeroAvatarBrush.ImageSource = new BitmapImage(new Uri(fp));
-                }
-                catch { }
+                string avatarStoredPath = !string.IsNullOrEmpty(_artist.ProfilePhotoPath)
+                    ? _artist.ProfilePhotoPath
+                    : FileStorage.DefaultAvatar;
+                string fp = FileStorage.ResolveImagePath(avatarStoredPath, "AvatarsLibrary");
+                if (File.Exists(fp))
+                    HeroAvatarBrush.ImageSource = new BitmapImage(new Uri(fp));
             }
+            catch { }
 
             // Published tracks, ordered by popularity
             try
@@ -247,37 +259,20 @@ namespace Rewind.Tabs.UsersTabs
 
         private void Subscribe_Click(object sender, MouseButtonEventArgs e)
         {
-            if (_artist == null || _artistId == Session.UserId) return;
-
-            bool isFollowing = false;
-            try { isFollowing = SubscriptionService.IsFollowing(Session.UserId, _artistId); } catch { }
-
-            if (isFollowing)
+            // Делегируем VM. Toast уведомление остаётся здесь — это визуальное действие окна.
+            bool wasFollowing = _vm.IsFollowing;
+            _vm.ToggleSubscribeCommand.Execute(null);
+            if (!wasFollowing && Session.NotifNewTracksEnabled && Session.NotifPushEnabled
+                && _publishedTracks.FirstOrDefault() is { } recent
+                && _vm.Artist != null
+                && Window.GetWindow(this) is MainWindow mw)
             {
-                try { SubscriptionService.Unsubscribe(Session.UserId, _artistId); } catch { }
-            }
-            else
-            {
-                try { SubscriptionService.Subscribe(Session.UserId, _artistId); } catch { }
-
-                // Toast / badge notification on new subscription
-                if (Session.NotifNewTracksEnabled)
-                {
-                    var recent = _publishedTracks.FirstOrDefault();
-                    if (Session.NotifPushEnabled && recent != null && Window.GetWindow(this) is MainWindow mw)
-                        mw.ShowToastNotification(
-                            $"Подписка на {_artist.Nickname}!",
-                            $"Последний трек: «{recent.Title}»");
-                    else if (!Session.NotifPushEnabled)
-                        Session.NotificationCount++;
-                }
+                mw.ShowToastNotification(
+                    $"Подписка на {_vm.Artist.Nickname}!",
+                    $"Последний трек: «{recent.Title}»");
             }
 
-            // Refresh follower count in the hero stats line
-            int followerCount = 0;
-            try { followerCount = SubscriptionService.GetFollowers(_artistId).Count; } catch { }
-            ArtistStatsText.Text = $"{_publishedTracks.Count} треков  •  {followerCount} подписчиков";
-
+            ArtistStatsText.Text = _vm.StatsText;
             RefreshSubscribeBtn();
         }
 
@@ -296,11 +291,7 @@ namespace Rewind.Tabs.UsersTabs
         //  Navigation
         // ─────────────────────────────────────────────
 
-        private void Back_Click(object sender, MouseButtonEventArgs e)
-        {
-            if (Window.GetWindow(this) is MainWindow mw)
-                mw.NavigateBack();
-        }
+        private void Back_Click(object sender, MouseButtonEventArgs e) => _vm.BackCommand.Execute(null);
 
         // ─────────────────────────────────────────────
         //  Helpers

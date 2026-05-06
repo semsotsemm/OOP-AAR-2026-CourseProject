@@ -1,8 +1,8 @@
 using Rewind.Contols;
 using Rewind.Helpers;
+using Rewind.MVVM.ViewModels.Pages;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -10,88 +10,71 @@ using System.Windows.Media;
 
 namespace Rewind.Tabs.UsersTabs
 {
+    /// <summary>
+    /// View поверх <see cref="SearchPageViewModel"/>.
+    /// Вся логика поиска/фильтрации/сортировки — в VM.
+    /// Code-behind отвечает только за отрисовку TrackItem-контролов
+    /// (они пока не переведены на DataTemplate) и чипсов жанров.
+    /// </summary>
     public partial class SearchPage : UserControl
     {
+        private readonly SearchPageViewModel _vm = new();
         private readonly List<TrackItem> _trackItems = new();
-        private readonly HashSet<string> _selectedGenres = new(StringComparer.OrdinalIgnoreCase);
-
-        // Переменные для циклической сортировки
-        private string _sortMode = "title";
-        private static readonly string[] SortModes = { "title", "artist", "duration" };
-        private static readonly string[] SortLabels = { "Название", "Исполнитель", "Длительность" };
 
         public SearchPage()
         {
             InitializeComponent();
+            DataContext = _vm;
+
+            _vm.ResultsChanged += RenderTrackItems;
+            _vm.SelectedGenres.CollectionChanged += (_, _) => { BuildGenreFilters(); UpdateGenreDropdownLabel(); };
+
             BuildGenreFilters();
-            Render(string.Empty);
+            UpdateGenreDropdownLabel();
+            RenderTrackItems();
         }
 
-        // Обработчик изменения текста в поиске
-        private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
-            => Render(SearchBox.Text.Trim().ToLower());
+        // ─── Прокидываем ввод в VM ───
 
-        // ЦИКЛИЧЕСКАЯ СОРТИРОВКА (как в примере)
+        private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
+            => _vm.Query = SearchBox.Text;
+
         private void ToggleSort_Click(object sender, MouseButtonEventArgs e)
         {
-            // Определяем следующий индекс сортировки
-            int next = (Array.IndexOf(SortModes, _sortMode) + 1) % SortModes.Length;
-            _sortMode = SortModes[next];
-
-            // Обновляем текст в XAML (SortLabel)
-            if (SortLabel != null)
-            {
-                SortLabel.Text = SortLabels[next];
-            }
-
-            Render(SearchBox.Text.Trim().ToLower());
+            _vm.ToggleSortCommand.Execute(null);
+            if (SortLabel != null) SortLabel.Text = _vm.SortLabel;
         }
 
-        private void Render(string query)
+        private void ToggleGenreDropdown_Click(object sender, MouseButtonEventArgs e)
+            => GenreDropdownPopup.IsOpen = !GenreDropdownPopup.IsOpen;
+
+        private void ClearGenreFilters_Click(object sender, MouseButtonEventArgs e)
+        {
+            _vm.ClearGenresCommand.Execute(null);
+            GenreDropdownPopup.IsOpen = false;
+        }
+
+        // ─── Визуальный рендер (остаётся в View) ───
+
+        private void RenderTrackItems()
         {
             ResultsContainer.Children.Clear();
             _trackItems.Clear();
 
-            // Получаем треки и фильтруем по жанрам и поисковому запросу
-            var tracks = TrackService.GetPublishedTracks()
-                .Where(t => _selectedGenres.Count == 0 || _selectedGenres.Contains(NormalizeGenre(t.Genre)))
-                .Where(t => string.IsNullOrEmpty(query)
-                            || t.Title.ToLower().Contains(query)
-                            || (t.Artist?.Nickname?.ToLower().Contains(query) ?? false)
-                            || NormalizeGenre(t.Genre).ToLower().Contains(query))
-                .ToList();
-
-            // Применяем выбранную сортировку
-            tracks = _sortMode switch
-            {
-                "artist" => tracks.OrderBy(t => t.Artist?.Nickname).ToList(),
-                "duration" => tracks.OrderBy(t => t.Duration).ToList(),
-                _ => tracks.OrderBy(t => t.Title).ToList()
-            };
-
-            // Ограничиваем количество для производительности
-            var finalTracks = tracks.Take(40).ToList();
-
-            foreach (var track in finalTracks)
+            foreach (var track in _vm.Results)
             {
                 var fullPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "MusicLibrary", track.FilePath);
-
-                // Создаем элемент трека
                 var item = new TrackItem(
-                    track.TrackID,
-                    track.Title,
+                    track.TrackID, track.Title,
                     track.Artist?.Nickname ?? "—",
-                    FormatDuration(track.Duration),
-                    fullPath,
-                    track.CoverPath,
-                    track.Duration
-                );
+                    $"{track.Duration / 60}:{track.Duration % 60:D2}",
+                    fullPath, track.CoverPath, track.Duration);
 
-                // Добавляем логику клика для воспроизведения
-                item.MouseLeftButtonDown += (s, e) => {
+                item.MouseLeftButtonDown += (s, _) =>
+                {
                     var it = (TrackItem)s;
-                    if (Window.GetWindow(this) is MainWindow mainWindow)
-                        mainWindow.PlayTrackFromContext(it, _trackItems);
+                    if (Window.GetWindow(this) is MainWindow mw)
+                        mw.PlayTrackFromContext(it, _trackItems);
                 };
 
                 _trackItems.Add(item);
@@ -99,23 +82,12 @@ namespace Rewind.Tabs.UsersTabs
             }
         }
 
-        #region Жанры и Фильтры
-
         private void BuildGenreFilters()
         {
             GenreFilters.Children.Clear();
-            var genres = GenreService.DefaultGenres
-                .Concat(TrackService.GetPublishedTracks().Select(t => NormalizeGenre(t.Genre)))
-                .Where(g => !string.IsNullOrWhiteSpace(g))
-                .Distinct(StringComparer.OrdinalIgnoreCase)
-                .OrderBy(g => g)
-                .ToList();
-
-            GenreFilters.Children.Add(BuildGenreChip("Все", _selectedGenres.Count == 0));
-            foreach (var genre in genres)
-                GenreFilters.Children.Add(BuildGenreChip(genre, _selectedGenres.Contains(genre)));
-
-            UpdateGenreDropdownLabel();
+            GenreFilters.Children.Add(BuildGenreChip("Все", _vm.IsGenreActive("Все")));
+            foreach (var g in _vm.AvailableGenres)
+                GenreFilters.Children.Add(BuildGenreChip(g, _vm.IsGenreActive(g)));
         }
 
         private UIElement BuildGenreChip(string genre, bool active)
@@ -132,8 +104,7 @@ namespace Rewind.Tabs.UsersTabs
                 Tag = genre
             };
 
-            var stack = new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center };
-            stack.Children.Add(new TextBlock
+            border.Child = new TextBlock
             {
                 Text = genre,
                 FontSize = 12,
@@ -141,44 +112,17 @@ namespace Rewind.Tabs.UsersTabs
                 FontFamily = (FontFamily)Application.Current.Resources["HeaderFont"],
                 Foreground = active ? Brushes.White : (Brush)Application.Current.Resources["TextSecondary"],
                 VerticalAlignment = VerticalAlignment.Center
-            });
-            border.Child = stack;
-
-            border.MouseLeftButtonDown += (_, _) =>
-            {
-                if (genre == "Все") _selectedGenres.Clear();
-                else if (_selectedGenres.Contains(genre)) _selectedGenres.Remove(genre);
-                else _selectedGenres.Add(genre);
-                BuildGenreFilters();
-                Render(SearchBox.Text.Trim().ToLower());
             };
+
+            border.MouseLeftButtonDown += (_, _) => _vm.ToggleGenreCommand.Execute(genre);
             return border;
-        }
-
-        private void ToggleGenreDropdown_Click(object sender, MouseButtonEventArgs e)
-            => GenreDropdownPopup.IsOpen = !GenreDropdownPopup.IsOpen;
-
-        private void ClearGenreFilters_Click(object sender, MouseButtonEventArgs e)
-        {
-            _selectedGenres.Clear();
-            BuildGenreFilters();
-            Render(SearchBox.Text.Trim().ToLower());
-            GenreDropdownPopup.IsOpen = false;
         }
 
         private void UpdateGenreDropdownLabel()
         {
-            GenreDropdownLabel.Text = _selectedGenres.Count == 0
-                ? "Все жанры"
-                : _selectedGenres.Count <= 3
-                    ? string.Join(", ", _selectedGenres.OrderBy(g => g))
-                    : $"Выбрано жанров: {_selectedGenres.Count}";
+            if (GenreDropdownLabel != null) GenreDropdownLabel.Text = _vm.GenreDropdownLabel;
         }
 
-        #endregion
-
-        private static string NormalizeGenre(string? genre) => string.IsNullOrWhiteSpace(genre) ? "Other" : genre.Trim();
-        private static string FormatDuration(int sec) => $"{sec / 60}:{sec % 60:D2}";
         public IReadOnlyList<TrackItem> GetTrackItems() => _trackItems;
     }
 }

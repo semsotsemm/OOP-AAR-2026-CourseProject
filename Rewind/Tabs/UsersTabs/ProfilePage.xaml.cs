@@ -1,5 +1,7 @@
 ﻿using Microsoft.Win32;
 using Rewind.Helpers;
+using Rewind.MVVM.Services;
+using Rewind.MVVM.ViewModels.Pages;
 using Rewind.Pages;
 using System.IO;
 using System.Linq;
@@ -11,8 +13,18 @@ using System.Windows.Media.Imaging;
 
 namespace Rewind.Controls
 {
+    /// <summary>
+    /// View-слой над <see cref="ProfilePageViewModel"/>. VM держит:
+    ///   • активную вкладку, загрузку плейлистов/лайков/альбомов;
+    ///   • команды SaveProfile, Logout, UploadTrack, SelectTheme;
+    ///   • смену аватара/email/пароля.
+    /// Code-behind отвечает только за императивный рендер карточек
+    /// (плейлисты/треки) и фотопикеры — переписывать XAML карточек в DataTemplate
+    /// без потери визуала рискованно.
+    /// </summary>
     public partial class ProfilePage : UserControl
     {
+        private readonly ProfilePageViewModel _vm;
         private string? _selectedCoverPath;
         private string? _selectedAudioPath;
         private string tempAvatarPath = Session.AvatarPath;
@@ -22,6 +34,29 @@ namespace Rewind.Controls
         public ProfilePage()
         {
             InitializeComponent();
+            _vm = new ProfilePageViewModel(ServiceLocator.Resolve<IDialogService>());
+            DataContext = _vm;
+
+            _vm.OverviewChanged += () => Dispatcher.Invoke(LoadOverviewSection);
+            _vm.LikedChanged += () => Dispatcher.Invoke(LoadLikedSection);
+            _vm.PlaylistsChanged += () => Dispatcher.Invoke(LoadPlaylistsSection);
+            _vm.AlbumsChanged += () => Dispatcher.Invoke(LoadAlbumsSection);
+            _vm.LogoutRequested += DoLogout;
+            _vm.ThemeSelected += theme =>
+            {
+                ApplyTheme(theme + ".xaml");
+                ThemeChanged?.Invoke(this, EventArgs.Empty);
+            };
+            _vm.TrackUploadFinished += () => Dispatcher.Invoke(() =>
+            {
+                NewTrackName.Clear();
+                AudioFileName.Text = "Файл не выбран";
+                _selectedAudioPath = null;
+                _selectedCoverPath = null;
+            });
+
+            Unloaded += (_, _) => _vm.Dispose();
+
             // Studio is now a separate sidebar nav item — always hide it in profile
             TabArtistStudio.Visibility = Visibility.Collapsed;
 
@@ -59,26 +94,16 @@ namespace Rewind.Controls
             });
         }
 
+        // Все вкладки делегируют переключение в VM (которая сама подгружает данные).
+        // View лишь обновляет визуал активной вкладки.
         private void TabOverview_Click(object sender, RoutedEventArgs e)
-        {
-            LoadOverviewSection();
-            SetActiveTab(TabOverview, PanelOverview);
-        }
+        { _vm.SelectTabCommand.Execute("overview"); SetActiveTab(TabOverview, PanelOverview); }
         private void TabLiked_Click(object sender, RoutedEventArgs e)
-        {
-            LoadLikedSection();
-            SetActiveTab(TabLiked, PanelLiked);
-        }
+        { _vm.SelectTabCommand.Execute("liked"); SetActiveTab(TabLiked, PanelLiked); }
         private void TabPlaylists_Click(object sender, RoutedEventArgs e)
-        {
-            LoadPlaylistsSection();
-            SetActiveTab(TabPlaylists, PanelPlaylists);
-        }
+        { _vm.SelectTabCommand.Execute("playlists"); SetActiveTab(TabPlaylists, PanelPlaylists); }
         private void TabAlbums_Click(object sender, RoutedEventArgs e)
-        {
-            LoadAlbumsSection();
-            SetActiveTab(TabAlbums, PanelAlbums);
-        }
+        { _vm.SelectTabCommand.Execute("albums"); SetActiveTab(TabAlbums, PanelAlbums); }
         private void TabSettings_Click(object sender, RoutedEventArgs e) => SetActiveTab(TabSettings, PanelSettings);
 
         private void EditBtn_MouseDown(object sender, MouseButtonEventArgs e)
@@ -108,56 +133,35 @@ namespace Rewind.Controls
 
         private void SaveProfile_Click(object sender, RoutedEventArgs e)
         {
-            if (!string.IsNullOrWhiteSpace(EditNameInput.Text) && !string.IsNullOrWhiteSpace(EditEmailInput.Text))
-            {
-                Session.UserName = EditNameInput.Text;
-                Session.Email = EditEmailInput.Text;
-                Session.Password = EditPassInput.Password;
-                Session.HidedPassword = new string('●', Session.Password.Length);
-                Session.AvatarPath = tempAvatarPath;
-
-                MessageBox.Show("Данные аккаунта успешно изменены");
-                EditOverlay.Visibility = Visibility.Collapsed;
-            }
-            else
-            {
-                MessageBox.Show("Ошибка ввода, проверь данные");
-            }
+            // Прокидываем значения PasswordBox и текстбоксов в VM перед командой
+            _vm.EditName = EditNameInput.Text;
+            _vm.EditEmail = EditEmailInput.Text;
+            _vm.EditPassword = EditPassInput.Password;
+            _vm.EditAvatarPath = tempAvatarPath;
+            _vm.SaveProfileCommand.Execute(null);
+            EditOverlay.Visibility = Visibility.Collapsed;
         }
 
         private void LogOut_MouseDown(object sender, MouseButtonEventArgs e)
+            => _vm.LogoutCommand.Execute(null);
+
+        /// <summary>Обработчик события LogoutRequested от VM.</summary>
+        private void DoLogout()
         {
-            Registration registration_page = new Registration();
-            registration_page.Show();
-
-           Session.FlushToDatabase();
-
-            Application.Current.MainWindow = registration_page;
-
+            var registration = new Registration();
+            registration.Show();
+            Session.FlushToDatabase();
+            Application.Current.MainWindow = registration;
             Window.GetWindow(this)?.Close();
         }
 
         private void ThemeClassic_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            if (sender is Border clickedBorder)
-            {
-                UpdateActiveCard(clickedBorder);
-
-                string themeFile = clickedBorder.Name switch
-                {
-                    "ThemeClassic" => "ThemeClassic.xaml",
-                    "ThemePink" => "ThemePink.xaml",
-                    "ThemeMidnight" => "ThemeMidnight.xaml",
-                    "ThemeLavender" => "ThemeLavender.xaml",
-                    _ => "ThemeClassic.xaml"
-                };
-
-                // Сохраняем выбранную тему в Session
-                Session.ActiveTheme = clickedBorder.Name;
-
-                ApplyTheme(themeFile);
-            }
-            ThemeChanged?.Invoke(this, EventArgs.Empty);
+            if (sender is not Border clickedBorder) return;
+            UpdateActiveCard(clickedBorder);
+            // VM сохраняет выбранную тему в Session и поднимает ThemeSelected,
+            // на который мы подписаны в конструкторе → ApplyTheme + ThemeChanged.
+            _vm.SelectThemeCommand.Execute(clickedBorder.Name);
         }
 
         /// <summary>Восстанавливает активную карточку темы согласно Session.ActiveTheme.</summary>
@@ -254,54 +258,12 @@ namespace Rewind.Controls
         }
         private void UploadTrack_Click(object sender, RoutedEventArgs e)
         {
-            string trackName = NewTrackName.Text;
-
-            // Проверка: выбраны ли все данные
-            if (string.IsNullOrWhiteSpace(trackName) || string.IsNullOrEmpty(_selectedAudioPath))
-            {
-                MessageBox.Show("Введите название и выберите аудиофайл!");
-                return;
-            }
-
-            try
-            {
-                string uniqueFileName = FileStorage.CopyTrackAudio(_selectedAudioPath, trackName);
-                string destPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "MusicLibrary", uniqueFileName);
-
-                int duration = GetTrackDuration(destPath);
-
-                string? finalCoverPath = null;
-                if (!string.IsNullOrWhiteSpace(_selectedCoverPath))
-                {
-                    finalCoverPath = FileStorage.CopyTrackCover(_selectedCoverPath);
-                }
-
-                string genre = (GenreSelector.SelectedItem as System.Windows.Controls.ComboBoxItem)?.Content?.ToString() ?? "";
-
-                Track newTrack = new Track
-                {
-                    Title = trackName,
-                    FilePath = uniqueFileName,
-                    CoverPath = finalCoverPath,
-                    Duration = duration,
-                    UploadDate = DateTime.UtcNow,
-                    ArtistID = Session.UserId,
-                    Genre = genre,
-                    PublishStatus = "Pending"
-                };
-
-                TrackService.AddTrack(newTrack);
-                MessageBox.Show("Трек отправлен на проверку администратору. После одобрения он появится на платформе.", "Заявка отправлена");
-
-                // Очистка полей после успеха
-                NewTrackName.Clear();
-                AudioFileName.Text = "Файл не выбран";
-                _selectedAudioPath = null;
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Ошибка: {ex.Message}");
-            }
+            // Прокидываем поля формы в VM и зовём команду
+            _vm.NewTrackName = NewTrackName.Text;
+            _vm.NewTrackAudioPath = _selectedAudioPath;
+            _vm.NewTrackCoverPath = _selectedCoverPath;
+            _vm.NewTrackGenre = (GenreSelector.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "";
+            _vm.UploadTrackCommand.Execute(null);
         }
 
         private int GetTrackDuration(string path)

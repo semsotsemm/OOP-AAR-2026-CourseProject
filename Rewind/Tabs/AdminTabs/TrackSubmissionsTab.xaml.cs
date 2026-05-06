@@ -110,15 +110,22 @@ namespace Rewind.Tabs.AdminTabs
                     Margin = new Thickness(16, 0, 0, 0),
                     VerticalAlignment = VerticalAlignment.Top
                 };
-                if (!string.IsNullOrEmpty(track.CoverPath) && File.Exists(track.CoverPath))
+                if (!string.IsNullOrEmpty(track.CoverPath))
                 {
                     try
                     {
-                        coverBorder.Child = new Image
+                        string fullCoverPath = FileStorage.ResolveImagePath(track.CoverPath);
+                        if (File.Exists(fullCoverPath))
                         {
-                            Source = new BitmapImage(new Uri(track.CoverPath)),
-                            Stretch = Stretch.UniformToFill
-                        };
+                            var bmp = new BitmapImage();
+                            bmp.BeginInit();
+                            bmp.UriSource = new Uri(fullCoverPath);
+                            bmp.DecodePixelWidth = 80;
+                            bmp.CacheOption = BitmapCacheOption.OnLoad;
+                            bmp.EndInit();
+                            bmp.Freeze();
+                            coverBorder.Child = new Image { Source = bmp, Stretch = Stretch.UniformToFill };
+                        }
                     }
                     catch { }
                 }

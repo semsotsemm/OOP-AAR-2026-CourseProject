@@ -456,10 +456,24 @@ namespace Rewind.Tabs.UsersTabs
             TrackStatusText.Foreground     = new SolidColorBrush(fgC);
             TrackStatusText.Text           = stText;
 
-            TrackDetailPlays.Text = (track.Statistics?.PlayCount  ?? 0).ToString("N0");
-            TrackDetailLikes.Text = (track.Statistics?.LikesCount ?? 0).ToString("N0");
-
-            DrawChart(track.TrackID);
+            if (track.PublishStatus == "Rejected")
+            {
+                RejectionReasonPanel.Visibility = Visibility.Visible;
+                RejectionReasonText.Text = string.IsNullOrWhiteSpace(track.RejectionReason)
+                    ? "Причина не указана"
+                    : track.RejectionReason;
+                TrackStatsGrid.Visibility   = Visibility.Collapsed;
+                TrackChartBorder.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                RejectionReasonPanel.Visibility = Visibility.Collapsed;
+                TrackStatsGrid.Visibility       = Visibility.Visible;
+                TrackChartBorder.Visibility     = Visibility.Visible;
+                TrackDetailPlays.Text = (track.Statistics?.PlayCount  ?? 0).ToString("N0");
+                TrackDetailLikes.Text = (track.Statistics?.LikesCount ?? 0).ToString("N0");
+                DrawChart(track.TrackID);
+            }
         }
 
         private void BackToDefault_Click(object sender, MouseButtonEventArgs e)

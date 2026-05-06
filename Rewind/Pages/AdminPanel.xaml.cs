@@ -1,4 +1,5 @@
 ﻿using Rewind.Helpers;
+using Rewind.MVVM.ViewModels.Pages;
 using Rewind.Tabs.AdminTabs;
 using System;
 using System.Linq;
@@ -10,14 +11,31 @@ using System.Windows.Threading;
 
 namespace Rewind.Pages
 {
+    /// <summary>
+    /// View поверх <see cref="AdminPanelViewModel"/>. VM держит активную вкладку,
+    /// счётчики бейджей и команды. View отвечает за создание UserControl-вкладок
+    /// и визуальную подсветку кнопок.
+    /// </summary>
     public partial class AdminPanel : Window
     {
+        private readonly AdminPanelViewModel _vm = new();
         private Button? _activeBtn;
         private readonly DispatcherTimer _refreshTimer;
 
         public AdminPanel()
         {
             InitializeComponent();
+            DataContext = _vm;
+
+            _vm.TabChanged += SwitchTabContent;
+            _vm.ThemeChanged += theme =>
+            {
+                ApplyThemeFile(theme + ".xaml");
+                MarkActiveThemeCircle();
+                SwitchTabContent(_vm.ActiveTab); // пересоздаём UserControl, чтобы подхватить DynamicResource
+            };
+            _vm.LogoutRequested += DoLogout;
+
             ApplyCurrentTheme();
             ShowOverview();
             _activeBtn = BtnOverview;
@@ -36,87 +54,46 @@ namespace Rewind.Pages
 
         private void RefreshTimer_Tick(object? sender, EventArgs e)
         {
-            UpdateRequestsBadge();
-            UpdateSubmissionsBadge();
-            UpdateReportsBadge();
-            if (AdminContentArea.Content is IAdminTab tab)
-                tab.Refresh();
+            _vm.RefreshBadges();
+            ApplyBadgesToUi();
+            if (AdminContentArea.Content is IAdminTab tab) tab.Refresh();
         }
 
-        private void UpdateRequestsBadge()
+        /// <summary>Переносит значения VM в существующие XAML-элементы бейджей.</summary>
+        private void ApplyBadgesToUi()
         {
-            try
-            {
-                int count = ArtistRequestService.PendingCount();
-                RequestsBadgeText.Text = count > 99 ? "99+" : count.ToString();
-                RequestsBadge.Visibility = count > 0 ? Visibility.Visible : Visibility.Collapsed;
-            }
-            catch { }
-        }
-
-        private void UpdateSubmissionsBadge()
-        {
-            try
-            {
-                int count = TrackService.GetPendingTracks().Count;
-                SubmissionsBadgeText.Text = count > 99 ? "99+" : count.ToString();
-                SubmissionsBadge.Visibility = count > 0 ? Visibility.Visible : Visibility.Collapsed;
-            }
-            catch { }
-        }
-
-        private void UpdateReportsBadge()
-        {
-            try
-            {
-                int count = TrackReportService.PendingCount();
-                ReportsBadgeText.Text = count > 99 ? "99+" : count.ToString();
-                ReportsBadge.Visibility = count > 0 ? Visibility.Visible : Visibility.Collapsed;
-            }
-            catch { }
+            RequestsBadgeText.Text = _vm.RequestsBadgeText;
+            RequestsBadge.Visibility = _vm.RequestsBadgeVisible ? Visibility.Visible : Visibility.Collapsed;
+            SubmissionsBadgeText.Text = _vm.SubmissionsBadgeText;
+            SubmissionsBadge.Visibility = _vm.SubmissionsBadgeVisible ? Visibility.Visible : Visibility.Collapsed;
+            ReportsBadgeText.Text = _vm.ReportsBadgeText;
+            ReportsBadge.Visibility = _vm.ReportsBadgeVisible ? Visibility.Visible : Visibility.Collapsed;
         }
 
         // ── Navigation ──
 
-        private void ShowOverview_Click(object sender, RoutedEventArgs e)
-        {
-            ShowOverview();
-            HighlightBtn(BtnOverview);
-        }
+        private void ShowOverview_Click(object sender, RoutedEventArgs e)    => _vm.SelectTabCommand.Execute("overview");
+        private void ShowUsers_Click(object sender, RoutedEventArgs e)       => _vm.SelectTabCommand.Execute("users");
+        private void ShowTracks_Click(object sender, RoutedEventArgs e)      => _vm.SelectTabCommand.Execute("tracks");
+        private void ShowSubmissions_Click(object sender, RoutedEventArgs e) => _vm.SelectTabCommand.Execute("submissions");
+        private void ShowRequests_Click(object sender, RoutedEventArgs e)    => _vm.SelectTabCommand.Execute("requests");
+        private void ShowReports_Click(object sender, RoutedEventArgs e)     => _vm.SelectTabCommand.Execute("reports");
 
-        private void ShowUsers_Click(object sender, RoutedEventArgs e)
-        {
-            AdminContentArea.Content = new UsersTab();
-            HighlightBtn(BtnUsers);
-        }
+        private void ShowOverview() => SwitchTabContent("overview");
 
-        private void ShowTracks_Click(object sender, RoutedEventArgs e)
+        /// <summary>Меняет UserControl в области контента согласно ActiveTab из VM.</summary>
+        private void SwitchTabContent(string tab)
         {
-            AdminContentArea.Content = new TracksTab();
-            HighlightBtn(BtnTracks);
-        }
-
-        private void ShowSubmissions_Click(object sender, RoutedEventArgs e)
-        {
-            AdminContentArea.Content = new TrackSubmissionsTab();
-            HighlightBtn(BtnSubmissions);
-        }
-
-        private void ShowRequests_Click(object sender, RoutedEventArgs e)
-        {
-            AdminContentArea.Content = new ArtistRequestsTab();
-            HighlightBtn(BtnRequests);
-        }
-
-        private void ShowReports_Click(object sender, RoutedEventArgs e)
-        {
-            AdminContentArea.Content = new TrackReportsTab();
-            HighlightBtn(BtnReports);
-        }
-
-        private void ShowOverview()
-        {
-            AdminContentArea.Content = new OverviewTab();
+            (AdminContentArea.Content, var btn) = tab switch
+            {
+                "users"       => ((object)new UsersTab(), BtnUsers),
+                "tracks"      => (new TracksTab(), BtnTracks),
+                "submissions" => (new TrackSubmissionsTab(), BtnSubmissions),
+                "requests"    => (new ArtistRequestsTab(), BtnRequests),
+                "reports"     => (new TrackReportsTab(), BtnReports),
+                _             => (new OverviewTab(), BtnOverview),
+            };
+            HighlightBtn(btn);
         }
 
         private void HighlightBtn(Button btn)
@@ -165,17 +142,8 @@ namespace Rewind.Pages
         {
             if (sender is Border b && b.Tag is string themeFile)
             {
-                ApplyThemeFile(themeFile);
-                Session.ActiveTheme = themeFile.Replace(".xaml", "");
-                MarkActiveThemeCircle();
-
-                // Пересоздаём текущую вкладку, чтобы она подхватила новые DynamicResource
-                if (_activeBtn == BtnOverview) ShowOverview();
-                else if (_activeBtn == BtnUsers) AdminContentArea.Content = new UsersTab();
-                else if (_activeBtn == BtnTracks) AdminContentArea.Content = new TracksTab();
-                else if (_activeBtn == BtnSubmissions) AdminContentArea.Content = new TrackSubmissionsTab();
-                else if (_activeBtn == BtnRequests) AdminContentArea.Content = new ArtistRequestsTab();
-                else if (_activeBtn == BtnReports) AdminContentArea.Content = new TrackReportsTab();
+                // VM меняет Session.ActiveTheme и поднимает ThemeChanged → перерисовка
+                _vm.SelectThemeCommand.Execute(themeFile.Replace(".xaml", ""));
             }
         }
 
@@ -217,7 +185,9 @@ namespace Rewind.Pages
 
         // ── Log out ──
 
-        private void LogOut_Click(object sender, MouseButtonEventArgs e)
+        private void LogOut_Click(object sender, MouseButtonEventArgs e) => _vm.LogoutCommand.Execute(null);
+
+        private void DoLogout()
         {
             _refreshTimer.Stop();
             var reg = new Registration();

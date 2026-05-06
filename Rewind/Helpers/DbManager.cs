@@ -553,8 +553,11 @@ namespace Rewind.Helpers
         public static Track? GetMostPopularTrack()
         {
             using var db = new AppDbContext();
-
-            return db.Tracks.Include(t => t.Artist).Include(t => t.Statistics).OrderByDescending(t => (t.Statistics.PlayCount + (t.Statistics.LikesCount * 10))).FirstOrDefault();
+            return db.Tracks
+                .Where(t => t.PublishStatus == "Published")
+                .Include(t => t.Artist).Include(t => t.Statistics)
+                .OrderByDescending(t => t.Statistics.PlayCount + t.Statistics.LikesCount * 10)
+                .FirstOrDefault();
         }
         public static void IncrementPlayCount(int trackId)
         {
@@ -628,21 +631,23 @@ namespace Rewind.Helpers
             return true;
         }
 
-        public static bool BanUnbanTrack(int trackId)
-        {
-            using var db = new AppDbContext();
-            var track = db.Tracks.Find(trackId);
-            if (track == null) return false;
-            track.PublishStatus = track.PublishStatus == "Banned" ? "Published" : "Banned";
-            db.SaveChanges();
-            return true;
-        }
+        public static bool BanUnbanTrack(int trackId) => DeleteTrack(trackId);
 
         public static bool DeleteTrack(int id)
         {
             using var db = new AppDbContext();
             var track = db.Tracks.FirstOrDefault(t => t.TrackID == id);
             if (track == null) return false;
+
+            // Удаляем все связанные записи перед удалением трека (FK-ограничения)
+            db.Favorites.RemoveRange(db.Favorites.Where(f => f.TrackID == id));
+            db.PlaylistTracks.RemoveRange(db.PlaylistTracks.Where(pt => pt.TrackID == id));
+            db.History.RemoveRange(db.History.Where(h => h.TrackID == id));
+            db.AlbumTracks.RemoveRange(db.AlbumTracks.Where(at => at.TrackId == id));
+            db.TrackReports.RemoveRange(db.TrackReports.Where(r => r.TrackId == id));
+            var stat = db.Statistics.Find(id);
+            if (stat != null) db.Statistics.Remove(stat);
+
             db.Tracks.Remove(track);
             db.SaveChanges();
             return true;
@@ -1288,14 +1293,15 @@ namespace Rewind.Helpers
 
         public static bool BanTrackFromReport(int reportId)
         {
-            using var db = new AppDbContext();
-            var report = db.TrackReports.Find(reportId);
-            if (report == null) return false;
-            report.Status = "Banned";
-            var track = db.Tracks.Find(report.TrackId);
-            if (track != null) track.PublishStatus = "Banned";
-            db.SaveChanges();
-            return true;
+            int trackId;
+            using (var db = new AppDbContext())
+            {
+                var report = db.TrackReports.Find(reportId);
+                if (report == null) return false;
+                trackId = report.TrackId;
+            }
+            // TrackService.DeleteTrack удаляет трек и все связанные записи, включая этот репорт
+            return TrackService.DeleteTrack(trackId);
         }
 
         public static bool Dismiss(int reportId)

@@ -6,6 +6,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Rewind.Helpers;
+using Rewind.MVVM.Services;
 using Rewind.Pages;
 using Rewind.Tabs.UsersTabs;
 
@@ -155,11 +156,12 @@ namespace Rewind.Contols
             }
         }
 
-        // Переход на страницу исполнителя по клику на никнейм
+        // Переход на страницу исполнителя по клику на никнейм (через NavigationService)
         private void ArtistName_Click(object sender, MouseButtonEventArgs e)
         {
-            e.Handled = true;   // не проваливаемся до TrackCard_MouseLeftButtonDown
+            e.Handled = true;
             if (string.IsNullOrWhiteSpace(ArtistName)) return;
+            // INavigationService не имеет ArtistByName, поэтому пока пользуемся MainWindow напрямую
             if (Window.GetWindow(this) is MainWindow mw)
                 mw.OpenArtistProfileByName(ArtistName);
         }
@@ -377,8 +379,7 @@ namespace Rewind.Contols
                 if (wasFollowing)
                 {
                     SubscriptionService.Unsubscribe(Session.UserId, artistId);
-                    MessageBox.Show($"Вы отписались от {artistName}.", "Rewind",
-                        MessageBoxButton.OK, MessageBoxImage.Information);
+                    ServiceLocator.TryResolve<IDialogService>()?.Info($"Вы отписались от {artistName}.");
                 }
                 else
                 {
@@ -405,14 +406,13 @@ namespace Rewind.Contols
                         }
                     }
 
-                    MessageBox.Show($"Вы подписались на {artistName}! Вы будете получать уведомления о новых треках.",
-                        "Rewind", MessageBoxButton.OK, MessageBoxImage.Information);
+                    ServiceLocator.TryResolve<IDialogService>()?.Info(
+                        $"Вы подписались на {artistName}! Вы будете получать уведомления о новых треках.");
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Ошибка подписки: {ex.Message}", "Rewind",
-                    MessageBoxButton.OK, MessageBoxImage.Error);
+                ServiceLocator.TryResolve<IDialogService>()?.Error($"Ошибка подписки: {ex.Message}");
             }
         }
 
@@ -421,32 +421,23 @@ namespace Rewind.Contols
             if (PlaylistContext == null) return;
             if (PlaylistContext.OwnerID != Session.UserId) return;
 
-            var confirm = MessageBox.Show(
-                $"Удалить трек «{TrackName}» из плейлиста «{PlaylistContext.Title}»?",
-                "Rewind",
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Question);
-
-            if (confirm != MessageBoxResult.Yes) return;
+            var dialog = ServiceLocator.TryResolve<IDialogService>();
+            if (dialog != null && !dialog.Confirm(
+                $"Удалить трек «{TrackName}» из плейлиста «{PlaylistContext.Title}»?")) return;
 
             bool removed = Session.RemoveTrackFromPlaylist(PlaylistContext, TrackId);
             if (!removed)
-                MessageBox.Show("Не удалось удалить трек из плейлиста.", "Rewind",
-                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                dialog?.Error("Не удалось удалить трек из плейлиста.");
         }
 
         private void AddTrackToPlaylist_Click(object sender, RoutedEventArgs e)
         {
             if (sender is not MenuItem item || item.Tag is not Playlist playlist) return;
 
+            var dialog = ServiceLocator.TryResolve<IDialogService>();
             bool added = Session.AddTrackToPlaylist(playlist, TrackId);
-            if (!added)
-            {
-                MessageBox.Show("Трек уже есть в этом плейлисте.", "Rewind", MessageBoxButton.OK, MessageBoxImage.Information);
-                return;
-            }
-
-            MessageBox.Show($"Трек добавлен в плейлист \"{playlist.Title}\".", "Rewind", MessageBoxButton.OK, MessageBoxImage.Information);
+            if (!added) { dialog?.Info("Трек уже есть в этом плейлисте."); return; }
+            dialog?.Info($"Трек добавлен в плейлист \"{playlist.Title}\".");
         }
 
         private void AddToPlaylist_Click(object sender, MouseButtonEventArgs e)

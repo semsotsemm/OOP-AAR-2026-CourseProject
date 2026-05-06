@@ -1,10 +1,12 @@
 using Rewind.Helpers;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
 
 namespace Rewind.Tabs.AdminTabs
 {
@@ -21,6 +23,7 @@ namespace Rewind.Tabs.AdminTabs
             public int LikesCount { get; set; }
             public string Duration { get; set; } = "";
             public string PublishStatus { get; set; } = "Published";
+            public string? CoverPath { get; set; }
         }
 
         private List<TrackRow> _allTracks = new();
@@ -42,7 +45,7 @@ namespace Rewind.Tabs.AdminTabs
 
                 var tracks = db.Tracks
                     .Join(db.Users, t => t.ArtistID, u => u.UserId,
-                          (t, u) => new { t.TrackID, t.Title, t.Duration, t.UploadDate, t.ArtistID, ArtistName = u.Nickname, t.PublishStatus })
+                          (t, u) => new { t.TrackID, t.Title, t.Duration, t.UploadDate, t.ArtistID, ArtistName = u.Nickname, t.PublishStatus, t.CoverPath })
                     .OrderByDescending(t => t.TrackID)
                     .ToList();
 
@@ -58,7 +61,8 @@ namespace Rewind.Tabs.AdminTabs
                         PlayCount = statsMap.TryGetValue(t.TrackID, out var st) ? st.PlayCount : 0,
                         LikesCount = statsMap.TryGetValue(t.TrackID, out var st2) ? st2.LikesCount : 0,
                         Duration = FormatDuration(t.Duration),
-                        PublishStatus = t.PublishStatus
+                        PublishStatus = t.PublishStatus,
+                        CoverPath = t.CoverPath
                     }).ToList();
 
                 RenderTracks(_allTracks);
@@ -81,8 +85,7 @@ namespace Rewind.Tabs.AdminTabs
 
             foreach (var track in tracks)
             {
-                var rowBg = track.PublishStatus == "Banned" ? new SolidColorBrush(Color.FromArgb(40, 220, 50, 50))
-                           : track.PublishStatus == "Pending" ? new SolidColorBrush(Color.FromArgb(40, 255, 200, 0))
+                var rowBg = track.PublishStatus == "Pending" ? new SolidColorBrush(Color.FromArgb(40, 255, 200, 0))
                            : track.Index % 2 == 0 ? bgHover : bgCard;
 
                 var rowBorder = new Border
@@ -112,8 +115,41 @@ namespace Rewind.Tabs.AdminTabs
                 };
                 Grid.SetColumn(indexText, 0);
 
-                // Title
-                var titleStack = new StackPanel { Margin = new Thickness(8, 0, 8, 0), VerticalAlignment = VerticalAlignment.Center };
+                // Title (cover + name + duration)
+                var titleGrid = new Grid { Margin = new Thickness(8, 0, 8, 0), VerticalAlignment = VerticalAlignment.Center };
+                titleGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(44) });
+                titleGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+
+                var coverBorder = new Border
+                {
+                    Width = 40, Height = 40,
+                    CornerRadius = new CornerRadius(6),
+                    Background = GetBrush("BgCardHover", Color.FromRgb(240, 239, 235)),
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Margin = new Thickness(0, 0, 8, 0)
+                };
+                if (!string.IsNullOrEmpty(track.CoverPath))
+                {
+                    try
+                    {
+                        string fullPath = FileStorage.ResolveImagePath(track.CoverPath);
+                        if (File.Exists(fullPath))
+                        {
+                            var bmp = new BitmapImage();
+                            bmp.BeginInit();
+                            bmp.UriSource = new Uri(fullPath);
+                            bmp.DecodePixelWidth = 40;
+                            bmp.CacheOption = BitmapCacheOption.OnLoad;
+                            bmp.EndInit();
+                            bmp.Freeze();
+                            coverBorder.Child = new Image { Source = bmp, Stretch = Stretch.UniformToFill };
+                        }
+                    }
+                    catch { }
+                }
+                Grid.SetColumn(coverBorder, 0);
+
+                var titleStack = new StackPanel { VerticalAlignment = VerticalAlignment.Center };
                 var titleText = new TextBlock
                 {
                     Text = track.Title,
@@ -129,6 +165,10 @@ namespace Rewind.Tabs.AdminTabs
                 titleStack.Children.Add(titleText);
                 titleStack.Children.Add(durationText);
                 Grid.SetColumn(titleStack, 1);
+
+                titleGrid.Children.Add(coverBorder);
+                titleGrid.Children.Add(titleStack);
+                Grid.SetColumn(titleGrid, 1);
 
                 // Artist
                 var artistText = new TextBlock
@@ -169,28 +209,24 @@ namespace Rewind.Tabs.AdminTabs
                 };
                 Grid.SetColumn(likesText, 5);
 
-                // Ban button
+                // Ban button (ban = permanent delete, no unban)
                 var banBtn = new Button
                 {
-                    Content = track.PublishStatus == "Banned" ? "Разбан" : "Бан",
+                    Content = "Забанить",
                     Tag = track.TrackId,
                     FontSize = 11, FontWeight = FontWeights.SemiBold,
                     Padding = new Thickness(10, 5, 10, 5),
                     Cursor = System.Windows.Input.Cursors.Hand,
                     BorderThickness = new Thickness(0),
-                    Background = track.PublishStatus == "Banned"
-                        ? new SolidColorBrush(Color.FromRgb(220, 252, 231))
-                        : new SolidColorBrush(Color.FromRgb(254, 226, 226)),
-                    Foreground = track.PublishStatus == "Banned"
-                        ? new SolidColorBrush(Color.FromRgb(21, 128, 61))
-                        : new SolidColorBrush(Color.FromRgb(185, 28, 28)),
+                    Background = new SolidColorBrush(Color.FromRgb(254, 226, 226)),
+                    Foreground = new SolidColorBrush(Color.FromRgb(185, 28, 28)),
                     VerticalAlignment = VerticalAlignment.Center
                 };
                 banBtn.Click += BanBtn_Click;
                 Grid.SetColumn(banBtn, 6);
 
                 grid.Children.Add(indexText);
-                grid.Children.Add(titleStack);
+                grid.Children.Add(titleGrid);
                 grid.Children.Add(artistText);
                 grid.Children.Add(dateText);
                 grid.Children.Add(playsText);

@@ -2,6 +2,7 @@
 using System.Windows;
 using System.Windows.Media.Imaging;
 using Rewind.Helpers;
+using Rewind.MVVM.Services;
 using System.ComponentModel;
 using System.Windows.Controls;
 
@@ -165,8 +166,7 @@ namespace Rewind.Contols
         private void PlayerInfo_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
             e.Handled = true;
-            if (Application.Current?.MainWindow is Rewind.MainWindow mw)
-                mw.OpenNowPlaying("Плеер");
+            ServiceLocator.TryResolve<IPlayerService>()?.OpenNowPlaying("Плеер");
         }
 
         /// <summary>Клик по имени исполнителя — открывает его страницу.</summary>
@@ -175,21 +175,19 @@ namespace Rewind.Contols
             e.Handled = true;
             string artistName = CurrentArtist;
             if (string.IsNullOrWhiteSpace(artistName)) return;
+            // Навигация на артиста по имени всё ещё есть в MainWindow; вызов через локатор
             if (Application.Current?.MainWindow is Rewind.MainWindow mw)
                 mw.OpenArtistProfileByName(artistName);
         }
 
         private void LikeBtn_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
-            // Активный трек возьмём через логику MainWindow
-            if (Application.Current?.MainWindow is Rewind.MainWindow mw)
-            {
-                var track = mw.CurrentTrack;
-                if (track == null) return;
-                bool liked = Session.ToggleLike(track.TrackId);
-                LikeIconBrush.ImageSource = IconAssets.LoadBitmap(
-                    liked ? "like_filled.png" : "like_outline.png");
-            }
+            var player = ServiceLocator.TryResolve<IPlayerService>();
+            var track = player?.CurrentTrack;
+            if (track == null) return;
+            bool liked = Session.ToggleLike(track.TrackId);
+            LikeIconBrush.ImageSource = IconAssets.LoadBitmap(
+                liked ? "like_filled.png" : "like_outline.png");
         }
 
         /// <summary>Обновляет миниатюрную обложку в плеере.</summary>
