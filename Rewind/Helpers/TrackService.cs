@@ -5,9 +5,7 @@ namespace Rewind.Helpers
     public static class TrackService
     {
         public static event Action<int, int>? OnPlayCountUpdated;
-        /// <summary>artistId, artistName, trackTitle — файер при загрузке нового трека</summary>
         public static event Action<int, string, string>? NewTrackUploaded;
-        /// <summary>Файерит NewTrackUploaded. Вызывать из любого места вместо прямого Invoke.</summary>
         public static void NotifyNewTrackUploaded(int artistId, string artistName, string trackTitle)
             => NewTrackUploaded?.Invoke(artistId, artistName, trackTitle);
 

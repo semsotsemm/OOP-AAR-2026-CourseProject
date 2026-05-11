@@ -6,12 +6,6 @@ using System.Windows.Input;
 
 namespace Rewind.MVVM.ViewModels.Pages
 {
-    /// <summary>
-    /// VM студии исполнителя. Держит активную вкладку, форму загрузки трека
-    /// и форму создания/редактирования альбома. Коллекции собственных треков
-    /// и альбомов остаются вычисляемыми «по требованию» в View, но команды
-    /// (UploadTrack, CreateAlbum) живут здесь.
-    /// </summary>
     public sealed class ArtistStudioViewModel : ViewModelBase
     {
         private readonly IDialogService _dialog;
@@ -24,7 +18,6 @@ namespace Rewind.MVVM.ViewModels.Pages
             SelectTabCommand = new RelayCommand<string>(name => { if (name != null) ActiveTab = name; });
         }
 
-        // ─── Активная вкладка ─────────────────────
 
         private string _activeTab = "upload";
         public string ActiveTab
@@ -34,7 +27,6 @@ namespace Rewind.MVVM.ViewModels.Pages
         }
         public event Action? TabChanged;
 
-        // ─── Форма загрузки трека ─────────────────
 
         public string NewTrackTitle { get; set; } = "";
         public string NewTrackGenre { get; set; } = "";
@@ -46,7 +38,6 @@ namespace Rewind.MVVM.ViewModels.Pages
         public ICommand CreateAlbumCommand { get; }
         public ICommand SelectTabCommand { get; }
 
-        // ─── Форма альбома ────────────────────────
 
         public string AlbumName { get; set; } = "";
         public string AlbumGenre { get; set; } = "";
@@ -54,8 +45,6 @@ namespace Rewind.MVVM.ViewModels.Pages
         public List<int> AlbumSelectedTrackIds { get; set; } = new();
         public int? EditingAlbumId { get; set; }
         public event Action? AlbumSaved;
-
-        // ─── Реализация ───────────────────────────
 
         private void UploadTrack()
         {

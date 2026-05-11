@@ -71,9 +71,10 @@ namespace Rewind.Tabs.UsersTabs
 
             foreach (var track in _vm.Tracks)
             {
-                string durStr = $"{track.Duration / 60}:{track.Duration % 60:D2}";
+                string durStr = track.Duration > 0 ? $"{track.Duration / 60}:{track.Duration % 60:D2}" : "";
                 string fullPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "MusicLibrary", track.FilePath);
-                var artist = UserService.GetUserById(track.ArtistID)?.Nickname ?? "Неизвестный";
+                // track.Artist уже загружен через .Include(t => t.Artist) в TrackService
+                var artist = track.Artist?.Nickname ?? "Неизвестный";
                 var item = new TrackItem(track.TrackID, track.Title, artist, durStr, fullPath, track.CoverPath, track.Duration);
                 item.PlayClicked += (_, _) => RefreshFeaturedUi();
                 _trackItems.Add(item);
@@ -168,8 +169,8 @@ namespace Rewind.Tabs.UsersTabs
             { mw.TogglePlayPause(); return; }
 
             string fullPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "MusicLibrary", _vm.FeaturedTrack.FilePath);
-            string durStr = $"{_vm.FeaturedTrack.Duration / 60}:{_vm.FeaturedTrack.Duration % 60:D2}";
-            var artistName = UserService.GetUserById(_vm.FeaturedTrack.ArtistID)?.Nickname ?? "";
+            string durStr = _vm.FeaturedTrack.Duration > 0 ? $"{_vm.FeaturedTrack.Duration / 60}:{_vm.FeaturedTrack.Duration % 60:D2}" : "";
+            var artistName = _vm.FeaturedTrack.Artist?.Nickname ?? "";
 
             var featuredItem = new TrackItem(
                 _vm.FeaturedTrack.TrackID, _vm.FeaturedTrack.Title, artistName,

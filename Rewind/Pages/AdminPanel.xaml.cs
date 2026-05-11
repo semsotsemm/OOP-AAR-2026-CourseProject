@@ -11,11 +11,6 @@ using System.Windows.Threading;
 
 namespace Rewind.Pages
 {
-    /// <summary>
-    /// View поверх <see cref="AdminPanelViewModel"/>. VM держит активную вкладку,
-    /// счётчики бейджей и команды. View отвечает за создание UserControl-вкладок
-    /// и визуальную подсветку кнопок.
-    /// </summary>
     public partial class AdminPanel : Window
     {
         private readonly AdminPanelViewModel _vm = new();
@@ -32,7 +27,7 @@ namespace Rewind.Pages
             {
                 ApplyThemeFile(theme + ".xaml");
                 MarkActiveThemeCircle();
-                SwitchTabContent(_vm.ActiveTab); // пересоздаём UserControl, чтобы подхватить DynamicResource
+                SwitchTabContent(_vm.ActiveTab);
             };
             _vm.LogoutRequested += DoLogout;
 
@@ -41,7 +36,6 @@ namespace Rewind.Pages
             _activeBtn = BtnOverview;
             MarkActiveThemeCircle();
 
-            // Реальное время: обновляем текущую вкладку каждые 5 секунд
             _refreshTimer = new DispatcherTimer
             {
                 Interval = TimeSpan.FromSeconds(5)

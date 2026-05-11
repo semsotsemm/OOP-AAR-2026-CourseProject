@@ -36,5 +36,32 @@ namespace Rewind.Helpers
             }
             catch { return 0; }
         }
+
+        /// <summary>Батч-версия: количество прослушиваний для списка плейлистов одним подключением.</summary>
+        public static Dictionary<int, int> GetListenerCounts(IEnumerable<int> playlistIds)
+        {
+            var ids = playlistIds.ToList();
+            if (ids.Count == 0) return new Dictionary<int, int>();
+            try
+            {
+                using var db = new AppDbContext();
+                var oldUnique = db.PlaylistListens
+                    .Where(l => ids.Contains(l.PlaylistId))
+                    .GroupBy(l => l.PlaylistId)
+                    .Select(g => new { Id = g.Key, Count = g.Count() })
+                    .ToDictionary(x => x.Id, x => x.Count);
+                var playEvents = db.PlaylistPlayEvents
+                    .Where(l => ids.Contains(l.PlaylistId))
+                    .GroupBy(l => l.PlaylistId)
+                    .Select(g => new { Id = g.Key, Count = g.Count() })
+                    .ToDictionary(x => x.Id, x => x.Count);
+
+                var result = new Dictionary<int, int>(ids.Count);
+                foreach (var id in ids)
+                    result[id] = oldUnique.GetValueOrDefault(id, 0) + playEvents.GetValueOrDefault(id, 0);
+                return result;
+            }
+            catch { return new Dictionary<int, int>(); }
+        }
     }
 }

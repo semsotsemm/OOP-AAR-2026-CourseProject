@@ -420,7 +420,7 @@ namespace Rewind.Controls
         }
 
         private static string FormatDuration(int sec)
-            => $"{sec / 60}:{sec % 60:D2}";
+            => sec > 0 ? $"{sec / 60}:{sec % 60:D2}" : "";
 
         /// <summary>Rich card for a liked track with cover, duration and play button.</summary>
         private static UIElement MakeLikedTrackCard(

@@ -36,7 +36,6 @@ namespace Rewind.Helpers
         public DateTime UploadDate { get; set; } = DateTime.UtcNow;
         public int ArtistID { get; set; }
         public string? Genre { get; set; }
-        /// <summary>Published / Pending / Rejected / Banned</summary>
         public string PublishStatus { get; set; } = "Published";
         public string? RejectionReason { get; set; }
         public User Artist { get; set; }

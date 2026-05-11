@@ -16,7 +16,6 @@ namespace Rewind.Helpers
             string safe = SanitizeFileName(trackName);
             if (string.IsNullOrWhiteSpace(safe)) safe = "track";
 
-            // Оставляем MusicLibrary для совместимости со всем существующим проигрыванием.
             string relative = CopyFile(sourcePath, "MusicLibrary", keepOriginalName: false, forcedBaseName: safe, forcedExtension: extension);
             return Path.GetFileName(relative);
         }

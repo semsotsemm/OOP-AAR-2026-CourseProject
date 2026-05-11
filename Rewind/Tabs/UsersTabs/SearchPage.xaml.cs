@@ -67,7 +67,7 @@ namespace Rewind.Tabs.UsersTabs
                 var item = new TrackItem(
                     track.TrackID, track.Title,
                     track.Artist?.Nickname ?? "—",
-                    $"{track.Duration / 60}:{track.Duration % 60:D2}",
+                    track.Duration > 0 ? $"{track.Duration / 60}:{track.Duration % 60:D2}" : "",
                     fullPath, track.CoverPath, track.Duration);
 
                 item.MouseLeftButtonDown += (s, _) =>

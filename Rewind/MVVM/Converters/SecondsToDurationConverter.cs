@@ -8,8 +8,8 @@ namespace Rewind.MVVM.Converters
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (value is int s) return $"{s / 60}:{s % 60:D2}";
-            return "0:00";
+            if (value is int s && s > 0) return $"{s / 60}:{s % 60:D2}";
+            return "—";
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

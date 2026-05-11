@@ -50,7 +50,7 @@ namespace Rewind.Tabs.UsersTabs
                 var artist = UserService.GetUserById(track.ArtistID)?.Nickname ?? "Неизвестный";
                 var fullPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "MusicLibrary", track.FilePath);
                 var item = new TrackItem(track.TrackID, track.Title, artist,
-                    $"{track.Duration / 60}:{track.Duration % 60:D2}",
+                    track.Duration > 0 ? $"{track.Duration / 60}:{track.Duration % 60:D2}" : "",
                     fullPath, track.CoverPath, track.Duration);
 
                 item.MouseLeftButtonDown += (s, _) =>

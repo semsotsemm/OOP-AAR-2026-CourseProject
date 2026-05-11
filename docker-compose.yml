@@ -20,4 +20,4 @@ services:
 volumes:
   rewind-pgdata:
 
-#docker exec -it rewind-postgres psql -U postgres -d rewinddb
+#docker exec -it rewind-postgres psql -U postgres -d rewinddbс

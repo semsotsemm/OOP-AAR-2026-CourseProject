@@ -4,14 +4,23 @@ namespace Rewind.Helpers
 {
     public class AppDbContext : DbContext
     {
+        private static volatile bool _schemaInitialized;
+        private static readonly object _initLock = new();
+
         public AppDbContext()
         {
-            Database.EnsureCreated();
-            EnsureArtistRequestsTable();
-            EnsureTrackSchemaUpdates();
-            EnsureAlbumsTables();
-            EnsureSubscriptionTimestamp();
-            SeedDefaultAdmin();
+            if (_schemaInitialized) return;
+            lock (_initLock)
+            {
+                if (_schemaInitialized) return;
+                Database.EnsureCreated();
+                EnsureArtistRequestsTable();
+                EnsureTrackSchemaUpdates();
+                EnsureAlbumsTables();
+                EnsureSubscriptionTimestamp();
+                SeedDefaultAdmin();
+                _schemaInitialized = true;
+            }
         }
 
         private void EnsureTrackSchemaUpdates()
@@ -122,7 +131,6 @@ namespace Rewind.Helpers
 
             }
         }
-
         public DbSet<Role> Roles { get; set; }
         public DbSet<User> Users { get; set; }
         public DbSet<ArtistRequest> ArtistRequests { get; set; }
@@ -187,7 +195,6 @@ namespace Rewind.Helpers
             }
             catch
             {
-                // Игнорируем на старте, чтобы не ронять приложение.
             }
         }
     }

@@ -5,7 +5,6 @@ using System.Windows.Input;
 
 namespace Rewind.MVVM.ViewModels.Entities
 {
-    /// <summary>ViewModel-обёртка для Album (карточки на главной / профиле).</summary>
     public class AlbumViewModel : ObservableObject
     {
         public Album Model { get; }
@@ -33,7 +32,6 @@ namespace Rewind.MVVM.ViewModels.Entities
         private void Open()
         {
             var nav = ServiceLocator.TryResolve<INavigationService>();
-            // Плотная сущность для страницы — с треками и навигацией; для списка достаточно model
             var full = AlbumService.GetById(AlbumId) ?? Model;
             nav?.OpenAlbumDetails(full);
         }

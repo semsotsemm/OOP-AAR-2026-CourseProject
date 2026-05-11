@@ -5,14 +5,6 @@ using Rewind.MVVM.ViewModels.Pages;
 
 namespace Rewind.Pages
 {
-    /// <summary>
-    /// Тонкий View-слой поверх <see cref="RegistrationViewModel"/>.
-    /// Вся бизнес-логика (валидация, регистрация, вход) живёт в VM.
-    /// Code-behind нужен только чтобы:
-    ///   1) Прокидывать значение PasswordBox.Password в VM (т.к. SecureString
-    ///      нельзя биндить напрямую по соображениям безопасности);
-    ///   2) Обновлять видимость панелей ролей — чисто визуальная логика.
-    /// </summary>
     public partial class Registration : Window
     {
         private readonly RegistrationViewModel _vm;
@@ -25,8 +17,6 @@ namespace Rewind.Pages
             _vm.PropertyChanged += (_, _) => UpdateUI();
             UpdateUI();
         }
-
-        // ─── Команды: собираем текст из TextBox/PasswordBox и зовём VM ───
 
         private void RegisterButton_Click(object sender, RoutedEventArgs e)
         {
@@ -68,7 +58,6 @@ namespace Rewind.Pages
             _vm.LoginCommand.Execute(null);
         }
 
-        // ─── Переключение режима/роли ───
 
         private void RoleSelector_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
@@ -83,7 +72,6 @@ namespace Rewind.Pages
             else _vm.SwitchToRegisterCommand.Execute(null);
         }
 
-        /// <summary>Чисто визуальная реакция на IsLoginMode / SelectedRoleId из VM.</summary>
         private void UpdateUI()
         {
             if (LoginModeBtn == null || RegModeBtn == null) return;

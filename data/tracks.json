@@ -1,0 +1,207 @@
+{
+  "_readme": [
+    "Положи этот файл в директорию с музыкой под именем tracks.json",
+    "Замени значения 'file' и 'cover' на реальные имена файлов в этой директории",
+    "Секция 'albums' позволяет задать отдельную обложку для альбома (необязательно)"
+  ],
+
+  "tracks": [
+
+    { "title": "О любви",
+      "file": "Чиж_и_Ко_-_О_любви_forhub_Soundcloud_to_mp3.mp3",
+      "cover": "C:\\Users\\untermensh\\Downloads\\images\\cover1.png",
+      "artist": "Чиж",
+      "genre": "Русский рок",
+      "album": "Лети" },
+
+    { "title": "Капитал",
+      "file": "Ляпис_Трубецкой_-_Капитал_forhub_Soundcloud_to_mp3.mp3",
+      "cover": "C:\\Users\\untermensh\\Downloads\\images\\cover2.png",
+      "artist": "Ляпис Трубецкой",
+      "genre": "Ска-панк",
+      "album": "Манифест" },
+
+    { "title": "Как будто мы с тобой",
+      "file": "ирина_круг_и_а_брянцев_Как_Будто_Мы_С_Тобой_forhub_Soundcloud_to_mp3.mp3",
+      "cover": "C:\\Users\\untermensh\\Downloads\\images\\cover3.png",
+      "artist": "Ирина Круг",
+      "genre": "Шансон",
+      "album": "Прости" },
+
+    { "title": "Блондинки и Брюнетки",
+      "file": "Жанна_Фриске_-_Блондинки_и_Брюнетки_forhub_Soundcloud_to_mp3.mp3",
+      "cover": "C:\\Users\\untermensh\\Downloads\\images\\cover4.png",
+      "artist": "Жанна Фриске",
+      "genre": "Поп",
+      "album": "Жанна" },
+
+    { "title": "Набери мой номер",
+      "file": "MOLLY_-_Набери_мой_номер_Vintage_1988_год_CCCР_forhub_Soundcloud_to_mp3.mp3",
+      "cover": "C:\\Users\\untermensh\\Downloads\\images\\cover5.png",
+      "artist": "Vintage",
+      "genre": "Синти-поп",
+      "album": "Москва" },
+
+    { "title": "Шоколадный заяц",
+      "file": "Шоколадный_Заяц_forhub_Soundcloud_to_mp3.mp3",
+      "cover": "C:\\Users\\untermensh\\Downloads\\images\\cover6.png",
+      "artist": "Волк",
+      "genre": "Детская музыка",
+      "album": "Сказки леса" },
+
+    { "title": "Батарейка",
+      "file": "Жуки_-_Батарейка_forhub_Soundcloud_to_mp3.mp3",
+      "cover": "C:\\Users\\untermensh\\Downloads\\images\\cover7.png",
+      "artist": "Жуки",
+      "genre": "Русский рок",
+      "album": "Шла Саша по шоссе" },
+
+    { "title": "Я куплю тебе дом",
+      "file": "Лесоповал_-_Я_куплю_тебе_дом_forhub_Soundcloud_to_mp3.mp3",
+      "cover": "C:\\Users\\untermensh\\Downloads\\images\\cover8.png",
+      "artist": "Лесоповал",
+      "genre": "Шансон",
+      "album": "Я куплю тебе дом" },
+
+    { "title": "Взгляни на небо",
+      "file": "Многоточие_и_Дыши_-_Взгляни_на_небо_forhub_Soundcloud_to_mp3.mp3",
+      "cover": "C:\\Users\\untermensh\\Downloads\\images\\cover9.png",
+      "artist": "Многоточие",
+      "genre": "Русский рэп",
+      "album": "Свежее дыхание улиц" },
+
+    { "title": "Too Far Gone",
+      "file": "Too_Far_Gone_forhub_Soundcloud_to_mp3.mp3",
+      "cover": "C:\\Users\\untermensh\\Downloads\\images\\cover10.png",
+      "artist": "WiFi Skeleton",
+      "genre": "Electronic",
+      "album": "Ghost Notes" },
+
+    { "title": "Девочка пай",
+      "file": "Михаил_Круг_-_Девочка_Пай_forhub_Soundcloud_to_mp3.mp3",
+      "cover": "C:\\Users\\untermensh\\Downloads\\images\\cover11.png",
+      "artist": "Михал Круг",
+      "genre": "Шансон",
+      "album": "Владимирский централ" },
+
+    { "title": "Фраер",
+      "file": "Михаил_Круг_-_Фраер_forhub_Soundcloud_to_mp3.mp3",
+      "cover": "C:\\Users\\untermensh\\Downloads\\images\\cover11.png",
+      "artist": "Михал Круг",
+      "genre": "Шансон",
+      "album": "Владимирский централ" },
+
+    { "title": "Город Сочи",
+      "file": "Город_Сочи_forhub_Soundcloud_to_mp3.mp3",
+      "cover": "C:\\Users\\untermensh\\Downloads\\images\\cover12.png",
+      "artist": "Тимофей Трофимов",
+      "genre": "Поп",
+      "album": "Привет Сочи" },
+
+    { "title": "Мой номер 245",
+      "file": "Гарик_Кричевский_-_Мой_номер_245_forhub_Soundcloud_to_mp3.mp3",
+      "cover": "C:\\Users\\untermensh\\Downloads\\images\\cover14.png",
+      "artist": "Гарик Кричевский",
+      "genre": "Шансон",
+      "album": "Мой номер 245" },
+
+    { "title": "Исповедь",
+      "file": "Михаил_Круг_-_Исповедь_forhub_Soundcloud_to_mp3.mp3",
+      "cover": "C:\\Users\\untermensh\\Downloads\\images\\cover14.png",
+      "artist": "Михаил Круг",
+      "genre": "Шансон",
+      "album": "Исповедь" },
+
+    { "title": "mirrors demo",
+      "file": "mirrors_demo_slowed_forhub_soundcloud_to_mp3.mp3",
+      "cover": "C:\\Users\\untermensh\\Downloads\\images\\cover15.png",
+      "artist": "Overtonight",
+      "genre": "Дрим-поп",
+      "album": "Nocturne" },
+
+    { "title": "bedrott",
+      "file": "bedrott_forhub_Soundcloud_to_mp3.mp3",
+      "cover": "C:\\Users\\untermensh\\Downloads\\images\\cover16.png",
+      "artist": "Duskydemise",
+      "genre": "Darkwave",
+      "album": "Decay" },
+
+    { "title": "Кайен",
+      "file": "Кайен_forhub_Soundcloud_to_mp3.mp3",
+      "cover": "C:\\Users\\untermensh\\Downloads\\images\\cover17.png",
+      "artist": "Валентин Стрыкало",
+      "genre": "Инди-поп",
+      "album": "Дипломат" },
+
+    { "title": "Так Гріє",
+      "file": "Так_гріє_forhub_Soundcloud_to_mp3.mp3",
+      "cover": "C:\\Users\\untermensh\\Downloads\\images\\cover17.png",
+      "artist": "Валентин Стрыкало",
+      "genre": "Инди-поп",
+      "album": "Дипломат" },
+
+    { "title": "Наше лето",
+      "file": "Наше_лето_forhub_Soundcloud_to_mp3.mp3",
+      "cover": "C:\\Users\\untermensh\\Downloads\\images\\cover17.png",
+      "artist": "Валентин Стрыкало",
+      "genre": "Инди-поп",
+      "album": "Дипломат" },
+
+    { "title": "Улица Сталеваров",
+      "file": "Улица_Сталеваров_forhub_Soundcloud_to_mp3.mp3",
+      "cover": "C:\\Users\\untermensh\\Downloads\\images\\cover18.png",
+      "artist": "Валентин Стрыкало",
+      "genre": "Инди-поп",
+      "album": "Неприятности" },
+
+    { "title": "92",
+      "file": "92_forhub_Soundcloud_to_mp3.mp3",
+      "cover": "C:\\Users\\untermensh\\Downloads\\images\\cover18.png",
+      "artist": "Валентин Стрыкало",
+      "genre": "Инди-поп",
+      "album": "Неприятности" },
+
+    { "title": "Офисный стиляга",
+      "file": "Офисный_Стиляга_forhub_Soundcloud_to_mp3.mp3",
+      "cover": "C:\\Users\\untermensh\\Downloads\\images\\cover18.png",
+      "artist": "Валентин Стрыкало",
+      "genre": "Инди-поп",
+      "album": "Неприятности" },
+
+    { "title": "Песня для девочек",
+      "file": "Песня_для_девочек_forhub_Soundcloud_to_mp3.mp3",
+      "cover": "C:\\Users\\untermensh\\Downloads\\images\\cover18.png",
+      "artist": "Валентин Стрыкало",
+      "genre": "Инди-поп",
+      "album": "Неприятности" },
+
+    { "title": "Знаешь, Таня",
+      "file": "Знаешь_Таня_forhub_Soundcloud_to_mp3.mp3",
+      "cover": "C:\\Users\\untermensh\\Downloads\\images\\cover20.png",
+      "artist": "Валентин Стрыкало",
+      "genre": "Инди-поп",
+      "album": "Светлана" },
+
+    { "title": "Светлана",
+      "file": "Валентин_Стрыкало_-_Светлана_forhub_Soundcloud_to_mp3.mp3",
+      "cover": "C:\\Users\\untermensh\\Downloads\\images\\cover20.png",
+      "artist": "Валентин Стрыкало",
+      "genre": "Инди-поп",
+      "album": "Светлана" }
+
+  ],
+
+  "albums": [
+    { "title": "Владимирский централ",
+      "cover": "C:\\Users\\untermensh\\Downloads\\images\\cover11.png" },
+
+    { "title": "Дипломат",
+      "cover": "C:\\Users\\untermensh\\Downloads\\images\\cover17.png" },
+
+    { "title": "Неприятности",
+      "cover": "C:\\Users\\untermensh\\Downloads\\images\\cover18.png" },
+
+    { "title": "Светлана",
+      "cover": "C:\\Users\\untermensh\\Downloads\\images\\cover20.png" }
+  ]
+}

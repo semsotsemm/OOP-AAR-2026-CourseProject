@@ -47,5 +47,18 @@ namespace Rewind.Helpers
             using var db = new AppDbContext();
             return db.SavedPlaylists.Count(sp => sp.PlaylistId == playlistId);
         }
+
+        /// <summary>Батч-версия: количество сохранений для списка плейлистов одним запросом.</summary>
+        public static Dictionary<int, int> GetSavedCounts(IEnumerable<int> playlistIds)
+        {
+            var ids = playlistIds.ToList();
+            if (ids.Count == 0) return new Dictionary<int, int>();
+            using var db = new AppDbContext();
+            return db.SavedPlaylists
+                .Where(sp => ids.Contains(sp.PlaylistId))
+                .GroupBy(sp => sp.PlaylistId)
+                .Select(g => new { Id = g.Key, Count = g.Count() })
+                .ToDictionary(x => x.Id, x => x.Count);
+        }
     }
 }

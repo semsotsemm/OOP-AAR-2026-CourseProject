@@ -6,15 +6,6 @@ using System.Windows.Input;
 
 namespace Rewind.MVVM.ViewModels.Pages
 {
-    /// <summary>
-    /// VM главной страницы. Держит:
-    ///   • приветствие;
-    ///   • избранный трек дня (FeaturedTrack) и его статистику воспроизведений;
-    ///   • популярные плейлисты;
-    ///   • список треков в основном фиде.
-    /// События OnFeaturedChanged / OnPlaylistsChanged используются View-слоем,
-    /// чтобы перерисовывать TrackItem/AlbumCard контролы (они пока императивные).
-    /// </summary>
     public sealed class MainPageViewModel : ViewModelBase, IDisposable
     {
         public MainPageViewModel()
@@ -61,7 +52,8 @@ namespace Rewind.MVVM.ViewModels.Pages
             get
             {
                 if (_featuredTrack == null) return "";
-                var name = UserService.GetUserById(_featuredTrack.ArtistID)?.Nickname ?? "Неизвестен";
+                // Artist уже включён в GetMostPopularTrack через .Include
+                var name = _featuredTrack.Artist?.Nickname ?? "Неизвестен";
                 return $"{name} · {_featuredTrack.Statistics?.PlayCount ?? 0} прослушиваний";
             }
         }
@@ -128,16 +120,27 @@ namespace Rewind.MVVM.ViewModels.Pages
             }
             catch { return; }
 
-            var counts = all.ToDictionary(p => p.PlaylistID, p =>
-            {
-                int s = 0, l = 0;
-                try { s = SavedPlaylistService.GetSavedCount(p.PlaylistID); } catch { }
-                try { l = PlaylistListenService.GetListenerCount(p.PlaylistID); } catch { }
-                return (s, l);
-            });
+            if (all.Count == 0) { PlaylistsChanged?.Invoke(); return; }
 
-            foreach (var p in all.OrderByDescending(p => counts[p.PlaylistID].s + counts[p.PlaylistID].l).Take(8))
-                PopularPlaylists.Add((p, counts[p.PlaylistID].s, counts[p.PlaylistID].l));
+            // ⚡ Один батч-запрос вместо N запросов в цикле — критично для скорости главной.
+            var ids = all.Select(p => p.PlaylistID).ToList();
+            Dictionary<int, int> savedMap, listenMap;
+            try { savedMap = SavedPlaylistService.GetSavedCounts(ids); }
+            catch { savedMap = new Dictionary<int, int>(); }
+            try { listenMap = PlaylistListenService.GetListenerCounts(ids); }
+            catch { listenMap = new Dictionary<int, int>(); }
+
+            foreach (var p in all
+                         .OrderByDescending(p => savedMap.GetValueOrDefault(p.PlaylistID, 0)
+                                               + listenMap.GetValueOrDefault(p.PlaylistID, 0))
+                         .Take(8))
+            {
+                PopularPlaylists.Add((
+                    p,
+                    savedMap.GetValueOrDefault(p.PlaylistID, 0),
+                    listenMap.GetValueOrDefault(p.PlaylistID, 0)
+                ));
+            }
 
             PlaylistsChanged?.Invoke();
         }

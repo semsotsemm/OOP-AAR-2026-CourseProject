@@ -78,9 +78,9 @@ namespace Rewind.Tabs.UsersTabs
 
             foreach (var track in _vm.Results)
             {
-                string durStr = $"{track.Duration / 60}:{track.Duration % 60:D2}";
+                string durStr = track.Duration > 0 ? $"{track.Duration / 60}:{track.Duration % 60:D2}" : "";
                 string fullPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "MusicLibrary", track.FilePath);
-                var artist = UserService.GetUserById(track.ArtistID)?.Nickname ?? "—";
+                var artist = track.Artist?.Nickname ?? "—";
 
                 var item = new TrackItem(track.TrackID, track.Title, artist, durStr, fullPath, track.CoverPath, track.Duration);
 

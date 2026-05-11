@@ -2,11 +2,6 @@ using System.Windows.Input;
 
 namespace Rewind.MVVM.Core
 {
-    /// <summary>
-    /// Команда без параметра. Хранит делегаты Execute/CanExecute и
-    /// пробрасывает CanExecuteChanged в CommandManager, чтобы WPF
-    /// автоматически перезапрашивал состояние кнопок.
-    /// </summary>
     public sealed class RelayCommand : ICommand
     {
         private readonly Action _execute;
@@ -30,10 +25,7 @@ namespace Rewind.MVVM.Core
 
         public void RaiseCanExecuteChanged() => CommandManager.InvalidateRequerySuggested();
     }
-
-    /// <summary>
-    /// Команда с параметром типа T. Значения null допустимы только если T — ссылочный тип.
-    /// </summary>
+    
     public sealed class RelayCommand<T> : ICommand
     {
         private readonly Action<T?> _execute;

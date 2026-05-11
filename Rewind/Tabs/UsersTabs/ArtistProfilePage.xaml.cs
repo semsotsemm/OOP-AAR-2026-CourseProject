@@ -299,6 +299,6 @@ namespace Rewind.Tabs.UsersTabs
 
         public IReadOnlyList<TrackItem> GetTrackItems() => _trackItems;
 
-        private static string FormatDuration(int sec) => $"{sec / 60}:{sec % 60:D2}";
+        private static string FormatDuration(int sec) => sec > 0 ? $"{sec / 60}:{sec % 60:D2}" : "";
     }
 }

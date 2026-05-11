@@ -21,13 +21,13 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <!-- ==================== SIDEBAR ==================== -->
+        <!-- слайдер -->
         <Border Grid.Column="0" Grid.RowSpan="2"
                 Background="{DynamicResource BgSidebar}"
                 BorderBrush="{DynamicResource BorderColor}" BorderThickness="0,0,1,0">
             <DockPanel LastChildFill="False">
 
-                <!-- Логотип -->
+                <!-- лого -->
                 <StackPanel DockPanel.Dock="Top" Margin="24,26,24,24">
                     <StackPanel Orientation="Horizontal">
                         <Border Width="32" Height="32" CornerRadius="16" Margin="0,0,10,0">
@@ -39,7 +39,7 @@
                     </StackPanel>
                 </StackPanel>
 
-                <!-- Навигация -->
+                <!-- навигация -->
                 <StackPanel DockPanel.Dock="Top" Margin="12,0,12,0">
                     <TextBlock Text="МЕНЮ" FontSize="10" FontWeight="Bold"
                                Foreground="{DynamicResource TextMuted}" Margin="12,0,0,10"/>
@@ -120,7 +120,6 @@
                         </StackPanel>
                     </Button>
 
-                    <!-- ПРОФИЛЬ — активный -->
                     <Button x:Name="BtnProfile" Style="{DynamicResource ActiveNavButtonStyle}" Click="ShowProfile_Click">
                         <StackPanel Orientation="Horizontal">
                             <Border Width="30" Height="30" CornerRadius="7" Background="{DynamicResource AccentColor}" Margin="0,0,10,0">
@@ -141,7 +140,6 @@
                         </StackPanel>
                     </Button>
 
-                    <!-- СТУДИЯ — только для исполнителей -->
                     <Button x:Name="BtnStudio" Style="{StaticResource NavButtonStyle}" Click="ShowStudio_Click" Visibility="Collapsed">
                         <StackPanel Orientation="Horizontal">
                             <Border Width="30" Height="30" CornerRadius="7" Background="{DynamicResource BgMain}" Margin="0,0,10,0">
@@ -170,7 +168,6 @@
                             Visibility="Collapsed"
                             Panel.ZIndex="50"/>
 
-        <!-- Тоаст-уведомление (правый нижний угол) -->
         <Border x:Name="ToastBorder"
                 Grid.Column="1" Grid.Row="0"
                 VerticalAlignment="Bottom" HorizontalAlignment="Right"
