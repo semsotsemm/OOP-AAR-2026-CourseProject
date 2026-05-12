@@ -53,7 +53,7 @@ namespace Rewind.Tabs.UsersTabs
             foreach (var track in _vm.Tracks)
             {
                 var artist = UserService.GetUserById(track.ArtistID)?.Nickname ?? "Неизвестный артист";
-                var fullPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "MusicLibrary", track.FilePath);
+                var fullPath = Path.Combine(Rewind.Helpers.FileStorage.DataRoot, "MusicLibrary", track.FilePath);
                 var item = new TrackItem(track.TrackID, track.Title, artist,
                     track.Duration > 0 ? $"{track.Duration / 60}:{track.Duration % 60:D2}" : "",
                     fullPath, track.CoverPath, track.Duration);

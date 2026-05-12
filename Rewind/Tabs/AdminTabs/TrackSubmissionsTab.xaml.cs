@@ -138,7 +138,7 @@ namespace Rewind.Tabs.AdminTabs
                 var actionRow = new StackPanel { Orientation = Orientation.Horizontal };
 
                 // Preview play button
-                var filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "MusicLibrary", track.FilePath);
+                var filePath = Path.Combine(Rewind.Helpers.FileStorage.DataRoot, "MusicLibrary", track.FilePath);
                 if (File.Exists(filePath))
                 {
                     var previewBtn = new Button

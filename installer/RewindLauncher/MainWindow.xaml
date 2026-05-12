@@ -1,0 +1,39 @@
+<Window x:Class="RewindLauncher.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Rewind"
+        Width="420" Height="170"
+        WindowStartupLocation="CenterScreen"
+        ResizeMode="NoResize"
+        WindowStyle="ToolWindow"
+        Background="#1E1E1E"
+        Foreground="White">
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock Grid.Row="0"
+                   Text="Запуск Rewind"
+                   FontSize="18"
+                   FontWeight="SemiBold"
+                   Foreground="White"
+                   Margin="0,0,0,10"/>
+
+        <TextBlock Grid.Row="1"
+                   x:Name="StatusText"
+                   Text="Инициализация..."
+                   TextWrapping="Wrap"
+                   Foreground="#CCCCCC"
+                   VerticalAlignment="Center"/>
+
+        <ProgressBar Grid.Row="2"
+                     Height="6"
+                     IsIndeterminate="True"
+                     Foreground="#4CAF50"
+                     Background="#333"
+                     BorderThickness="0"/>
+    </Grid>
+</Window>

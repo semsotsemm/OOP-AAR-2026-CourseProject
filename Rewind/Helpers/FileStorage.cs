@@ -1,4 +1,6 @@
+using System;
 using System.IO;
+using System.Linq;
 
 namespace Rewind.Helpers
 {
@@ -6,25 +8,59 @@ namespace Rewind.Helpers
     {
         public const string DefaultAvatar = "Images/Avatars/default_avatar.png";
 
-        public static string CopyAvatar(string sourcePath) => CopyFile(sourcePath, "Images/Avatars", keepOriginalName: true);
-        public static string CopyTrackCover(string sourcePath) => CopyFile(sourcePath, "Images/TrackCovers", keepOriginalName: true);
+        // Куда пишутся пользовательские файлы (треки, обложки, аватарки).
+        // Program Files доступен на запись только админу, поэтому данные
+        // хранятся в %LOCALAPPDATA%\Rewind. Каталог можно переопределить
+        // переменной окружения REWIND_DATA_DIR (используется, например,
+        // python-скриптом seed.py).
+        public static string DataRoot { get; } = ResolveDataRoot();
+
+        private static string ResolveDataRoot()
+        {
+            var env = Environment.GetEnvironmentVariable("REWIND_DATA_DIR");
+            if (!string.IsNullOrWhiteSpace(env)) return env;
+
+            var localAppData = Environment.GetFolderPath(
+                Environment.SpecialFolder.LocalApplicationData);
+            return Path.Combine(localAppData, "Rewind");
+        }
+
+        public static string CopyAvatar(string sourcePath)        => CopyFile(sourcePath, "Images/Avatars",        keepOriginalName: true);
+        public static string CopyTrackCover(string sourcePath)    => CopyFile(sourcePath, "Images/TrackCovers",    keepOriginalName: true);
         public static string CopyPlaylistCover(string sourcePath) => CopyFile(sourcePath, "Images/PlaylistCovers", keepOriginalName: true);
-        public static string CopyAlbumCover(string sourcePath) => CopyFile(sourcePath, "Images/AlbumCovers", keepOriginalName: true);
+        public static string CopyAlbumCover(string sourcePath)    => CopyFile(sourcePath, "Images/AlbumCovers",    keepOriginalName: true);
+
         public static string CopyTrackAudio(string sourcePath, string trackName)
         {
             string extension = Path.GetExtension(sourcePath);
             string safe = SanitizeFileName(trackName);
             if (string.IsNullOrWhiteSpace(safe)) safe = "track";
 
-            string relative = CopyFile(sourcePath, "MusicLibrary", keepOriginalName: false, forcedBaseName: safe, forcedExtension: extension);
+            string relative = CopyFile(sourcePath, "MusicLibrary",
+                keepOriginalName: false, forcedBaseName: safe, forcedExtension: extension);
             return Path.GetFileName(relative);
         }
 
+        /// <summary>
+        /// Превращает относительный путь, сохранённый в БД, в абсолютный.
+        /// Сначала пробуем %LOCALAPPDATA%\Rewind (туда пишет приложение),
+        /// если файла нет — пробуем install-папку (для встроенных ресурсов),
+        /// иначе возвращаем путь в DataRoot (даже если файла нет — для логов).
+        /// </summary>
         public static string ResolvePath(string? storedPath)
         {
             if (string.IsNullOrWhiteSpace(storedPath)) return string.Empty;
             if (Path.IsPathRooted(storedPath)) return storedPath;
-            return Path.Combine(AppDomain.CurrentDomain.BaseDirectory, storedPath.Replace('/', Path.DirectorySeparatorChar));
+
+            string rel = storedPath.Replace('/', Path.DirectorySeparatorChar);
+
+            string inData = Path.Combine(DataRoot, rel);
+            if (File.Exists(inData)) return inData;
+
+            string inApp = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, rel);
+            if (File.Exists(inApp)) return inApp;
+
+            return inData;
         }
 
         public static string ResolveImagePath(string? storedPath, string legacyFolder = "CoversLibrary")
@@ -35,17 +71,24 @@ namespace Rewind.Helpers
             string direct = ResolvePath(storedPath);
             if (File.Exists(direct)) return direct;
 
-            string legacy = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, legacyFolder, storedPath);
-            return legacy;
+            // Legacy fallback в обоих корнях
+            string legacyData = Path.Combine(DataRoot, legacyFolder, storedPath);
+            if (File.Exists(legacyData)) return legacyData;
+
+            string legacyApp = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, legacyFolder, storedPath);
+            return legacyApp;
         }
 
-        private static string CopyFile(string sourcePath, string relativeFolder, bool keepOriginalName, string? forcedBaseName = null, string? forcedExtension = null)
+        private static string CopyFile(string sourcePath, string relativeFolder,
+            bool keepOriginalName, string? forcedBaseName = null, string? forcedExtension = null)
         {
-            string folder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, relativeFolder.Replace('/', Path.DirectorySeparatorChar));
+            string folder = Path.Combine(DataRoot, relativeFolder.Replace('/', Path.DirectorySeparatorChar));
             Directory.CreateDirectory(folder);
 
             string ext = forcedExtension ?? Path.GetExtension(sourcePath);
-            string baseName = forcedBaseName ?? (keepOriginalName ? Path.GetFileNameWithoutExtension(sourcePath) : Guid.NewGuid().ToString());
+            string baseName = forcedBaseName ?? (keepOriginalName
+                ? Path.GetFileNameWithoutExtension(sourcePath)
+                : Guid.NewGuid().ToString());
             baseName = SanitizeFileName(baseName);
             if (string.IsNullOrWhiteSpace(baseName)) baseName = "file";
 

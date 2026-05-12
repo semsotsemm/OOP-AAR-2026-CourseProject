@@ -14,6 +14,7 @@ seed.py — Rewind DB Seeder
     python seed.py --music-dir C:/путь/к/музыке --app-dir C:/путь/к/Rewind/bin/Debug/net8.0-windows
 
 Формат music-dir/tracks.json см. в tracks_example.json рядом со скриптом.
+python data\seed.py --app-dir "$env:LOCALAPPDATA\Rewind"
 """
 
 import argparse

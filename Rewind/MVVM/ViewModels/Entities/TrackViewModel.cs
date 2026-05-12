@@ -38,7 +38,7 @@ namespace Rewind.MVVM.ViewModels.Entities
 
         /// <summary>Абсолютный путь к аудиофайлу в MusicLibrary.</summary>
         public string FullAudioPath =>
-            System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "MusicLibrary", Model.FilePath);
+            System.IO.Path.Combine(Rewind.Helpers.FileStorage.DataRoot, "MusicLibrary", Model.FilePath);
 
         public string DurationText => $"{DurationSeconds / 60}:{DurationSeconds % 60:D2}";
 

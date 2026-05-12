@@ -63,7 +63,7 @@ namespace Rewind.Tabs.UsersTabs
 
             foreach (var track in _vm.Results)
             {
-                var fullPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "MusicLibrary", track.FilePath);
+                var fullPath = System.IO.Path.Combine(Rewind.Helpers.FileStorage.DataRoot, "MusicLibrary", track.FilePath);
                 var item = new TrackItem(
                     track.TrackID, track.Title,
                     track.Artist?.Nickname ?? "—",

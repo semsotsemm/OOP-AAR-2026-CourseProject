@@ -683,7 +683,7 @@ namespace Rewind.Tabs.UsersTabs
             try
             {
                 string uniqueFileName = FileStorage.CopyTrackAudio(_selectedAudioPath, trackName);
-                string destPath       = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "MusicLibrary", uniqueFileName);
+                string destPath       = Path.Combine(Rewind.Helpers.FileStorage.DataRoot, "MusicLibrary", uniqueFileName);
                 int    duration       = GetTrackDuration(destPath);
 
                 string? finalCoverPath = null;
@@ -787,7 +787,7 @@ namespace Rewind.Tabs.UsersTabs
             string safe   = SanitizeFileName(trackName);
             if (string.IsNullOrWhiteSpace(safe)) safe = "track";
 
-            string folder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "MusicLibrary");
+            string folder = Path.Combine(Rewind.Helpers.FileStorage.DataRoot, "MusicLibrary");
             Directory.CreateDirectory(folder);
 
             string fn   = $"{safe}{ext}";

@@ -72,7 +72,7 @@ namespace Rewind.Tabs.UsersTabs
             foreach (var track in _vm.Tracks)
             {
                 string durStr = track.Duration > 0 ? $"{track.Duration / 60}:{track.Duration % 60:D2}" : "";
-                string fullPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "MusicLibrary", track.FilePath);
+                string fullPath = System.IO.Path.Combine(Rewind.Helpers.FileStorage.DataRoot, "MusicLibrary", track.FilePath);
                 // track.Artist уже загружен через .Include(t => t.Artist) в TrackService
                 var artist = track.Artist?.Nickname ?? "Неизвестный";
                 var item = new TrackItem(track.TrackID, track.Title, artist, durStr, fullPath, track.CoverPath, track.Duration);
@@ -168,7 +168,7 @@ namespace Rewind.Tabs.UsersTabs
             if (mw.CurrentTrack?.TrackId == _vm.FeaturedTrack.TrackID)
             { mw.TogglePlayPause(); return; }
 
-            string fullPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "MusicLibrary", _vm.FeaturedTrack.FilePath);
+            string fullPath = System.IO.Path.Combine(Rewind.Helpers.FileStorage.DataRoot, "MusicLibrary", _vm.FeaturedTrack.FilePath);
             string durStr = _vm.FeaturedTrack.Duration > 0 ? $"{_vm.FeaturedTrack.Duration / 60}:{_vm.FeaturedTrack.Duration % 60:D2}" : "";
             var artistName = _vm.FeaturedTrack.Artist?.Nickname ?? "";
 

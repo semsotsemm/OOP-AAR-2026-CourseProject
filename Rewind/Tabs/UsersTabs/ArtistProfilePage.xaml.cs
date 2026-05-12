@@ -91,7 +91,7 @@ namespace Rewind.Tabs.UsersTabs
             _trackItems = _publishedTracks
                 .Select(t =>
                 {
-                    string fp = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "MusicLibrary", t.FilePath);
+                    string fp = Path.Combine(Rewind.Helpers.FileStorage.DataRoot, "MusicLibrary", t.FilePath);
                     return new TrackItem(
                         t.TrackID, t.Title, _artist.Nickname,
                         FormatDuration(t.Duration), fp, t.CoverPath, t.Duration);

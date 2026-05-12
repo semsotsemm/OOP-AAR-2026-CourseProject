@@ -281,7 +281,7 @@ namespace Rewind.Controls
             if (string.IsNullOrWhiteSpace(safeName))
                 safeName = "track";
 
-            string musicFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "MusicLibrary");
+            string musicFolder = Path.Combine(Rewind.Helpers.FileStorage.DataRoot, "MusicLibrary");
             if (!Directory.Exists(musicFolder)) Directory.CreateDirectory(musicFolder);
 
             string fileName = $"{safeName}{extension}";
@@ -397,7 +397,7 @@ namespace Rewind.Controls
                 .Cast<Track>()
                 .Select(t =>
                 {
-                    var fp = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "MusicLibrary", t.FilePath);
+                    var fp = System.IO.Path.Combine(Rewind.Helpers.FileStorage.DataRoot, "MusicLibrary", t.FilePath);
                     var artist = UserService.GetUserById(t.ArtistID)?.Nickname ?? "Неизвестный";
                     return new Rewind.Contols.TrackItem(t.TrackID, t.Title, artist,
                         FormatDuration(t.Duration), fp, t.CoverPath, t.Duration);
@@ -562,7 +562,7 @@ namespace Rewind.Controls
             var playContext = tracks
                 .Select(t =>
                 {
-                    var fp = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "MusicLibrary", t.FilePath);
+                    var fp = System.IO.Path.Combine(Rewind.Helpers.FileStorage.DataRoot, "MusicLibrary", t.FilePath);
                     var artist = UserService.GetUserById(t.ArtistID)?.Nickname ?? "Неизвестный";
                     return new Rewind.Contols.TrackItem(t.TrackID, t.Title, artist,
                         FormatDuration(t.Duration), fp, t.CoverPath, t.Duration);

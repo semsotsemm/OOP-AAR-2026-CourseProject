@@ -214,7 +214,7 @@ namespace Rewind.MVVM.ViewModels.Pages
             try
             {
                 string uniqueFileName = FileStorage.CopyTrackAudio(NewTrackAudioPath, NewTrackName);
-                string destPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "MusicLibrary", uniqueFileName);
+                string destPath = Path.Combine(Rewind.Helpers.FileStorage.DataRoot, "MusicLibrary", uniqueFileName);
                 int duration;
                 using (var file = TagLib.File.Create(destPath))
                     duration = (int)file.Properties.Duration.TotalSeconds;
