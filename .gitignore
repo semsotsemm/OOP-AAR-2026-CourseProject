@@ -422,3 +422,4 @@ FodyWeavers.xsd
 
 # Installer vendor blobs (Docker Desktop installer, postgres image)
 /installer/vendor/
+"RewindSetup.exe" 
