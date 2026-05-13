@@ -176,9 +176,15 @@ namespace Rewind.Tabs.UsersTabs
                 _vm.FeaturedTrack.TrackID, _vm.FeaturedTrack.Title, artistName,
                 durStr, fullPath, _vm.FeaturedTrack.CoverPath, _vm.FeaturedTrack.Duration);
 
+            // Контекст «трека дня»: сам трек + остальные треки списка (без дубликата по TrackId).
+            // Иначе PlayTrackFromContext не найдёт featuredItem в _trackItems и откатится к индексу 0,
+            // воспроизводя первый трек списка вместо «трека дня».
+            var context = new List<TrackItem> { featuredItem };
+            context.AddRange(_trackItems.Where(t => t.TrackId != featuredItem.TrackId));
+
             Session.AddListenedTrack(_vm.FeaturedTrack.TrackID, _vm.FeaturedTrack.Duration);
             Session.ResetPlaybackScope();
-            mw.PlayTrackFromContext(featuredItem, _trackItems);
+            mw.PlayTrackFromContext(featuredItem, context);
         }
 
         private void ShowAllTracksBtn_Click(object sender, MouseButtonEventArgs e)

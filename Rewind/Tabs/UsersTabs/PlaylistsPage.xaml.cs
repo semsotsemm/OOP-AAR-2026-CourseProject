@@ -172,7 +172,7 @@ namespace Rewind.Tabs.UsersTabs
             });
 
             string subtitle = $"{vm.TrackCount} {Pluralize(vm.TrackCount, "трек", "трека", "треков")}";
-            if (!vm.IsOwned) subtitle += "  ·  сохранён";
+            if (!vm.IsOwned && vm.IsSaved) subtitle += "  ·  сохранён";
 
             stack.Children.Add(new TextBlock
             {

@@ -74,16 +74,24 @@ namespace Rewind.MVVM.ViewModels.Pages
         {
             _all.Clear();
             foreach (var pl in Session.CachedPlaylists)
-                _all.Add(new PlaylistViewModel(pl, isOwned: true));
+                _all.Add(new PlaylistViewModel(pl, isOwned: true, isSaved: false));
 
             try
             {
                 var others = PlaylistService.GetPublicPlaylists(excludeUserId: Session.UserId);
+                // Один запрос за всеми сохранениями текущего юзера, чтобы не дёргать IsSaved в цикле.
+                var savedIds = SafeGetSavedIds();
                 foreach (var pl in others)
-                    _all.Add(new PlaylistViewModel(pl, isOwned: false));
+                    _all.Add(new PlaylistViewModel(pl, isOwned: false, isSaved: savedIds.Contains(pl.PlaylistID)));
             }
             catch { }
             Render();
+        }
+
+        private static HashSet<int> SafeGetSavedIds()
+        {
+            try { return SavedPlaylistService.GetSavedByUser(Session.UserId).Select(p => p.PlaylistID).ToHashSet(); }
+            catch { return new HashSet<int>(); }
         }
 
         private void Render()
@@ -93,13 +101,21 @@ namespace Rewind.MVVM.ViewModels.Pages
             foreach (var p in _all
                 .Where(p => _activeFilter == "all"
                             || (_activeFilter == "own" && p.IsOwned)
-                            || (_activeFilter == "saved" && !p.IsOwned))
+                            || (_activeFilter == "saved" && !p.IsOwned && p.IsSaved))
                 .Where(p => string.IsNullOrEmpty(q) || p.Title.ToLower().Contains(q)))
                 Shown.Add(p);
             RenderRequested?.Invoke();
         }
 
-        private void OnStatsChanged(int _) => Render();
+        private void OnStatsChanged(int _)
+        {
+            // Если поменялся статус «сохранения», обновим IsSaved у всех чужих VM —
+            // т.к. порядок срабатывания обработчиков не гарантирован.
+            var savedIds = SafeGetSavedIds();
+            foreach (var vm in _all.Where(v => !v.IsOwned))
+                vm.IsSaved = savedIds.Contains(vm.PlaylistId);
+            Render();
+        }
 
         public void Dispose()
         {

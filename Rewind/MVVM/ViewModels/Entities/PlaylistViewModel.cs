@@ -14,16 +14,25 @@ namespace Rewind.MVVM.ViewModels.Entities
     {
         public Playlist Model { get; }
 
-        public PlaylistViewModel(Playlist playlist, bool isOwned = true)
+        public PlaylistViewModel(Playlist playlist, bool isOwned = true, bool? isSaved = null)
         {
             Model = playlist ?? throw new ArgumentNullException(nameof(playlist));
             _isOwned = isOwned;
+            // Если IsSaved не передан явно — спрашиваем сервис (одиночный запрос).
+            // Чужие плейлисты по умолчанию НЕ считаются сохранёнными — иначе подпись/фильтр врут.
+            _isSaved = isSaved ?? (!isOwned && SafeIsSaved());
 
             OpenCommand = new RelayCommand(Open);
 
             Session.PlaylistChanged += OnPlaylistChanged;
-            PlaylistListenService.OnPlaylistListenChanged += _ => OnPlaylistChanged(_);
-            SavedPlaylistService.OnPlaylistSavedChanged += _ => OnPlaylistChanged(_);
+            PlaylistListenService.OnPlaylistListenChanged += OnPlaylistChanged;
+            SavedPlaylistService.OnPlaylistSavedChanged += OnSavedChanged;
+        }
+
+        private bool SafeIsSaved()
+        {
+            try { return SavedPlaylistService.IsSaved(Session.UserId, Model.PlaylistID); }
+            catch { return false; }
         }
 
         private void OnPlaylistChanged(int playlistId)
@@ -32,6 +41,14 @@ namespace Rewind.MVVM.ViewModels.Entities
             OnPropertyChanged(nameof(TrackCount));
             OnPropertyChanged(nameof(LikesCount));
             OnPropertyChanged(nameof(ListensCount));
+            OnPropertyChanged(nameof(Subtitle));
+        }
+
+        private void OnSavedChanged(int playlistId)
+        {
+            if (playlistId != PlaylistId) return;
+            if (!IsOwned) IsSaved = SafeIsSaved();
+            OnPropertyChanged(nameof(LikesCount));
             OnPropertyChanged(nameof(Subtitle));
         }
 
@@ -60,9 +77,18 @@ namespace Rewind.MVVM.ViewModels.Entities
             set => SetProperty(ref _isOwned, value);
         }
 
+        private bool _isSaved;
+        public bool IsSaved
+        {
+            get => _isSaved;
+            set { if (SetProperty(ref _isSaved, value)) OnPropertyChanged(nameof(Subtitle)); }
+        }
+
         public string Subtitle => IsOwned
             ? $"{TrackCount} тр.  •  ♥ {LikesCount}  •  ► {ListensCount}"
-            : $"{TrackCount} тр.  •  сохранён  •  ► {ListensCount}";
+            : (IsSaved
+                ? $"{TrackCount} тр.  •  сохранён  •  ► {ListensCount}"
+                : $"{TrackCount} тр.  •  ♥ {LikesCount}  •  ► {ListensCount}");
 
         public ICommand OpenCommand { get; }
 
