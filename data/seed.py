@@ -1,21 +1,4 @@
-"""
-seed.py — Rewind DB Seeder
-==========================
-Наполняет PostgreSQL-базу приложения Rewind пользователями, треками,
-альбомами и плейлистами, воспроизводя ту же логику хеширования паролей
-и хранения файлов, что используется в C#-приложении.
-
-Зависимости:
-    pip install psycopg2-binary mutagen
-
-    mutagen опционален: без него длительность треков будет записана как 0.
-
-Использование:
-    python seed.py --music-dir C:/путь/к/музыке --app-dir C:/путь/к/Rewind/bin/Debug/net8.0-windows
-
-Формат music-dir/tracks.json см. в tracks_example.json рядом со скриптом.
-python data\seed.py --app-dir "$env:LOCALAPPDATA\Rewind"
-"""
+#python data\seed.py --app-dir "$env:LOCALAPPDATA\Rewind"
 
 import argparse
 import base64
@@ -37,11 +20,13 @@ except ImportError:
     print("[ОШИБКА] Установите psycopg2: pip install psycopg2-binary")
     sys.exit(1)
 
-DB_HOST     = "localhost"
-DB_PORT     = 5433
-DB_NAME     = "rewinddb"
-DB_USER     = "postgres"
-DB_PASSWORD = "5329965"
+DB_HOST     = "ep-raspy-waterfall-ap8gyjmk-pooler.c-7.us-east-1.aws.neon.tech"
+DB_PORT     = 5432
+DB_NAME     = "neondb"
+DB_USER     = "neondb_owner"
+DB_PASSWORD = "npg_SzZQ1vfPTqN5"
+DB_SSLMODE  = "require"
+DB_CHANNEL_BINDING = "require"
 
 _SALT_SIZE  = 16        
 _KEY_SIZE   = 32        
@@ -215,22 +200,18 @@ def _same_file(a: Path, b: Path) -> bool:
         return False
 
 
-# Проверяем mutagen один раз при импорте, чтобы дать пользователю чёткую ошибку.
 try:
     from mutagen import File as _MutagenFile  # type: ignore
     _MUTAGEN_AVAILABLE = True
 except ImportError:
     _MUTAGEN_AVAILABLE = False
-    _MutagenFile = None  # type: ignore
+    _MutagenFile = None  
 
 
 def get_audio_duration(file_path: Path) -> int:
-    """Возвращает длительность аудио в секундах. Пробует несколько парсеров mutagen,
-    т.к. файлы из SoundCloud-конвертеров часто имеют битые/отсутствующие ID3-заголовки."""
     if not _MUTAGEN_AVAILABLE:
         return 0
 
-    # 1. Универсальный авто-парсер (определяет формат по содержимому)
     try:
         audio = _MutagenFile(str(file_path))
         if audio and audio.info and getattr(audio.info, "length", 0) > 0:
@@ -238,34 +219,30 @@ def get_audio_duration(file_path: Path) -> int:
     except Exception:
         pass
 
-    # 2. Принудительный MP3-парсер — работает даже когда нет ID3-тегов
     try:
-        from mutagen.mp3 import MP3  # type: ignore
+        from mutagen.mp3 import MP3  
         audio = MP3(str(file_path))
         if audio and audio.info and audio.info.length > 0:
             return int(audio.info.length)
     except Exception:
         pass
 
-    # 3. MP3-парсер без обработки ID3 (для совсем "сырых" файлов)
     try:
-        from mutagen.mp3 import MP3  # type: ignore
+        from mutagen.mp3 import MP3  
         audio = MP3(str(file_path), ID3=None)
         if audio and audio.info and audio.info.length > 0:
             return int(audio.info.length)
     except Exception:
         pass
 
-    # 4. MP4/M4A (некоторые "soundcloud_to_mp3" по факту .m4a)
     try:
-        from mutagen.mp4 import MP4  # type: ignore
+        from mutagen.mp4 import MP4  
         audio = MP4(str(file_path))
         if audio and audio.info and audio.info.length > 0:
             return int(audio.info.length)
     except Exception:
         pass
 
-    # 5. ffprobe из ffmpeg — самый универсальный (если установлен)
     ffprobe = _ffprobe_path()
     if ffprobe:
         try:
@@ -288,7 +265,7 @@ def get_audio_duration(file_path: Path) -> int:
     return 0
 
 
-_FFPROBE_CACHED: str | None = ""  # "" = ещё не искали, None = искали и не нашли
+_FFPROBE_CACHED: str | None = ""  
 
 def _ffprobe_path() -> str | None:
     """Возвращает путь к ffprobe (из PATH или из стандартных winget/choco-локаций),
@@ -297,22 +274,18 @@ def _ffprobe_path() -> str | None:
     if _FFPROBE_CACHED != "":
         return _FFPROBE_CACHED
 
-    # 1. В PATH
     found = shutil.which("ffprobe")
     if found:
         _FFPROBE_CACHED = found
         return _FFPROBE_CACHED
 
-    # 2. Стандартные пути установки на Windows
     candidates = []
     local_app = os.environ.get("LOCALAPPDATA", "")
     if local_app:
-        # winget packages
         winget_root = Path(local_app) / "Microsoft" / "WinGet" / "Packages"
         if winget_root.exists():
             candidates.extend(winget_root.glob("Gyan.FFmpeg*/**/bin/ffprobe.exe"))
             candidates.extend(winget_root.glob("*FFmpeg*/**/bin/ffprobe.exe"))
-    # Стандартные ручные установки
     for root in (r"C:\ffmpeg", r"C:\Program Files\ffmpeg",
                  r"C:\Program Files (x86)\ffmpeg", r"C:\ProgramData\chocolatey\bin"):
         p = Path(root) / "bin" / "ffprobe.exe"
@@ -336,7 +309,6 @@ def _ffprobe_available() -> bool:
 
 
 def ensure_schema_ready(cur):
-    """Проверяет что таблицы созданы. Если нет — даёт понятную ошибку."""
     cur.execute("""
         SELECT 1 FROM information_schema.tables
         WHERE table_schema = 'public' AND table_name = 'Roles'
@@ -378,8 +350,6 @@ def ensure_user(cur, nickname: str, email: str, password: str, role_id: int, sta
 
 def ensure_track(cur, title: str, file_path_db: str, cover_path_db: str | None,
                  duration: int, artist_id: int, genre: str | None) -> int:
-    """Создаёт трек если не существует.
-    Если трек уже есть — обновляет Duration/CoverPath/Genre если они изменились/были пустыми."""
     cur.execute(
         'SELECT "TrackID", "Duration", "CoverPath", "Genre" FROM "Tracks" '
         'WHERE "Title" = %s AND "ArtistID" = %s',
@@ -441,8 +411,6 @@ def link_album_track(cur, album_id: int, track_id: int):
 
 
 def ensure_playlist(cur, title: str, owner_id: int, is_private: bool, cover_path_db: str | None) -> int:
-    """Создаёт плейлист если не существует.
-    Если плейлист уже есть без обложки — обновляет CoverPath. Возвращает PlaylistID."""
     cur.execute(
         'SELECT "PlaylistID", "CoverPath" FROM "Playlists" WHERE "Title" = %s AND "OwnerID" = %s',
         (title, owner_id),
@@ -518,7 +486,7 @@ def refresh_durations_mode(cur, app_dir: Path) -> None:
         sys.exit(1)
 
     fixed = failed = 0
-    failed_tracks: list[tuple[str, int]] = []  # (title, file_size)
+    failed_tracks: list[tuple[str, int]] = [] 
     for r in rows:
         track_id  = r["TrackID"]
         title     = r["Title"]
@@ -606,12 +574,19 @@ def main():
         "--db-password", default=DB_PASSWORD,
         help="Пароль PostgreSQL",
     )
+    parser.add_argument(
+        "--db-sslmode", default=DB_SSLMODE,
+        help=f"SSL mode для PostgreSQL (default: {DB_SSLMODE})",
+    )
+    parser.add_argument(
+        "--db-channel-binding", default=DB_CHANNEL_BINDING,
+        help=f"Channel binding для PostgreSQL (default: {DB_CHANNEL_BINDING})",
+    )
     args = parser.parse_args()
 
     music_dir = Path(args.music_dir).resolve()
     dry_run   = args.dry_run
 
-    # ── Определяем app-dir ────────────────────────────────────────────────────
     if args.app_dir:
         app_dir = Path(args.app_dir).resolve()
     else:
@@ -622,8 +597,6 @@ def main():
             sys.exit(1)
         print(f"[auto] app-dir: {app_dir}")
 
-    # ── Ищем tracks.json ──────────────────────────────────────────────────────
-    # Сначала рядом со скриптом, потом в music-dir
     tracks_json_path: Path | None = None
     for candidate in (_SCRIPT_DIR / "tracks.json", music_dir / "tracks.json"):
         if candidate.exists():
@@ -638,7 +611,6 @@ def main():
 
     with open(tracks_json_path, encoding="utf-8") as f:
         raw = f.read()
-    # Поддержка // комментариев (не входят в стандарт JSON, но удобны для примеров)
     raw = re.sub(r'//[^\n]*', '', raw)
     data = json.loads(raw)
 
@@ -646,8 +618,7 @@ def main():
     if not tracks_meta:
         print("[ПРЕДУПРЕЖДЕНИЕ] Список треков пуст — нечего добавлять.")
 
-    # Явные обложки альбомов из секции "albums" (необязательно)
-    album_covers_override: dict[str, str] = {}  # album_title -> cover filename
+    album_covers_override: dict[str, str] = {}  
     for al in data.get("albums", []):
         if al.get("title") and al.get("cover"):
             album_covers_override[al["title"]] = al["cover"]
@@ -659,12 +630,13 @@ def main():
     if dry_run:
         print("=== РЕЖИМ DRY-RUN: никаких изменений не производится ===\n")
 
-    # ── Подключаемся к БД ─────────────────────────────────────────────────────
     if not dry_run:
         try:
             conn = psycopg2.connect(
                 host=args.db_host, port=args.db_port,
                 dbname=args.db_name, user=args.db_user, password=args.db_password,
+                sslmode=args.db_sslmode,
+                channel_binding=args.db_channel_binding,
             )
             conn.autocommit = False
             cur = conn.cursor(cursor_factory=RealDictCursor)
@@ -676,11 +648,9 @@ def main():
         conn = cur = None
 
     try:
-        # ── Проверка что таблицы созданы (EF Core должен это сделать) ───────
         if not dry_run:
             ensure_schema_ready(cur)
 
-        # ── Режим обновления длительностей ───────────────────────────────────
         if args.refresh_durations:
             if dry_run:
                 print("[ОШИБКА] --refresh-durations несовместим с --dry-run")
@@ -689,27 +659,21 @@ def main():
             conn.commit()
             return
 
-        # ── Роли ─────────────────────────────────────────────────────────────
         print("=== Проверяем роли ===")
         if not dry_run:
             ensure_roles(cur)
         else:
             print("  [DRY] Проверка/создание ролей (Admin, Artist, Listener)")
 
-        # ── Собираем исполнителей из JSON + DEFAULT_ARTISTS ──────────────────
         artists_nicknames_from_json: set[str] = {
             t.get("artist", "").strip()
             for t in tracks_meta
             if t.get("artist", "").strip()
         }
 
-        # Строим итоговый список исполнителей.
-        # Для артистов НЕ из DEFAULT_ARTISTS email/пароль деривируются из никнейма.
         artists_to_create: list[dict] = list(DEFAULT_ARTISTS)
         default_nicks = {a["nickname"] for a in DEFAULT_ARTISTS}
         for nick in sorted(artists_nicknames_from_json - default_nicks):
-            # Безопасный email: lowercase, пробелы → '_', кириллица транслитом не нужна
-            # (PostgreSQL хранит любую строку, главное уникальность)
             nick_slug = re.sub(r"[^\w]", "_", nick.lower()).strip("_") or "artist"
             artists_to_create.append({
                 "nickname": nick,
@@ -718,7 +682,6 @@ def main():
                 "status":   "Верифицирован",
             })
 
-        # ── Создаём исполнителей ─────────────────────────────────────────────
         print("\n=== Создаём исполнителей ===")
         artists_map: dict[str, int] = {}  # nickname -> UserId
         for a in artists_to_create:
@@ -730,7 +693,6 @@ def main():
                 artists_map[a["nickname"]] = uid
                 print(f"  Исполнитель: {a['nickname']} (UserId={uid})")
 
-        # ── Создаём слушателей ───────────────────────────────────────────────
         print("\n=== Создаём слушателей ===")
         listener_ids: list[int] = []
         for l in LISTENERS:
@@ -742,16 +704,12 @@ def main():
                 listener_ids.append(uid)
                 print(f"  Слушатель: {l['nickname']} (UserId={uid})")
 
-        # ── Копируем и регистрируем треки ────────────────────────────────────
         print("\n=== Загружаем треки ===")
         music_lib_dir = app_dir / "MusicLibrary"
 
         all_track_ids: list[int] = []
-        # album_name -> {artist_nick, genre, cover_db, tracks: [id, ...]}
         albums_data: dict[str, dict] = {}
-        # artist_nick -> [{"track_id", "genre", "cover_db"}, ...]  (треки без альбома)
         unassigned_tracks: dict[str, list] = {}
-        # track_id -> cover_path_db  (для назначения обложек плейлистам)
         track_cover_map: dict[int, str] = {}
 
         for t in tracks_meta:
@@ -759,7 +717,7 @@ def main():
             file_name   = t.get("file", "").strip()
             cover_name  = t.get("cover", "").strip()
             artist_nick = t.get("artist", "").strip()
-            genre       = t.get("genre", "").strip() or "Разное"   # дефолт если не задан
+            genre       = t.get("genre", "").strip() or "Разное" 
             album_name  = t.get("album", "").strip()
 
             artist_id = artists_map.get(artist_nick)
@@ -776,7 +734,6 @@ def main():
                 print(f"  [ПРОПУСК] Аудиофайл не найден: {audio_src}")
                 continue
 
-            # --- Копируем аудио ---
             if dry_run:
                 audio_db = sanitize_filename(title) + audio_src.suffix
                 duration = get_audio_duration(audio_src)
@@ -784,7 +741,6 @@ def main():
                 audio_db = copy_to_music_library(audio_src, title, music_lib_dir)
                 duration = get_audio_duration(audio_src)
 
-            # --- Копируем обложку трека ---
             cover_path_db: str | None = None
             if cover_name:
                 cover_src = music_dir / cover_name
@@ -796,7 +752,6 @@ def main():
                 else:
                     print(f"  [ПРЕДУПРЕЖДЕНИЕ] Обложка не найдена: {cover_src}")
 
-            # --- Вставляем трек в БД ---
             if dry_run:
                 track_id = -len(all_track_ids) - 1
                 print(
@@ -820,19 +775,17 @@ def main():
                     albums_data[album_name] = {
                         "artist_nick": artist_nick,
                         "genre":       genre,
-                        "cover_db":    cover_path_db,  # обложка первого трека как fallback
+                        "cover_db":    cover_path_db,  
                         "tracks":      [],
                     }
                 albums_data[album_name]["tracks"].append(track_id)
             else:
-                # Трек без альбома — запоминаем для возможного авто-альбома
                 unassigned_tracks.setdefault(artist_nick, []).append({
                     "track_id": track_id,
                     "genre":    genre,
                     "cover_db": cover_path_db,
                 })
 
-        # ── Создаём альбомы ──────────────────────────────────────────────────
         if albums_data:
             print("\n=== Создаём альбомы ===")
         for album_name, info in albums_data.items():
@@ -840,8 +793,6 @@ def main():
             if artist_id is None:
                 continue
 
-            # Определяем обложку альбома: сначала явный override из секции "albums",
-            # затем используем обложку первого трека альбома.
             album_cover_db: str | None = info["cover_db"]
 
             override_cover_name = album_covers_override.get(album_name)
@@ -853,8 +804,6 @@ def main():
                     else:
                         album_cover_db = copy_to_image_folder(cover_src, "AlbumCovers", app_dir)
             elif album_cover_db:
-                # Копируем ту же картинку в Images/AlbumCovers
-                # (у треков она в TrackCovers, альбому нужна своя копия)
                 if not dry_run:
                     src_path = app_dir / album_cover_db.replace("/", os.sep)
                     if src_path.exists():
@@ -874,7 +823,6 @@ def main():
                 for tid in info["tracks"]:
                     link_album_track(cur, album_id, tid)
 
-        # ── Авто-альбомы: артисты с >1 треком без указанного альбома ────────────
         auto_album_candidates = {
             nick: entries
             for nick, entries in unassigned_tracks.items()
@@ -887,11 +835,9 @@ def main():
             if artist_id is None:
                 continue
             auto_album_name = f"{artist_nick} — Коллекция"
-            # Жанр и обложка — берём из первого трека где они есть
             auto_genre   = next((e["genre"]    for e in entries if e["genre"]    and e["genre"] != "Разное"), None) \
                         or next((e["genre"]    for e in entries if e["genre"]),    "Разное")
             auto_cover   = next((e["cover_db"] for e in entries if e["cover_db"]), None)
-            # Если обложка из TrackCovers — скопируем в AlbumCovers
             if auto_cover and not dry_run:
                 src_path = app_dir / auto_cover.replace("/", os.sep)
                 if src_path.exists():
@@ -910,7 +856,6 @@ def main():
                     f"(AlbumId={album_id}, треков={len(entries)})"
                 )
 
-        # ── Создаём плейлисты для слушателей ─────────────────────────────────
         if listener_ids and all_track_ids:
             print("\n=== Создаём плейлисты для слушателей ===")
         for i, (uid, l) in enumerate(zip(listener_ids, LISTENERS)):
@@ -919,13 +864,11 @@ def main():
                 pl_title = PLAYLIST_TEMPLATES[tpl_idx][0]
                 is_priv  = PLAYLIST_TEMPLATES[tpl_idx][1]
 
-                # Добавляем nickname слушателя чтобы названия были уникальными
                 pl_full_title = f"{pl_title} — {l['nickname']}"
 
                 n_tracks      = min(TRACKS_PER_PLAYLIST, len(all_track_ids))
                 chosen_tracks = random.sample(all_track_ids, n_tracks)
 
-                # Обложка плейлиста = обложка первого трека из выборки у которого она есть
                 pl_cover = next(
                     (track_cover_map[tid] for tid in chosen_tracks if tid in track_cover_map),
                     None,
@@ -945,7 +888,6 @@ def main():
                         f"(PlaylistID={pl_id}, треков={n_tracks})"
                     )
 
-        # ── Фиксируем транзакцию ─────────────────────────────────────────────
         if not dry_run:
             conn.commit()
             print("\n[OK] Транзакция зафиксирована. База данных успешно наполнена!")

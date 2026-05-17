@@ -3,7 +3,6 @@ using System.Runtime.CompilerServices;
 
 namespace Rewind.MVVM.Core
 {
-    // Базовый класс вьюмодел
     public abstract class ViewModelBase : INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler? PropertyChanged;
@@ -11,7 +10,6 @@ namespace Rewind.MVVM.Core
         protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
             => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 
-        // Присваивает новое значение и уведомляет об изменении успех — true
         protected bool SetProperty<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
         {
             if (EqualityComparer<T>.Default.Equals(field, value)) return false;

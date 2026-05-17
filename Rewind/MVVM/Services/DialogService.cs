@@ -3,7 +3,6 @@ using System.Windows;
 
 namespace Rewind.MVVM.Services
 {
-    /// <summary>Реализация диалогов поверх MessageBox / OpenFileDialog.</summary>
     public sealed class DialogService : IDialogService
     {
         public void Info(string message, string title = "Rewind")

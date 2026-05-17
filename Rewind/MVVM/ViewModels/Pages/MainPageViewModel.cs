@@ -52,7 +52,6 @@ namespace Rewind.MVVM.ViewModels.Pages
             get
             {
                 if (_featuredTrack == null) return "";
-                // Artist уже включён в GetMostPopularTrack через .Include
                 var name = _featuredTrack.Artist?.Nickname ?? "Неизвестен";
                 return $"{name} · {_featuredTrack.Statistics?.PlayCount ?? 0} прослушиваний";
             }
@@ -122,7 +121,6 @@ namespace Rewind.MVVM.ViewModels.Pages
 
             if (all.Count == 0) { PlaylistsChanged?.Invoke(); return; }
 
-            // ⚡ Один батч-запрос вместо N запросов в цикле — критично для скорости главной.
             var ids = all.Select(p => p.PlaylistID).ToList();
             Dictionary<int, int> savedMap, listenMap;
             try { savedMap = SavedPlaylistService.GetSavedCounts(ids); }

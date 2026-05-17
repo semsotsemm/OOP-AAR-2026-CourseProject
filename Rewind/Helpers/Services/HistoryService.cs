@@ -19,7 +19,6 @@ namespace Rewind.Helpers
             catch { }
         }
 
-        /// <summary>Listens per day for last N days for a specific track.</summary>
         public static Dictionary<DateTime, int> GetListensByDay(int trackId, int days = 30)
         {
             using var db = new AppDbContext();

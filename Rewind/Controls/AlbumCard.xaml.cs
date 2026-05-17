@@ -10,8 +10,7 @@ namespace Rewind.Contols
         {
             InitializeComponent();
         }
-
-        // Название альбома
+        
         public string AlbumTitle
         {
             get { return (string)GetValue(AlbumTitleProperty); }
@@ -20,7 +19,6 @@ namespace Rewind.Contols
         public static readonly DependencyProperty AlbumTitleProperty =
             DependencyProperty.Register("AlbumTitle", typeof(string), typeof(AlbumCard), new PropertyMetadata("Название альбома"));
 
-        // Исполнитель
         public string Artist
         {
             get { return (string)GetValue(ArtistProperty); }
@@ -29,7 +27,7 @@ namespace Rewind.Contols
         public static readonly DependencyProperty ArtistProperty =
             DependencyProperty.Register("Artist", typeof(string), typeof(AlbumCard), new PropertyMetadata("Исполнитель"));
 
-        // Начальный цвет градиента
+
         public Color StartColor
         {
             get { return (Color)GetValue(StartColorProperty); }
@@ -37,8 +35,7 @@ namespace Rewind.Contols
         }
         public static readonly DependencyProperty StartColorProperty =
             DependencyProperty.Register("StartColor", typeof(Color), typeof(AlbumCard), new PropertyMetadata(Color.FromRgb(102, 126, 234)));
-
-        // Конечный цвет градиента
+        
         public Color EndColor
         {
             get { return (Color)GetValue(EndColorProperty); }
@@ -47,7 +44,6 @@ namespace Rewind.Contols
         public static readonly DependencyProperty EndColorProperty =
             DependencyProperty.Register("EndColor", typeof(Color), typeof(AlbumCard), new PropertyMetadata(Color.FromRgb(118, 75, 162)));
 
-        // Обложка
         public ImageSource CoverImageSource
         {
             get { return (ImageSource)GetValue(CoverImageSourceProperty); }

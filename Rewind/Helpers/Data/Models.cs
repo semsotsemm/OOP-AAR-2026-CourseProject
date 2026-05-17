@@ -70,9 +70,7 @@ namespace Rewind.Helpers
         [Required, MaxLength(100)] public string Title { get; set; }
         public int OwnerID { get; set; }
         public User Owner { get; set; }
-        /// <summary>true = виден только владельцу, false = публичный</summary>
         public bool IsPrivate { get; set; } = false;
-        /// <summary>Путь к картинке обложки (локальный или относительный)</summary>
         public string? CoverPath { get; set; }
         public List<PlaylistTrack> PlaylistTracks { get; set; } = new();
     }

@@ -5,11 +5,6 @@ using System.Windows.Input;
 
 namespace Rewind.MVVM.ViewModels.Pages
 {
-    /// <summary>
-    /// VM для страницы «Любимые треки». Держит полный список лайкнутых,
-    /// применяет фильтры/сортировку и подписывается на Session.LikeChanged,
-    /// чтобы моментально реагировать на лайк/анлайк из любого места приложения.
-    /// </summary>
     public sealed class FavoritesPageViewModel : ViewModelBase, IDisposable
     {
         private static readonly string[] SortModes = { "recent", "az", "artist", "duration" };

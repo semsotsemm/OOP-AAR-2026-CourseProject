@@ -3,7 +3,6 @@ using System.Windows;
 
 namespace Rewind.MVVM.Services
 {
-    /// <summary>Реализация плеера поверх текущего MainWindow.</summary>
     public sealed class PlayerService : IPlayerService
     {
         private MainWindow? MW => Application.Current?.MainWindow as MainWindow;

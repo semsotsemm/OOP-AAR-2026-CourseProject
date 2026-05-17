@@ -4,7 +4,6 @@ namespace Rewind.Helpers
     {
         public static event Action<int>? OnPlaylistListenChanged;
 
-        /// <summary>Каждое нажатие Play внутри плейлиста = +1 прослушивание.</summary>
         public static void RegisterListen(int userId, int playlistId)
         {
             if (userId <= 0 || playlistId <= 0) return;
@@ -29,7 +28,6 @@ namespace Rewind.Helpers
             try
             {
                 using var db = new AppDbContext();
-                // Старые уникальные прослушивания + новые события Play
                 int oldUnique = db.PlaylistListens.Count(l => l.PlaylistId == playlistId);
                 int playEvents = db.PlaylistPlayEvents.Count(l => l.PlaylistId == playlistId);
                 return oldUnique + playEvents;
@@ -37,7 +35,6 @@ namespace Rewind.Helpers
             catch { return 0; }
         }
 
-        /// <summary>Батч-версия: количество прослушиваний для списка плейлистов одним подключением.</summary>
         public static Dictionary<int, int> GetListenerCounts(IEnumerable<int> playlistIds)
         {
             var ids = playlistIds.ToList();

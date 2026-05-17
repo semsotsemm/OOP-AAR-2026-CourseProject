@@ -7,7 +7,6 @@ namespace Rewind.Helpers
         public static void CreateReport(int trackId, int reporterId, string reason)
         {
             using var db = new AppDbContext();
-            // Prevent duplicate reports from the same user on same track
             if (db.TrackReports.Any(r => r.TrackId == trackId && r.ReporterId == reporterId && r.Status == "Pending"))
                 return;
             db.TrackReports.Add(new TrackReport
@@ -54,7 +53,6 @@ namespace Rewind.Helpers
                 if (report == null) return false;
                 trackId = report.TrackId;
             }
-            // TrackService.DeleteTrack удаляет трек и все связанные записи, включая этот репорт
             return TrackService.DeleteTrack(trackId);
         }
 

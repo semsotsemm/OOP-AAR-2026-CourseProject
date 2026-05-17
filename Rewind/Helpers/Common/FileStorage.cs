@@ -8,11 +8,6 @@ namespace Rewind.Helpers
     {
         public const string DefaultAvatar = "Images/Avatars/default_avatar.png";
 
-        // Куда пишутся пользовательские файлы (треки, обложки, аватарки).
-        // Program Files доступен на запись только админу, поэтому данные
-        // хранятся в %LOCALAPPDATA%\Rewind. Каталог можно переопределить
-        // переменной окружения REWIND_DATA_DIR (используется, например,
-        // python-скриптом seed.py).
         public static string DataRoot { get; } = ResolveDataRoot();
 
         private static string ResolveDataRoot()
@@ -41,12 +36,6 @@ namespace Rewind.Helpers
             return Path.GetFileName(relative);
         }
 
-        /// <summary>
-        /// Превращает относительный путь, сохранённый в БД, в абсолютный.
-        /// Сначала пробуем %LOCALAPPDATA%\Rewind (туда пишет приложение),
-        /// если файла нет — пробуем install-папку (для встроенных ресурсов),
-        /// иначе возвращаем путь в DataRoot (даже если файла нет — для логов).
-        /// </summary>
         public static string ResolvePath(string? storedPath)
         {
             if (string.IsNullOrWhiteSpace(storedPath)) return string.Empty;
@@ -71,7 +60,6 @@ namespace Rewind.Helpers
             string direct = ResolvePath(storedPath);
             if (File.Exists(direct)) return direct;
 
-            // Legacy fallback в обоих корнях
             string legacyData = Path.Combine(DataRoot, legacyFolder, storedPath);
             if (File.Exists(legacyData)) return legacyData;
 

@@ -23,14 +23,12 @@ namespace Rewind.Contols
         public PlayerBar()
         {
             InitializeComponent();
-            // Устанавливаем DataContext, чтобы Binding работал проще
             this.DataContext = this;
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
         protected void OnPropertyChanged(string name) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
 
-        // --- DEPENDENCY PROPERTIES ---
 
         public static readonly DependencyProperty TotalSecondsProperty =
             DependencyProperty.Register("TotalSeconds", typeof(double), typeof(PlayerBar),
@@ -52,7 +50,6 @@ namespace Rewind.Contols
             DependencyProperty.Register("PlayPauseIcon", typeof(string), typeof(PlayerBar),
                 new PropertyMetadata(IconAssets.GetAbsolutePath("player_pause.png")));
 
-        // --- WRAPPERS ---
 
         public double TotalSeconds
         {
@@ -84,7 +81,6 @@ namespace Rewind.Contols
             set { SetValue(PlayPauseIconProperty, value); }
         }
 
-        // --- ВЫЧИСЛЯЕМЫЕ СВОЙСТВА ДЛЯ ТЕКСТА ---
 
         public string CurrentTimeStr => TimeSpan.FromSeconds(CurrentSeconds).ToString(@"mm\:ss");
         public string TotalTimeStr => TimeSpan.FromSeconds(TotalSeconds).ToString(@"mm\:ss");
@@ -104,8 +100,6 @@ namespace Rewind.Contols
             OnPropertyChanged(nameof(CurrentTimeStr));
             OnPropertyChanged(nameof(TotalTimeStr));
         }
-
-        // --- МЕТОДЫ ---
 
         public void ShowPlayer()
         {
@@ -134,7 +128,6 @@ namespace Rewind.Contols
             if (IsLoaded) VolumeChangeRequested?.Invoke(this, e.NewValue);
         }
 
-        /// <summary>Устанавливает значение слайдера громкости без генерации события (для синхронизации).</summary>
         public void SetVolumeExternal(double volume)
         {
             _suppressVolumeEvent = true;
@@ -162,20 +155,17 @@ namespace Rewind.Contols
             RepeatIcon.Opacity = active ? 1.0 : 0.55;
         }
 
-        /// <summary>Клик по обложке или названию — открывает страницу «Сейчас играет».</summary>
         private void PlayerInfo_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
             e.Handled = true;
             ServiceLocator.TryResolve<IPlayerService>()?.OpenNowPlaying("Плеер");
         }
 
-        /// <summary>Клик по имени исполнителя — открывает его страницу.</summary>
         private void ArtistName_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
             e.Handled = true;
             string artistName = CurrentArtist;
             if (string.IsNullOrWhiteSpace(artistName)) return;
-            // Навигация на артиста по имени всё ещё есть в MainWindow; вызов через локатор
             if (Application.Current?.MainWindow is Rewind.MainWindow mw)
                 mw.OpenArtistProfileByName(artistName);
         }
@@ -190,7 +180,6 @@ namespace Rewind.Contols
                 liked ? "like_filled.png" : "like_outline.png");
         }
 
-        /// <summary>Обновляет миниатюрную обложку в плеере.</summary>
         public void UpdateCover(string? coverPath)
         {
             try
@@ -229,7 +218,6 @@ namespace Rewind.Contols
             }
         }
 
-        /// <summary>Обновляет состояние лайк в плеере.</summary>
         public void UpdateLikeIcon(int trackId)
         {
             LikeIconBrush.ImageSource = IconAssets.LoadBitmap(

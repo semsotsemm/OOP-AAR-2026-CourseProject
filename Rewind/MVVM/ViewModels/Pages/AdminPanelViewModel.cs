@@ -4,11 +4,6 @@ using System.Windows.Input;
 
 namespace Rewind.MVVM.ViewModels.Pages
 {
-    /// <summary>
-    /// VM админки. Хранит активную вкладку, бейджи и команды (тема, выход,
-    /// навигация). View занимается подменой UserControl-а в AdminContentArea
-    /// и подсветкой кнопок (визуальная задача).
-    /// </summary>
     public sealed class AdminPanelViewModel : ViewModelBase
     {
         public AdminPanelViewModel()
@@ -24,7 +19,6 @@ namespace Rewind.MVVM.ViewModels.Pages
             RefreshBadges();
         }
 
-        // ─── Активная вкладка ──────────────────────
 
         private string _activeTab = "overview";
         public string ActiveTab
@@ -40,7 +34,6 @@ namespace Rewind.MVVM.ViewModels.Pages
         public ICommand SelectThemeCommand { get; }
         public ICommand LogoutCommand { get; }
 
-        // ─── Бейджи ────────────────────────────────
 
         public int RequestsCount { get; private set; }
         public int SubmissionsCount { get; private set; }

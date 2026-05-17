@@ -19,11 +19,20 @@ namespace Rewind.Helpers
 
         public static bool VerifyPassword(string password, string storedHash)
         {
+            if (string.IsNullOrWhiteSpace(storedHash)) return false;
             string[] parts = storedHash.Split(':');
             if (parts.Length != 2) return false;
 
-            byte[] salt = Convert.FromBase64String(parts[0]);
-            byte[] hash = Convert.FromBase64String(parts[1]);
+            byte[] salt, hash;
+            try
+            {
+                salt = Convert.FromBase64String(parts[0]);
+                hash = Convert.FromBase64String(parts[1]);
+            }
+            catch
+            {
+                return false;
+            }
 
             byte[] inputHash = Rfc2898DeriveBytes.Pbkdf2(password, salt, Iterations, HashAlgorithm, KeySize);
 

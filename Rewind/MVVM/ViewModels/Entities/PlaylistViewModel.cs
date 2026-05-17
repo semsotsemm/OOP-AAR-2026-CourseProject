@@ -5,11 +5,6 @@ using System.Windows.Input;
 
 namespace Rewind.MVVM.ViewModels.Entities
 {
-    /// <summary>
-    /// ViewModel-обёртка над сущностью Playlist.
-    /// Показывает количество треков, лайков, прослушиваний и команды
-    /// «открыть плейлист» / «сохранить»/«удалить сохранение».
-    /// </summary>
     public class PlaylistViewModel : ObservableObject
     {
         public Playlist Model { get; }
@@ -18,8 +13,6 @@ namespace Rewind.MVVM.ViewModels.Entities
         {
             Model = playlist ?? throw new ArgumentNullException(nameof(playlist));
             _isOwned = isOwned;
-            // Если IsSaved не передан явно — спрашиваем сервис (одиночный запрос).
-            // Чужие плейлисты по умолчанию НЕ считаются сохранёнными — иначе подпись/фильтр врут.
             _isSaved = isSaved ?? (!isOwned && SafeIsSaved());
 
             OpenCommand = new RelayCommand(Open);

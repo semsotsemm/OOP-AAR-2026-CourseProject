@@ -10,7 +10,6 @@ namespace Rewind.Contols
             InitializeComponent();
         }
 
-        // Свойство для заголовка (Chill Vibes)
         public string Title
         {
             get { return (string)GetValue(TitleProperty); }
@@ -19,7 +18,6 @@ namespace Rewind.Contols
         public static readonly DependencyProperty TitleProperty =
             DependencyProperty.Register("Title", typeof(string), typeof(PlaylistButton), new PropertyMetadata("Название плейлиста"));
 
-        // Свойство для подзаголовка (24 трека)
         public string Subtitle
         {
             get { return (string)GetValue(SubtitleProperty); }

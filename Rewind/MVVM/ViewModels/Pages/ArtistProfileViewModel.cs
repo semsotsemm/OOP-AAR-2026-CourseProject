@@ -6,10 +6,6 @@ using System.Windows.Input;
 
 namespace Rewind.MVVM.ViewModels.Pages
 {
-    /// <summary>
-    /// VM страницы исполнителя.
-    /// Управляет данными профиля, подпиской и переключением «показать все треки».
-    /// </summary>
     public sealed class ArtistProfileViewModel : ViewModelBase
     {
         private readonly INavigationService _nav;

@@ -119,7 +119,6 @@ namespace Rewind.Helpers
             var track = db.Tracks.FirstOrDefault(t => t.TrackID == id);
             if (track == null) return false;
 
-            // Удаляем все связанные записи перед удалением трека (FK-ограничения)
             db.Favorites.RemoveRange(db.Favorites.Where(f => f.TrackID == id));
             db.PlaylistTracks.RemoveRange(db.PlaylistTracks.Where(pt => pt.TrackID == id));
             db.History.RemoveRange(db.History.Where(h => h.TrackID == id));

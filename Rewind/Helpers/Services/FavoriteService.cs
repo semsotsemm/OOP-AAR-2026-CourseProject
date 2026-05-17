@@ -4,7 +4,6 @@ namespace Rewind.Helpers
 {
     public static class FavoriteService
     {
-        /// <summary>Возвращает треки из избранного (для инициализации сессии).</summary>
         public static List<Favorite> GetFavoritesByUser(int userId)
         {
             using var db = new AppDbContext();

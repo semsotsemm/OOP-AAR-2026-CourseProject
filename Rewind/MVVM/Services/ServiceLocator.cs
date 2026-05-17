@@ -1,11 +1,5 @@
 namespace Rewind.MVVM.Services
 {
-    /// <summary>
-    /// Лёгкий DI-контейнер. Регистрируется один раз в App.OnStartup
-    /// и хранит синглтоны сервисов приложения (навигация, диалоги и т.п.).
-    /// Сознательно не тянем полноценный IoC-контейнер — для курсового проекта
-    /// ручной локатор нагляднее и достаточен.
-    /// </summary>
     public static class ServiceLocator
     {
         private static readonly Dictionary<Type, object> _services = new();

@@ -4,7 +4,6 @@ using System.Windows.Data;
 
 namespace Rewind.MVVM.Converters
 {
-    /// <summary>bool → Visibility. Параметр "invert" инвертирует логику.</summary>
     public sealed class BoolToVisibilityConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)

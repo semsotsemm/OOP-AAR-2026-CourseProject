@@ -7,15 +7,6 @@ using System.Windows.Input;
 
 namespace Rewind.MVVM.ViewModels.Pages
 {
-    /// <summary>
-    /// VM страницы профиля. Управляет:
-    ///   • активной вкладкой (Overview/Liked/Playlists/Albums/Settings/ArtistStudio);
-    ///   • редактированием профиля (имя/email/пароль/аватар);
-    ///   • выбором темы;
-    ///   • загрузкой трека (для исполнителей);
-    ///   • перезагрузкой данных вкладок (плейлисты/лайки/альбомы).
-    /// View занимается только императивным рендером карточек.
-    /// </summary>
     public sealed class ProfilePageViewModel : ViewModelBase, IDisposable
     {
         private readonly IDialogService _dialog;
@@ -43,7 +34,6 @@ namespace Rewind.MVVM.ViewModels.Pages
             LoadOverview();
         }
 
-        // ─── Активная вкладка ────────────────────────
 
         private string _activeTab = "overview";
         public string ActiveTab
@@ -69,14 +59,11 @@ namespace Rewind.MVVM.ViewModels.Pages
         public event Action? PlaylistsChanged;
         public event Action? AlbumsChanged;
 
-        // ─── Профиль ─────────────────────────────────
-
         public string UserName => Session.UserName;
         public string Email => Session.Email;
         public string Role => Session.UserRole;
         public string AvatarPath => Session.AvatarPath;
 
-        // Поля редактирования
         public string EditName { get; set; } = "";
         public string EditEmail { get; set; } = "";
         public string EditPassword { get; set; } = "";
@@ -88,16 +75,12 @@ namespace Rewind.MVVM.ViewModels.Pages
         public ICommand UploadTrackCommand { get; }
         public ICommand SelectThemeCommand { get; }
 
-        // ─── Загрузка трека (артист) ────────────────
-
         public string NewTrackName { get; set; } = "";
         public string? NewTrackCoverPath { get; set; }
         public string? NewTrackAudioPath { get; set; }
         public string NewTrackGenre { get; set; } = "";
 
         public event Action? TrackUploadFinished;
-
-        // ─── Коллекции вкладок ──────────────────────
 
         public ObservableCollection<Playlist> OverviewPlaylists { get; }
         public ObservableCollection<Track> OverviewLikedTracks { get; }
@@ -106,11 +89,7 @@ namespace Rewind.MVVM.ViewModels.Pages
         public ObservableCollection<Track> LikedTracks { get; }
         public ObservableCollection<Album> SavedAlbums { get; }
 
-        // ─── Активная тема ───────────────────────────
-
         public event Action<string>? ThemeSelected;
-
-        // ─── Реализация ─────────────────────────────
 
         private void LoadOverview()
         {
@@ -199,8 +178,6 @@ namespace Rewind.MVVM.ViewModels.Pages
 
         private void Logout()
         {
-            // Закрытие окна и возврат на регистрацию делает code-behind,
-            // потому что VM не должен напрямую открывать Window-ы.
             LogoutRequested?.Invoke();
         }
 

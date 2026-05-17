@@ -5,10 +5,6 @@ using System.Windows.Input;
 
 namespace Rewind.MVVM.ViewModels.Entities
 {
-    /// <summary>
-    /// ViewModel-обёртка над доменной сущностью Track.
-    /// Используется в списках треков (ItemsControl + DataTemplate).
-    /// </summary>
     public class TrackViewModel : ObservableObject
     {
         public Track Model { get; }
@@ -36,7 +32,6 @@ namespace Rewind.MVVM.ViewModels.Entities
         public string? CoverPath => Model.CoverPath;
         public string FilePath => Model.FilePath;
 
-        /// <summary>Абсолютный путь к аудиофайлу в MusicLibrary.</summary>
         public string FullAudioPath =>
             System.IO.Path.Combine(Rewind.Helpers.FileStorage.DataRoot, "MusicLibrary", Model.FilePath);
 

@@ -14,9 +14,6 @@ namespace Rewind.Contols
 {
     public partial class TrackItem : UserControl
     {
-        // ─────────────────────────────────────────────
-        //  Свойства
-        // ─────────────────────────────────────────────
         public int TrackId { get; private set; }
 
         public event MouseButtonEventHandler TrackSelected;
@@ -26,10 +23,6 @@ namespace Rewind.Contols
         public string ArtistName { get; private set; }
         public double DurationSeconds { get; private set; }
 
-        /// <summary>
-        /// Если установлен — контекстное меню покажет пункт
-        /// «Удалить из плейлиста» (только для владельца плейлиста).
-        /// </summary>
         public Playlist? PlaylistContext { get; set; }
 
         public event RoutedEventHandler PlayClicked;
@@ -39,9 +32,6 @@ namespace Rewind.Contols
         {
             TrackSelected?.Invoke(this, e);
         }
-        // ─────────────────────────────────────────────
-        //  Конструктор
-        // ─────────────────────────────────────────────
         public TrackItem(int trackId, string title, string artist,
                          string duration, string path,
                          string? coverPath, double durationSeconds = 0)
@@ -60,7 +50,6 @@ namespace Rewind.Contols
             ArtistNameText.Text = artist;
             DurationText.Text = duration;
 
-            // Синхронизируем иконку лайка с кешем сессии
             RefreshLikeIcon();
 
             UpdateCover(coverPath);
@@ -93,15 +82,10 @@ namespace Rewind.Contols
                 _playerHost.CurrentTrack?.TrackId == TrackId &&
                 _playerHost.IsPlaying;
 
-            // Обновляем иконку play/pause на кнопке
             SetPlayPauseIcon(isThisTrackPlaying);
 
-            // Подсветка названия
             SetPlaying(_playerHost.CurrentTrack?.TrackId == TrackId);
         }
-        // ─────────────────────────────────────────────
-        //  Обложка
-        // ─────────────────────────────────────────────
         private void UpdateCover(string? path)
         {
             if (string.IsNullOrEmpty(path)) return;
@@ -132,16 +116,11 @@ namespace Rewind.Contols
             }
             catch
             {
-                /* оставляем ноту-заглушку */
             }
         }
 
 
-        // ─────────────────────────────────────────────
-        //  Воспроизведение
-        // ─────────────────────────────────────────────
 
-        // Реальное время: обновляем счётчик прослушиваний при любом воспроизведении
         private void OnTrackPlayCountUpdated(int trackId, int newCount)
         {
             if (trackId != TrackId) return;
@@ -156,12 +135,10 @@ namespace Rewind.Contols
             }
         }
 
-        // Переход на страницу исполнителя по клику на никнейм (через NavigationService)
         private void ArtistName_Click(object sender, MouseButtonEventArgs e)
         {
             e.Handled = true;
             if (string.IsNullOrWhiteSpace(ArtistName)) return;
-            // INavigationService не имеет ArtistByName, поэтому пока пользуемся MainWindow напрямую
             if (Window.GetWindow(this) is MainWindow mw)
                 mw.OpenArtistProfileByName(ArtistName);
         }
@@ -191,7 +168,6 @@ namespace Rewind.Contols
 
             if (mainWindow.CurrentTrack?.TrackId == TrackId)
             {
-                // Трек уже играет — просто пауза/плей
                 mainWindow.TogglePlayPause();
             }
             else
@@ -235,22 +211,14 @@ namespace Rewind.Contols
                 }
             }
 
-            // NowPlaying не открываем автоматически —
-            // пользователь открывает его сам кликом по PlayerBar.
         }
-        // ─────────────────────────────────────────────
-        //  Лайк — работает через Session-кеш
-        // ─────────────────────────────────────────────
         private void LikeBtn_Click(object sender, MouseButtonEventArgs e)
         {
             e.Handled = true;
-            // Переключаем состояние в кеше сессии
             bool isNowLiked = Session.ToggleLike(TrackId);
 
-            // Обновляем иконку
             RefreshLikeIcon(isNowLiked);
 
-            // Небольшая анимация — быстрый scale через RenderTransform
             AnimateLikeButton();
         }
 
@@ -289,14 +257,12 @@ namespace Rewind.Contols
             if (ContextMenu == null) return;
             ContextMenu.Items.Clear();
 
-            // ―― Очередь ――
             var playNextItem = new MenuItem { Header = "⇥  Играть следующим" };
             playNextItem.Click += (_, _) => PlayNext_Click(this, null!);
             ContextMenu.Items.Add(playNextItem);
 
             ContextMenu.Items.Add(new Separator());
 
-            // Удаление из текущего плейлиста (только если открыт из плейлиста владельца)
             if (PlaylistContext != null && PlaylistContext.OwnerID == Session.UserId)
             {
                 var removeItem = new MenuItem
@@ -329,7 +295,6 @@ namespace Rewind.Contols
 
             ContextMenu.Items.Add(new Separator());
 
-            // Subscribe / Unsubscribe item — resolved at menu-open time
             try
             {
                 var track = TrackService.GetTrackById(TrackId);
@@ -352,7 +317,8 @@ namespace Rewind.Contols
                     ContextMenu.Items.Add(new Separator());
                 }
             }
-            catch { /* ignore DB errors during menu open */ }
+            catch { 
+            }
 
             var reportItem = new MenuItem { Header = "Пожаловаться на трек" };
             reportItem.Click += ReportTrack_Click;
@@ -385,7 +351,6 @@ namespace Rewind.Contols
                 {
                     SubscriptionService.Subscribe(Session.UserId, artistId);
 
-                    // Notify if settings allow
                     if (Session.NotifNewTracksEnabled)
                     {
                         var recent = TrackService.GetPublishedTracks()
@@ -451,7 +416,6 @@ namespace Rewind.Contols
 
         private void TrackCard_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            // Игнорируем клики по кнопкам/слайдерам/меню
             var origin = e.OriginalSource as DependencyObject;
             while (origin != null)
             {
@@ -460,14 +424,10 @@ namespace Rewind.Contols
                 origin = VisualTreeHelper.GetParent(origin);
             }
 
-            // Play_Click уже открывает NowPlaying внутри
             Play_Click(PlayBtn, new RoutedEventArgs());
             e.Handled = true;
         }
 
-        // ─────────────────────────────────────────────
-        //  Подсветка при воспроизведении
-        // ─────────────────────────────────────────────
         public void SetPlaying(bool isPlaying)
         {
             TrackTitleText.Foreground = isPlaying

@@ -71,7 +71,6 @@ namespace Rewind.Controls
             var valueBrush = GetBrush("TextPrimary", Color.FromRgb(26, 26, 24));
             var borderBrush = GetBrush("BorderColor", Color.FromRgb(235, 235, 231));
 
-            // Baseline
             var line = new Line
             {
                 X1 = 0, Y1 = chartH,
@@ -87,7 +86,6 @@ namespace Rewind.Controls
                 double barHeight = (_data[i].Value / maxVal) * (chartH - 20);
                 double y = chartH - barHeight;
 
-                // Background track
                 var bgRect = new Rectangle
                 {
                     Width = barW,
@@ -101,7 +99,6 @@ namespace Rewind.Controls
                 Canvas.SetTop(bgRect, 0);
                 ChartCanvas.Children.Add(bgRect);
 
-                // Actual bar
                 if (barHeight > 0)
                 {
                     var rect = new Rectangle
@@ -117,7 +114,6 @@ namespace Rewind.Controls
                     ChartCanvas.Children.Add(rect);
                 }
 
-                // Value label
                 if (_data[i].Value > 0)
                 {
                     var tb = new TextBlock
@@ -133,7 +129,6 @@ namespace Rewind.Controls
                     ChartCanvas.Children.Add(tb);
                 }
 
-                // X label
                 var lb = new TextBlock
                 {
                     Text = _data[i].Label,

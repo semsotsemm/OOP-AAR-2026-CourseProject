@@ -33,7 +33,6 @@ namespace Rewind.Helpers
             return true;
         }
 
-        /// <summary>New subscriptions per day for the given artist over the last N days.</summary>
         public static Dictionary<DateTime, int> GetSubscriptionsByDay(int artistId, int days = 14)
         {
             using var db = new AppDbContext();

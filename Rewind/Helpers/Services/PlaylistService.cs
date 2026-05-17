@@ -4,7 +4,6 @@ namespace Rewind.Helpers
 {
     public static class PlaylistService
     {
-        /// <summary>Плейлисты пользователя (его собственные — все, чужие — только публичные).</summary>
         public static List<Playlist> GetPlaylistsByUser(int userId)
         {
             using var db = new AppDbContext();
@@ -14,7 +13,6 @@ namespace Rewind.Helpers
                 .ToList();
         }
 
-        /// <summary>Публичные плейлисты всех пользователей (для раздела «Сохранённые»).</summary>
         public static List<Playlist> GetPublicPlaylists(int excludeUserId = 0)
         {
             using var db = new AppDbContext();
@@ -37,7 +35,6 @@ namespace Rewind.Helpers
         public static void AddPlaylist(Playlist playlist)
         {
             using var db = new AppDbContext();
-            // Сбрасываем навигационные свойства чтобы EF не дублировал Owner
             playlist.Owner = null!;
             db.Playlists.Add(playlist);
             db.SaveChanges();

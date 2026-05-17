@@ -3,12 +3,6 @@ using System.Windows;
 
 namespace Rewind.MVVM.Services
 {
-    /// <summary>
-    /// Реализация навигации поверх уже существующего MainWindow.
-    /// Хранит лениво добываемую ссылку на активное главное окно
-    /// (берётся через Application.Current.MainWindow, что стабильно
-    /// работает при открытии/закрытии Registration → MainWindow).
-    /// </summary>
     public sealed class NavigationService : INavigationService
     {
         private MainWindow? MW => Application.Current?.MainWindow as MainWindow;

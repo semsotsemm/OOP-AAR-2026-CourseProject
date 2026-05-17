@@ -3,7 +3,6 @@ using System.Windows.Data;
 
 namespace Rewind.MVVM.Converters
 {
-    /// <summary>int секунды → строка "M:SS".</summary>
     public sealed class SecondsToDurationConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)

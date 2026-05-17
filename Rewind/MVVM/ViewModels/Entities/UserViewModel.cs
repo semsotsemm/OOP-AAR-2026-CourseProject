@@ -5,7 +5,6 @@ using System.Windows.Input;
 
 namespace Rewind.MVVM.ViewModels.Entities
 {
-    /// <summary>ViewModel-обёртка для User (карточки исполнителей).</summary>
     public class UserViewModel : ObservableObject
     {
         public User Model { get; }

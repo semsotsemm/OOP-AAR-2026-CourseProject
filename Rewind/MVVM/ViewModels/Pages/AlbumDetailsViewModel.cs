@@ -6,7 +6,6 @@ using System.Windows.Input;
 
 namespace Rewind.MVVM.ViewModels.Pages
 {
-    /// <summary>VM страницы деталей альбома.</summary>
     public sealed class AlbumDetailsViewModel : ViewModelBase
     {
         private readonly Album _album;

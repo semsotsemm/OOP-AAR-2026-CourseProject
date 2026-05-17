@@ -2,7 +2,6 @@ namespace Rewind.Helpers
 {
     public static class ArtistRequestService
     {
-        /// <summary>Создать новую заявку исполнителя.</summary>
         public static void CreateRequest(string nickname, string email, string passwordHash)
         {
             using var db = new AppDbContext();
@@ -17,7 +16,6 @@ namespace Rewind.Helpers
             db.SaveChanges();
         }
 
-        /// <summary>Все заявки (для отображения в панели).</summary>
         public static List<ArtistRequest> GetAll()
         {
             using var db = new AppDbContext();
@@ -26,7 +24,6 @@ namespace Rewind.Helpers
                      .ToList();
         }
 
-        /// <summary>Только ожидающие заявки.</summary>
         public static List<ArtistRequest> GetPending()
         {
             using var db = new AppDbContext();
@@ -42,20 +39,18 @@ namespace Rewind.Helpers
             return db.ArtistRequests.Count(r => r.Status == "Pending");
         }
 
-        /// <summary>Подтвердить заявку: создаёт User с ролью Artist.</summary>
         public static bool Approve(int requestId)
         {
             using var db = new AppDbContext();
             var req = db.ArtistRequests.FirstOrDefault(r => r.RequestId == requestId);
             if (req == null || req.Status != "Pending") return false;
 
-            // Создаём аккаунт
             var user = new User
             {
                 Nickname = req.Nickname,
                 Email = req.Email,
                 PasswordHash = req.PasswordHash,
-                RoleId = 2, // Artist
+                RoleId = 2, 
                 Status = "Активен"
             };
             db.Users.Add(user);
@@ -64,7 +59,6 @@ namespace Rewind.Helpers
             return true;
         }
 
-        /// <summary>Отклонить заявку.</summary>
         public static bool Reject(int requestId)
         {
             using var db = new AppDbContext();
@@ -75,7 +69,6 @@ namespace Rewind.Helpers
             return true;
         }
 
-        /// <summary>Проверка: есть ли уже ожидающая или одобренная заявка с таким email/ником.</summary>
         public static bool HasActiveRequest(string email, string nickname)
         {
             using var db = new AppDbContext();

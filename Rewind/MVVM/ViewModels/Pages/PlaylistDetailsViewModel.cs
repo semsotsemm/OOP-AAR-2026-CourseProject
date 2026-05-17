@@ -6,7 +6,6 @@ using System.Windows.Input;
 
 namespace Rewind.MVVM.ViewModels.Pages
 {
-    /// <summary>VM деталей плейлиста: сохранение, прослушивание, состав треков.</summary>
     public sealed class PlaylistDetailsViewModel : ViewModelBase, IDisposable
     {
         private readonly Playlist _playlist;

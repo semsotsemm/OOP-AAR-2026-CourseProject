@@ -1,8 +1,5 @@
 namespace Rewind.MVVM.Services
 {
-    /// <summary>
-    /// Абстракция над диалогами/сообщениями, чтобы VM не тянули MessageBox напрямую.
-    /// </summary>
     public interface IDialogService
     {
         void Info(string message, string title = "Rewind");

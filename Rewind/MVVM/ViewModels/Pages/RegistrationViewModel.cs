@@ -8,12 +8,6 @@ using System.Windows.Input;
 
 namespace Rewind.MVVM.ViewModels.Pages
 {
-    /// <summary>
-    /// VM страницы регистрации/входа.
-    /// Реализует всю бизнес-логику и команды.
-    /// View-слой лишь прокидывает содержимое PasswordBox через свойства
-    /// (потому что PasswordBox не поддерживает прямой binding из соображений безопасности).
-    /// </summary>
     public sealed class RegistrationViewModel : ViewModelBase
     {
         private readonly IDialogService _dialog;
@@ -27,7 +21,6 @@ namespace Rewind.MVVM.ViewModels.Pages
             SwitchToRegisterCommand = new RelayCommand(() => IsLoginMode = false);
         }
 
-        // ─── Режим и роль ─────────────────────────────
 
         private bool _isLoginMode = true;
         public bool IsLoginMode
@@ -36,7 +29,6 @@ namespace Rewind.MVVM.ViewModels.Pages
             set => SetProperty(ref _isLoginMode, value);
         }
 
-        /// <summary>1 = Слушатель, 2 = Исполнитель, 3 = Администратор.</summary>
         private int _selectedRoleId = 1;
         public int SelectedRoleId
         {
@@ -44,27 +36,20 @@ namespace Rewind.MVVM.ViewModels.Pages
             set
             {
                 if (SetProperty(ref _selectedRoleId, value) && value == 3)
-                    IsLoginMode = true; // Для админа доступен только вход
+                    IsLoginMode = true;
             }
         }
 
-        // ─── Поля форм ────────────────────────────────
-
-        // Общие поля (их заполняет code-behind перед вызовом команды)
         public string Login { get; set; } = "";
         public string Password { get; set; } = "";
         public string Email { get; set; } = "";
         public string Nickname { get; set; } = "";
         public string ConfirmPassword { get; set; } = "";
 
-        // ─── Команды ──────────────────────────────────
-
         public ICommand RegisterCommand { get; }
         public ICommand LoginCommand { get; }
         public ICommand SwitchToLoginCommand { get; }
         public ICommand SwitchToRegisterCommand { get; }
-
-        // ─── Логика ───────────────────────────────────
 
         private static string NormalizeRoleName(int roleId) => roleId switch
         {
@@ -76,9 +61,9 @@ namespace Rewind.MVVM.ViewModels.Pages
 
         private static int UiRoleToDbRoleId(int uiRoleId) => uiRoleId switch
         {
-            1 => 3, // Listener
-            2 => 2, // Artist
-            3 => 1, // Admin
+            1 => 3, 
+            2 => 2, 
+            3 => 1, 
             _ => 3
         };
 
@@ -143,48 +128,64 @@ namespace Rewind.MVVM.ViewModels.Pages
 
         private void DoLogin()
         {
-            string login = Login.Trim();
-            string password = Password;
-
-            if (string.IsNullOrWhiteSpace(login) || string.IsNullOrWhiteSpace(password))
-            { _dialog.Error("Пожалуйста, заполните все поля"); return; }
-
-            var user = login.Contains('@')
-                ? UserService.GetUserByEmail(login)
-                : UserService.GetUserByNickname(login);
-
-            if (user == null)
-            { _dialog.Error("Пользователь с таким логином не найден"); return; }
-
-            bool verified = PasswordHelper.VerifyPassword(password, user.PasswordHash);
-            if (!verified && user.PasswordHash == password)
+            try
             {
-                user.PasswordHash = PasswordHelper.HashPassword(password);
-                UserService.UpdateUser(user, user);
-                verified = true;
+                string login = Login.Trim();
+                string password = Password;
+
+                if (string.IsNullOrWhiteSpace(login) || string.IsNullOrWhiteSpace(password))
+                { _dialog.Error("Пожалуйста, заполните все поля"); return; }
+
+                var user = login.Contains('@')
+                    ? UserService.GetUserByEmail(login)
+                    : UserService.GetUserByNickname(login);
+
+                if (user == null)
+                { _dialog.Error("Пользователь с таким логином не найден"); return; }
+
+                bool verified;
+                try
+                {
+                    verified = PasswordHelper.VerifyPassword(password, user.PasswordHash);
+                }
+                catch
+                {
+                    verified = false;
+                }
+
+                if (!verified && user.PasswordHash == password)
+                {
+                    user.PasswordHash = PasswordHelper.HashPassword(password);
+                    UserService.UpdateUser(user, user);
+                    verified = true;
+                }
+
+                if (!verified)
+                { _dialog.Error("Пожалуйста, проверьте пароль"); return; }
+
+                if (user.RoleId != UiRoleToDbRoleId(SelectedRoleId))
+                { _dialog.Error("Выбранная роль не соответствует вашему аккаунту", "Доступ запрещен"); return; }
+
+                Session.UserId = user.UserId;
+                Session.UserName = user.Nickname;
+                Session.Email = user.Email;
+                Session.Password = password;
+                Session.UserRole = NormalizeRoleName(SelectedRoleId);
+                Session.HidedPassword = new string('●', Session.Password.Length);
+                Session.AvatarPath = string.IsNullOrWhiteSpace(user.ProfilePhotoPath)
+                    ? FileStorage.DefaultAvatar
+                    : user.ProfilePhotoPath;
+                Session.LoadFromDatabase();
+
+                if (SelectedRoleId == 3)
+                    OpenAdminPanelAndClose();
+                else
+                    OpenMainWindowAndClose();
             }
-
-            if (!verified)
-            { _dialog.Error("Пожалуйста, проверьте пароль"); return; }
-
-            if (user.RoleId != UiRoleToDbRoleId(SelectedRoleId))
-            { _dialog.Error("Выбранная роль не соответствует вашему аккаунту", "Доступ запрещен"); return; }
-
-            Session.UserId = user.UserId;
-            Session.UserName = user.Nickname;
-            Session.Email = user.Email;
-            Session.Password = password;
-            Session.UserRole = NormalizeRoleName(SelectedRoleId);
-            Session.HidedPassword = new string('●', Session.Password.Length);
-            Session.AvatarPath = string.IsNullOrWhiteSpace(user.ProfilePhotoPath)
-                ? FileStorage.DefaultAvatar
-                : user.ProfilePhotoPath;
-            Session.LoadFromDatabase();
-
-            if (SelectedRoleId == 3)
-                OpenAdminPanelAndClose();
-            else
-                OpenMainWindowAndClose();
+            catch (Exception ex)
+            {
+                _dialog.Error($"Ошибка входа: {ex.Message}");
+            }
         }
 
         private void RegisterArtistRequest(string nickname, string email, string password)

@@ -5,13 +5,6 @@ using System.Windows.Input;
 
 namespace Rewind.MVVM.ViewModels.Pages
 {
-    /// <summary>
-    /// VM страницы поиска треков. Управляет фильтрацией по жанрам,
-    /// поисковой строкой и циклической сортировкой.
-    /// Событие ResultsChanged сигнализирует View о необходимости
-    /// перестроить список TrackItem-ов (тонкая часть, остаётся в code-behind
-    /// до миграции TrackItem на полноценный DataTemplate).
-    /// </summary>
     public sealed class SearchPageViewModel : ViewModelBase
     {
         private static readonly string[] SortModes = { "title", "artist", "duration" };
@@ -35,7 +28,6 @@ namespace Rewind.MVVM.ViewModels.Pages
         public ObservableCollection<string> AvailableGenres { get; }
         public ObservableCollection<string> SelectedGenres { get; }
 
-        /// <summary>Срабатывает, когда список Results был пересобран.</summary>
         public event Action? ResultsChanged;
 
         private string _query = "";

@@ -7,12 +7,6 @@ using System.Windows.Input;
 
 namespace Rewind.MVVM.ViewModels.Pages
 {
-    /// <summary>
-    /// VM страницы «Мои плейлисты». Держит фильтрацию (all/own/saved),
-    /// поиск и команды (создать плейлист, открыть, переключить фильтр).
-    /// View рендерит карточки `PlaylistViewModel` императивно (карточки —
-    /// сложная вёрстка с тенями/масками, не имеет смысла переписывать XAML).
-    /// </summary>
     public sealed class PlaylistsPageViewModel : ViewModelBase, IDisposable
     {
         private readonly INavigationService _nav;
@@ -79,7 +73,6 @@ namespace Rewind.MVVM.ViewModels.Pages
             try
             {
                 var others = PlaylistService.GetPublicPlaylists(excludeUserId: Session.UserId);
-                // Один запрос за всеми сохранениями текущего юзера, чтобы не дёргать IsSaved в цикле.
                 var savedIds = SafeGetSavedIds();
                 foreach (var pl in others)
                     _all.Add(new PlaylistViewModel(pl, isOwned: false, isSaved: savedIds.Contains(pl.PlaylistID)));
@@ -109,8 +102,6 @@ namespace Rewind.MVVM.ViewModels.Pages
 
         private void OnStatsChanged(int _)
         {
-            // Если поменялся статус «сохранения», обновим IsSaved у всех чужих VM —
-            // т.к. порядок срабатывания обработчиков не гарантирован.
             var savedIds = SafeGetSavedIds();
             foreach (var vm in _all.Where(v => !v.IsOwned))
                 vm.IsSaved = savedIds.Contains(vm.PlaylistId);

@@ -1,4 +1,7 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Storage;
+using System.Text;
 
 namespace Rewind.Helpers
 {
@@ -13,14 +16,60 @@ namespace Rewind.Helpers
             lock (_initLock)
             {
                 if (_schemaInitialized) return;
-                Database.EnsureCreated();
-                EnsureArtistRequestsTable();
-                EnsureTrackSchemaUpdates();
-                EnsureAlbumsTables();
-                EnsureSubscriptionTimestamp();
-                SeedDefaultAdmin();
+                EnsureDatabaseAndSchemaInitialized();
                 _schemaInitialized = true;
             }
+        }
+
+        private void EnsureDatabaseAndSchemaInitialized()
+        {
+            EnsurePublicSchema();
+            var creator = this.GetService<IRelationalDatabaseCreator>();
+
+            try
+            {
+                Database.EnsureCreated();
+            }
+            catch
+            {
+            }
+
+            try
+            {
+                if (!creator.HasTables())
+                {
+                    creator.CreateTables();
+                }
+            }
+            catch
+            {
+            }
+
+            EnsureBaseSchemaUpdates();
+            EnsureArtistRequestsTable();
+            EnsureTrackSchemaUpdates();
+            EnsureAlbumsTables();
+            EnsureSubscriptionTimestamp();
+            SeedDefaultAdmin();
+        }
+
+        private void EnsurePublicSchema()
+        {
+            try
+            {
+                Database.ExecuteSqlRaw(@"CREATE SCHEMA IF NOT EXISTS public");
+            }
+            catch
+            {
+            }
+        }
+
+        private void EnsureBaseSchemaUpdates()
+        {
+            try { Database.ExecuteSqlRaw(@"ALTER TABLE ""Users"" ADD COLUMN IF NOT EXISTS ""ProfilePhotoPath"" TEXT"); } catch { }
+            try { Database.ExecuteSqlRaw(@"ALTER TABLE ""Users"" ADD COLUMN IF NOT EXISTS ""Status"" TEXT"); } catch { }
+            try { Database.ExecuteSqlRaw(@"ALTER TABLE ""Playlists"" ADD COLUMN IF NOT EXISTS ""IsPrivate"" BOOLEAN NOT NULL DEFAULT FALSE"); } catch { }
+            try { Database.ExecuteSqlRaw(@"ALTER TABLE ""Playlists"" ADD COLUMN IF NOT EXISTS ""CoverPath"" TEXT"); } catch { }
         }
 
         private void EnsureTrackSchemaUpdates()
@@ -151,7 +200,73 @@ namespace Rewind.Helpers
         public DbSet<ListeningHistory> History { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder o)
-            => o.UseNpgsql("Host=localhost;Port=5433;Database=rewinddb;Username=postgres;Password=5329965");
+            => o.UseNpgsql(GetConnectionString());
+
+        private static string GetConnectionString()
+        {
+            var fromEnv = Environment.GetEnvironmentVariable("REWIND_DB_CONNECTION");
+            if (!string.IsNullOrWhiteSpace(fromEnv))
+                return NormalizeConnectionString(fromEnv);
+
+            return NormalizeConnectionString("postgresql://neondb_owner:npg_SzZQ1vfPTqN5@ep-raspy-waterfall-ap8gyjmk-pooler.c-7.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require");
+        }
+
+        private static string NormalizeConnectionString(string value)
+        {
+            var text = value.Trim();
+            if (!(text.StartsWith("postgres://", StringComparison.OrdinalIgnoreCase) ||
+                  text.StartsWith("postgresql://", StringComparison.OrdinalIgnoreCase)))
+            {
+                return text;
+            }
+
+            var uri = new Uri(text);
+            var userInfo = uri.UserInfo.Split(':', 2);
+            var user = userInfo.Length > 0 ? Uri.UnescapeDataString(userInfo[0]) : "";
+            var password = userInfo.Length > 1 ? Uri.UnescapeDataString(userInfo[1]) : "";
+            var database = uri.AbsolutePath.Trim('/');
+            var port = uri.IsDefaultPort ? 5432 : uri.Port;
+
+            var sb = new StringBuilder();
+            sb.Append("Host=").Append(uri.Host).Append(';');
+            sb.Append("Port=").Append(port).Append(';');
+            if (!string.IsNullOrWhiteSpace(database))
+                sb.Append("Database=").Append(database).Append(';');
+            if (!string.IsNullOrWhiteSpace(user))
+                sb.Append("Username=").Append(user).Append(';');
+            if (!string.IsNullOrWhiteSpace(password))
+                sb.Append("Password=").Append(password).Append(';');
+
+            if (!string.IsNullOrWhiteSpace(uri.Query))
+            {
+                var query = uri.Query.TrimStart('?');
+                foreach (var part in query.Split('&', StringSplitOptions.RemoveEmptyEntries))
+                {
+                    var kv = part.Split('=', 2);
+                    var key = NormalizeNpgsqlKeyword(Uri.UnescapeDataString(kv[0]));
+                    var val = kv.Length > 1 ? Uri.UnescapeDataString(kv[1]) : "";
+                    if (string.IsNullOrWhiteSpace(key)) continue;
+                    sb.Append(key).Append('=').Append(val).Append(';');
+                }
+            }
+
+            return sb.ToString();
+        }
+
+        private static string NormalizeNpgsqlKeyword(string key)
+        {
+            if (string.IsNullOrWhiteSpace(key)) return "";
+
+            var compact = key.Replace("_", "").Replace("-", "").Replace(" ", "")
+                .ToLowerInvariant();
+            return compact switch
+            {
+                "sslmode" => "SSL Mode",
+                "trustservercertificate" => "Trust Server Certificate",
+                "channelbinding" => "Channel Binding",
+                _ => key
+            };
+        }
 
         protected override void OnModelCreating(ModelBuilder m)
         {
@@ -176,10 +291,17 @@ namespace Rewind.Helpers
             );
         }
 
+        public override int SaveChanges()
+        {
+            EnsureDefaultRoles();
+            return base.SaveChanges();
+        }
+
         private void SeedDefaultAdmin()
         {
             try
             {
+                EnsureDefaultRoles();
                 if (Users.Any(u => u.Nickname == "Alexey")) return;
 
                 Users.Add(new User
@@ -192,6 +314,19 @@ namespace Rewind.Helpers
                     Status = "Активен"
                 });
                 SaveChanges();
+            }
+            catch
+            {
+            }
+        }
+
+        private void EnsureDefaultRoles()
+        {
+            try
+            {
+                Database.ExecuteSqlRaw(@"INSERT INTO ""Roles"" (""RoleId"", ""RoleName"") VALUES (1, 'Admin') ON CONFLICT (""RoleId"") DO NOTHING");
+                Database.ExecuteSqlRaw(@"INSERT INTO ""Roles"" (""RoleId"", ""RoleName"") VALUES (2, 'Artist') ON CONFLICT (""RoleId"") DO NOTHING");
+                Database.ExecuteSqlRaw(@"INSERT INTO ""Roles"" (""RoleId"", ""RoleName"") VALUES (3, 'Listener') ON CONFLICT (""RoleId"") DO NOTHING");
             }
             catch
             {
